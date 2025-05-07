@@ -1,4 +1,4 @@
-package com.example.myway
+package com.bdgg.myway
 
 import io.flutter.embedding.android.FlutterActivity
 
