@@ -7,6 +7,7 @@ import 'package:myway/screen/signup_screen.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
   runApp(const MyApp());
 }
 
@@ -19,7 +20,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
-      home: const SignUpScreen(),
+      theme: ThemeData(fontFamily: 'Freesentation'),
+      home: const HomeScreen(),
     );
   }
 }
