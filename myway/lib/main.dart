@@ -28,6 +28,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
+      theme: ThemeData(fontFamily: 'Freesentation'),
       home: const AuthWrapper(),
       routes: {
         'signUp': (context) => const SignUpScreen(),
@@ -56,9 +57,6 @@ class AuthWrapper extends StatelessWidget {
           return const SigninScreen(); // 로그인되지 않은 경우
         }
       },
-      theme: ThemeData(fontFamily: 'Freesentation'),
-      home: const HomeScreen(),
-      //test commit name change
     );
   }
 }

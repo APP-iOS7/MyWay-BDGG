@@ -1,11 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:myway/colors.dart';
+import 'package:myway/const/colors.dart';
 import 'package:myway/provider/user_provider.dart';
 import 'package:provider/provider.dart';
 
-import 'map_screen.dart';
+import 'map/map_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -16,14 +16,11 @@ class HomeScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 20.0,
-              vertical: 80.0,
-            ),
-            child: Row(
+      body: Padding(
+        padding: const EdgeInsets.only(left: 20.0, right: 20.0, top: 70),
+        child: Column(
+          children: [
+            Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
@@ -67,6 +64,7 @@ class HomeScreen extends StatelessWidget {
                     ],
                   ),
                 ),
+                // 임시 로그아웃 버튼
                 Consumer<UserProvider>(
                   builder: (context, userProvider, child) {
                     return IconButton(
@@ -80,83 +78,41 @@ class HomeScreen extends StatelessWidget {
                 ),
               ],
             ),
-          ),
-          // username님의 코스
-          Padding(
-            padding: const EdgeInsets.only(left: 20.0),
-            child: Row(
-              children: [
-                Text.rich(
-                  TextSpan(
-                    text: user?.displayName,
-                    style: TextStyle(
-                      color: GRAYSCALE_LABEL_800,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    children: <TextSpan>[
-                      TextSpan(
-                        text: '님의 코스',
-                        style: TextStyle(
-                          color: GRAYSCALE_LABEL_600,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w500,
-                        ),
+            // username님의 코스
+            Padding(
+              padding: const EdgeInsets.only(top: 10.0),
+              child: Row(
+                children: [
+                  Text.rich(
+                    TextSpan(
+                      text: user?.displayName,
+                      style: TextStyle(
+                        color: GRAYSCALE_LABEL_700,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
                       ),
-                    ],
-                  ),
-                ),
-                Consumer<UserProvider>(
-                  builder: (context, userProvider, child) {
-                    return IconButton(
-                      onPressed: () {
-                        userProvider.signOut();
-                        Navigator.pushReplacementNamed(context, 'signIn');
-                      },
-                      icon: Icon(Icons.output_rounded),
-                    );
-                  },
-                ),
-              ],
-            ),
-          ),
-          // username님의 코스
-          Padding(
-            padding: const EdgeInsets.only(left: 20.0),
-            child: Row(
-              children: [
-                Text.rich(
-                  TextSpan(
-                    text: user?.displayName,
-                    style: TextStyle(
-                      color: GRAYSCALE_LABEL_800,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    children: <TextSpan>[
-                      TextSpan(
-                        text: '님의 코스',
-                        style: TextStyle(
-                          color: GRAYSCALE_LABEL_600,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w500,
+                      children: <TextSpan>[
+                        TextSpan(
+                          text: '님의 코스',
+                          style: TextStyle(
+                            color: GRAYSCALE_LABEL_600,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w400,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          Expanded(
-            child: Column(
-              children: [Card(color: Colors.black, child: Text(''))],
+            Expanded(
+              child: Column(
+                children: [Card(color: Colors.black, child: Text(''))],
+              ),
             ),
-          ),
 
-          Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Column(
+            Column(
               children: [
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 10.0),
@@ -274,8 +230,8 @@ class HomeScreen extends StatelessWidget {
                 ),
               ],
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

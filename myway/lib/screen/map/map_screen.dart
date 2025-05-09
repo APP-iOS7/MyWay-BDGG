@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
-import 'package:myway/colors.dart';
+import 'package:myway/const/colors.dart';
 
-import '../park_model.dart';
+import '../../model/park_model.dart';
 import 'start_tracking_screen.dart';
 
 class MapScreen extends StatefulWidget {
