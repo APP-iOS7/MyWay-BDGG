@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:myway/colors.dart';
 
 import '../park_model.dart';
-import 'tracking_bottomsheet.dart';
+import 'start_tracking_screen.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -21,12 +20,10 @@ class _MapScreenState extends State<MapScreen>
   bool isTracking = false;
   List<LatLng> route = [];
   Set<Polyline> polylines = {};
-  int calories = 0;
-  int timeInSeconds = 0;
-  double distance = 0.0;
 
   late TabController _tabController;
-  final ScrollController _scrollController = ScrollController();
+
+  Park? selectedPark;
   List<Park> parks = [
     Park(
       name: "서울숲",
@@ -51,6 +48,28 @@ class _MapScreenState extends State<MapScreen>
 
   void _onMapCreated(GoogleMapController controller) {
     mapController = controller;
+  }
+
+  void _onParkSelect(Park park) {
+    setState(() {
+      if (selectedPark == park) {
+        selectedPark = null; // 이미 선택된 공원은 취소
+      } else {
+        selectedPark = park; // 공원 선택
+      }
+    });
+  }
+
+  void _onSelectionComplete() {
+    if (selectedPark != null) {
+      // 선택 완료 후 다른 화면으로 이동 (예시로 ParkDetailPage로 이동)
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => StartTrackingScreen(park: selectedPark!),
+        ),
+      );
+    }
   }
 
   @override
@@ -202,10 +221,19 @@ class _MapScreenState extends State<MapScreen>
                             ],
                           ),
                           subtitle: Text(park.address),
-
+                          trailing:
+                              selectedPark == park
+                                  ? const Icon(
+                                    Icons.check,
+                                    color: GREEN_SECONDARY_600,
+                                  ) // 선택된 항목에 체크 표시
+                                  : null,
+                          tileColor:
+                              selectedPark == park ? GREEN_SECONDARY_600 : null,
                           onTap: () {
                             // 공원 클릭 시 동작 예시
                             print("Tapped on ${park.name}");
+                            _onParkSelect(park);
                           },
                         );
                       },
@@ -220,6 +248,7 @@ class _MapScreenState extends State<MapScreen>
                       child: ElevatedButton(
                         onPressed: () {
                           // 선택 완료 로직
+                          _onSelectionComplete();
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: ORANGE_PRIMARY_500,
