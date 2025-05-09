@@ -1,6 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:myway/colors.dart';
+import 'package:myway/provider/user_provider.dart';
+import 'package:provider/provider.dart';
 
 import 'map_screen.dart';
 
@@ -9,6 +12,8 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    User? user = FirebaseAuth.instance.currentUser;
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: Column(
@@ -58,6 +63,84 @@ class HomeScreen extends StatelessWidget {
                             ),
                           ),
                         ],
+                      ),
+                    ],
+                  ),
+                ),
+                Consumer<UserProvider>(
+                  builder: (context, userProvider, child) {
+                    return IconButton(
+                      onPressed: () {
+                        userProvider.signOut();
+                        Navigator.pushReplacementNamed(context, 'signIn');
+                      },
+                      icon: Icon(Icons.output_rounded),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+          // username님의 코스
+          Padding(
+            padding: const EdgeInsets.only(left: 20.0),
+            child: Row(
+              children: [
+                Text.rich(
+                  TextSpan(
+                    text: user?.displayName,
+                    style: TextStyle(
+                      color: GRAYSCALE_LABEL_800,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    children: <TextSpan>[
+                      TextSpan(
+                        text: '님의 코스',
+                        style: TextStyle(
+                          color: GRAYSCALE_LABEL_600,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Consumer<UserProvider>(
+                  builder: (context, userProvider, child) {
+                    return IconButton(
+                      onPressed: () {
+                        userProvider.signOut();
+                        Navigator.pushReplacementNamed(context, 'signIn');
+                      },
+                      icon: Icon(Icons.output_rounded),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+          // username님의 코스
+          Padding(
+            padding: const EdgeInsets.only(left: 20.0),
+            child: Row(
+              children: [
+                Text.rich(
+                  TextSpan(
+                    text: user?.displayName,
+                    style: TextStyle(
+                      color: GRAYSCALE_LABEL_800,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    children: <TextSpan>[
+                      TextSpan(
+                        text: '님의 코스',
+                        style: TextStyle(
+                          color: GRAYSCALE_LABEL_600,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ],
                   ),
