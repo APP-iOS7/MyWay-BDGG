@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:myway/colors.dart';
 import 'package:myway/provider/user_provider.dart';
 import 'package:provider/provider.dart';
@@ -18,16 +18,19 @@ class HomeScreen extends StatelessWidget {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.only(top: 80.0, left: 20),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 20.0,
+              vertical: 80.0,
+            ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
                   '마이웨이',
-                  style: GoogleFonts.inter(
+                  style: TextStyle(
                     color: Colors.black,
                     fontSize: 30,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 GestureDetector(
@@ -81,6 +84,41 @@ class HomeScreen extends StatelessWidget {
             padding: const EdgeInsets.all(20.0),
             child: Column(
               children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10.0),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        // Navigator.push(
+                        //   context,
+                        //   MaterialPageRoute(
+                        //     builder: (context) {
+                        //       return const MapScreen();
+                        //     },
+                        //   ),
+                        // );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        shadowColor: Colors.transparent,
+                        backgroundColor: ORANGE_PRIMARY_600,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 15),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        '산책 시작',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
