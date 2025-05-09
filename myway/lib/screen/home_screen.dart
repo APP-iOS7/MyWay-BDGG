@@ -48,6 +48,7 @@ class HomeScreen extends StatelessWidget {
               ],
             ),
           ),
+          // username님의 코스
           Padding(
             padding: const EdgeInsets.only(left: 20.0),
             child: Row(

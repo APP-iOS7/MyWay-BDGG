@@ -17,6 +17,7 @@ class _SigninScreenState extends State<SigninScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
+  // 로그인 함수
   Future<void> _signIn() async {
     try {
       UserCredential userCredential = await FirebaseAuth.instance

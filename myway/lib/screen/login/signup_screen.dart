@@ -493,7 +493,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 onPressed:
                                     _allFieldsFilled
                                         ? () async {
-                                          // 회원가입 로직 구현 필요
+                                          // 회원가입 로직
                                           if (!userProvider.isLoading) {
                                             bool success = await userProvider
                                                 .signUp(
@@ -637,7 +637,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               onPressed:
                                   _allFieldsFilled
                                       ? () async {
-                                        // 회원가입 로직 구현 필요
+                                        // 회원가입 로직
                                         if (!userProvider.isLoading) {
                                           bool
                                           success = await userProvider.signUp(
@@ -779,6 +779,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
             ),
           ),
           child: TextFormField(
+            cursorColor: ORANGE_PRIMARY_500,
             controller: controller,
             focusNode: focusNode,
             obscureText: isPassword,
