@@ -12,10 +12,12 @@ class _WeatherScreenState extends State<WeatherScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         leading: Icon(Icons.arrow_back),
         title: Text('금천구'),
         centerTitle: true,
+        backgroundColor: Colors.white,
       ),
       body: Center(
         child: Column(
