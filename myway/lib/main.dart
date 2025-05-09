@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Demo',
       theme: ThemeData(fontFamily: 'Freesentation'),
       home: const HomeScreen(),
-      //test commit
+      //test commit name change
     );
   }
 }
