@@ -165,21 +165,23 @@ class _SigninScreenState extends State<SigninScreen> {
                   ),
                 ],
               ),
-              Padding(
-                padding: const EdgeInsets.only(left: 130.0),
-                child: Transform.translate(
-                  offset: Offset(0, -10),
-                  child: TextButton(
-                    onPressed: () {},
-                    child: Text(
-                      '비밀번호 찾기',
-                      style: GoogleFonts.inter(
-                        color: GRAYSCALE_LABEL_600,
-                        fontSize: 15,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Transform.translate(
+                    offset: Offset(0, -15),
+                    child: TextButton(
+                      onPressed: () {},
+                      child: Text(
+                        '비밀번호 찾기',
+                        style: GoogleFonts.inter(
+                          color: GRAYSCALE_LABEL_600,
+                          fontSize: 15,
+                        ),
                       ),
                     ),
                   ),
-                ),
+                ],
               ),
             ],
           ),
