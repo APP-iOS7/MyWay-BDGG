@@ -1,12 +1,18 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:myway/colors.dart';
+import 'package:myway/provider/user_provider.dart';
+import 'package:provider/provider.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    User? user = FirebaseAuth.instance.currentUser;
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: Column(
@@ -28,10 +34,48 @@ class HomeScreen extends StatelessWidget {
                   onTap: () {},
                   child: SvgPicture.asset('assets/icons/sun2.svg', height: 80),
                 ),
+                Consumer<UserProvider>(
+                  builder: (context, userProvider, child) {
+                    return IconButton(
+                      onPressed: () {
+                        userProvider.signOut();
+                        Navigator.pushReplacementNamed(context, 'signIn');
+                      },
+                      icon: Icon(Icons.output_rounded),
+                    );
+                  },
+                ),
               ],
             ),
           ),
-          SizedBox(height: 500),
+          Padding(
+            padding: const EdgeInsets.only(left: 20.0),
+            child: Row(
+              children: [
+                Text.rich(
+                  TextSpan(
+                    text: user?.displayName,
+                    style: GoogleFonts.inter(
+                      color: GRAYSCALE_LABEL_800,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    children: <TextSpan>[
+                      TextSpan(
+                        text: '님의 코스',
+                        style: GoogleFonts.inter(
+                          color: GRAYSCALE_LABEL_600,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: 470),
           Padding(
             padding: const EdgeInsets.all(20.0),
             child: Column(

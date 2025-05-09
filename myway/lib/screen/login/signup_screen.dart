@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 
+import 'package:google_fonts/google_fonts.dart';
+import 'package:myway/colors.dart';
+import 'package:myway/provider/user_provider.dart';
+import 'package:myway/screen/home_screen.dart';
+import 'package:provider/provider.dart';
+
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
 
@@ -9,7 +15,6 @@ class SignUpScreen extends StatefulWidget {
 }
 
 class _SignUpScreenState extends State<SignUpScreen> {
-  final TextEditingController _nameController = TextEditingController();
   final TextEditingController _nicknameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -17,7 +22,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
       TextEditingController();
 
   // FocusNode 추가
-  final FocusNode _nameFocus = FocusNode();
   final FocusNode _nicknameFocus = FocusNode();
   final FocusNode _emailFocus = FocusNode();
   final FocusNode _passwordFocus = FocusNode();
@@ -29,11 +33,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
   bool _allFieldsFilled = false;
   bool _isPasswordValid = false;
   bool _isNicknameValid = true;
-  bool _isNameValid = true;
   bool _isEmailValid = true;
   String _passwordErrorMessage = '';
   String _nicknameErrorMessage = '';
-  String _nameErrorMessage = '';
   String _emailErrorMessage = '';
   String _confirmPasswordErrorMessage = '';
 
@@ -51,24 +53,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
     super.initState();
 
     // 텍스트 필드 변경 감지
-    _nameController.addListener(_checkTextAndValidate);
     _nicknameController.addListener(_checkTextAndValidate);
     _emailController.addListener(_checkTextAndValidate);
     _passwordController.addListener(_checkTextAndValidate);
     _confirmPasswordController.addListener(_checkTextAndValidate);
 
     // 포커스 변경 감지
-    _nameFocus.addListener(() {
-      if (_nameFocus.hasFocus) {
-        setState(() {
-          _currentFocusField = 'name';
-        });
-        _scrollToField(0);
-      } else {
-        _checkFieldFocus();
-      }
-    });
-
     _nicknameFocus.addListener(() {
       if (_nicknameFocus.hasFocus) {
         setState(() {
@@ -119,10 +109,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
     _checkAnyText();
 
     // 각 필드별 유효성 검사
-    if (_currentFocusField == 'name' || _nameController.text.isNotEmpty) {
-      _validateName();
-    }
-
     if (_currentFocusField == 'nickname' ||
         _nicknameController.text.isNotEmpty) {
       _validateNickname();
@@ -150,7 +136,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
   void _checkAnyText() {
     setState(() {
       _hasAnyText =
-          _nameController.text.isNotEmpty ||
           _nicknameController.text.isNotEmpty ||
           _emailController.text.isNotEmpty ||
           _passwordController.text.isNotEmpty ||
@@ -167,16 +152,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
     // 필드 입력 여부 확인
     bool hasEmptyField =
-        _nameController.text.isEmpty ||
         _nicknameController.text.isEmpty ||
         _emailController.text.isEmpty ||
         _passwordController.text.isEmpty ||
         _confirmPasswordController.text.isEmpty;
-
-    // 이름 필드에 텍스트가 있고 유효하지 않은 경우
-    if (_nameController.text.isNotEmpty && !_isNameValid) {
-      return _nameErrorMessage;
-    }
 
     // 닉네임 필드에 텍스트가 있고 유효하지 않은 경우
     if (_nicknameController.text.isNotEmpty && !_isNicknameValid) {
@@ -202,9 +181,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
     // 현재 포커스된 필드의 에러 메시지 반환 (위의 조건에 해당하지 않는 경우)
     String errorMessage = '';
     switch (_currentFocusField) {
-      case 'name':
-        errorMessage = _nameErrorMessage.isNotEmpty ? _nameErrorMessage : '';
-        break;
       case 'nickname':
         errorMessage =
             _nicknameErrorMessage.isNotEmpty ? _nicknameErrorMessage : '';
@@ -241,7 +217,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
   // 필드 포커스 상태 확인
   void _checkFieldFocus() {
     bool hasFocus =
-        _nameFocus.hasFocus ||
         _nicknameFocus.hasFocus ||
         _emailFocus.hasFocus ||
         _passwordFocus.hasFocus ||
@@ -284,31 +259,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
         setState(() {
           _isKeyboardVisible = false;
         });
-      }
-    });
-  }
-
-  // 이름 유효성 검사
-  void _validateName() {
-    final name = _nameController.text;
-
-    if (name.isEmpty) {
-      _isNameValid = true;
-      _nameErrorMessage = '';
-      return;
-    }
-
-    // UTF-8 인코딩을 사용하여 바이트 수 계산
-    final bytes = utf8.encode(name);
-    final byteLength = bytes.length;
-
-    setState(() {
-      if (byteLength < 6) {
-        _isNameValid = false;
-        _nameErrorMessage = '이름은 한글 2자, 영문 6자 이상이어야 합니다';
-      } else {
-        _isNameValid = true;
-        _nameErrorMessage = '';
       }
     });
   }
@@ -415,8 +365,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
   void _checkFields() {
     setState(() {
       _allFieldsFilled =
-          _nameController.text.isNotEmpty &&
-          _isNameValid &&
           _nicknameController.text.isNotEmpty &&
           _isNicknameValid &&
           _emailController.text.isNotEmpty &&
@@ -429,14 +377,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   @override
   void dispose() {
-    _nameController.dispose();
     _nicknameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
 
     // FocusNode 해제
-    _nameFocus.dispose();
     _nicknameFocus.dispose();
     _emailFocus.dispose();
     _passwordFocus.dispose();
@@ -462,6 +408,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFFFFFFF),
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        scrolledUnderElevation: 0,
+        title: Text(
+          '회원가입',
+          style: GoogleFonts.inter(
+            color: Colors.black,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
       body: SafeArea(
         bottom: false,
         child: Padding(
@@ -476,29 +434,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       const SizedBox(height: 40.0),
-                      const Center(
-                        child: Text(
-                          '회원가입',
-                          style: TextStyle(
-                            fontSize: 30.0,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
                       const SizedBox(height: 40.0),
-                      _buildTextField(
-                        '이름',
-                        _nameController,
-                        focusNode: _nameFocus,
-                        height: 48.0,
-                        isValid: _isNameValid,
-                      ),
-                      const SizedBox(height: 20.0),
                       _buildTextField(
                         '닉네임',
                         _nicknameController,
                         focusNode: _nicknameFocus,
-                        height: 48.0,
                         isValid: _isNicknameValid,
                       ),
                       const SizedBox(height: 20.0),
@@ -507,7 +447,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         _emailController,
                         focusNode: _emailFocus,
                         keyboardType: TextInputType.emailAddress,
-                        height: 48.0,
                         isValid: _isEmailValid,
                       ),
                       const SizedBox(height: 20.0),
@@ -516,7 +455,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         _passwordController,
                         focusNode: _passwordFocus,
                         isPassword: true,
-                        height: 48.0,
                         isValid: _isPasswordValid,
                       ),
                       const SizedBox(height: 20.0),
@@ -525,7 +463,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         _confirmPasswordController,
                         focusNode: _confirmPasswordFocus,
                         isPassword: true,
-                        height: 48.0,
                         isValid:
                             _confirmPasswordController.text.isEmpty ||
                             (_isPasswordValid &&
@@ -550,28 +487,77 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         SizedBox(
                           width: double.infinity,
                           height: 48.0,
-                          child: ElevatedButton(
-                            onPressed:
-                                _allFieldsFilled
-                                    ? () {
-                                      // 회원가입 로직 구현 필요
-                                    }
-                                    : null,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF567FD9),
-                              disabledBackgroundColor: Colors.grey[300],
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8.0),
-                              ),
-                            ),
-                            child: const Text(
-                              '회원가입',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 16.0,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
+                          child: Consumer<UserProvider>(
+                            builder: (context, userProvider, child) {
+                              return ElevatedButton(
+                                onPressed:
+                                    _allFieldsFilled
+                                        ? () async {
+                                          // 회원가입 로직 구현 필요
+                                          if (!userProvider.isLoading) {
+                                            bool success = await userProvider
+                                                .signUp(
+                                                  email: _emailController.text,
+                                                  password:
+                                                      _passwordController.text,
+                                                  checkPassword:
+                                                      _confirmPasswordController
+                                                          .text,
+                                                  username:
+                                                      _nicknameController.text,
+                                                );
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).hideCurrentSnackBar();
+
+                                            if (success) {
+                                              ScaffoldMessenger.of(
+                                                context,
+                                              ).showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                    '회원가입 성공! 이름: ${userProvider.currentUser?.displayName}',
+                                                  ),
+                                                ),
+                                              );
+                                              Navigator.pushReplacement(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder:
+                                                      (context) => HomeScreen(),
+                                                ),
+                                              );
+                                            } else {
+                                              ScaffoldMessenger.of(
+                                                context,
+                                              ).showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                    '회원가입 실패! ${userProvider.errorMessage ?? '알 수 없는 오류'}',
+                                                  ),
+                                                ),
+                                              );
+                                            }
+                                          }
+                                        }
+                                        : null,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: ORANGE_PRIMARY_500,
+                                  disabledBackgroundColor: Colors.grey[300],
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8.0),
+                                  ),
+                                ),
+                                child: const Text(
+                                  '회원가입',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16.0,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              );
+                            },
                           ),
                         ),
                         const SizedBox(height: 20.0),
@@ -600,7 +586,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               child: const Text(
                                 '로그인',
                                 style: TextStyle(
-                                  color: Color(0xFF567FD9),
+                                  color: BLUE_SECONDARY_600,
                                   fontSize: 14.0,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -645,28 +631,74 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       SizedBox(
                         width: double.infinity,
                         height: 48.0,
-                        child: ElevatedButton(
-                          onPressed:
-                              _allFieldsFilled
-                                  ? () {
-                                    // 회원가입 로직 구현 필요
-                                  }
-                                  : null,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF567FD9),
-                            disabledBackgroundColor: Colors.grey[300],
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8.0),
-                            ),
-                          ),
-                          child: const Text(
-                            '회원가입',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16.0,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+                        child: Consumer<UserProvider>(
+                          builder: (context, userProvider, child) {
+                            return ElevatedButton(
+                              onPressed:
+                                  _allFieldsFilled
+                                      ? () async {
+                                        // 회원가입 로직 구현 필요
+                                        if (!userProvider.isLoading) {
+                                          bool
+                                          success = await userProvider.signUp(
+                                            email: _emailController.text,
+                                            password: _passwordController.text,
+                                            checkPassword:
+                                                _confirmPasswordController.text,
+                                            username: _nicknameController.text,
+                                          );
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).hideCurrentSnackBar();
+
+                                          if (success) {
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(
+                                              SnackBar(
+                                                content: Text(
+                                                  '회원가입 성공! 이름: ${userProvider.currentUser?.displayName}',
+                                                ),
+                                              ),
+                                            );
+                                            Navigator.pushReplacement(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder:
+                                                    (context) => HomeScreen(),
+                                              ),
+                                            );
+                                          } else {
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(
+                                              SnackBar(
+                                                content: Text(
+                                                  '회원가입 실패! ${userProvider.errorMessage ?? '알 수 없는 오류'}',
+                                                ),
+                                              ),
+                                            );
+                                          }
+                                        }
+                                      }
+                                      : null,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF567FD9),
+                                disabledBackgroundColor: Colors.grey[300],
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8.0),
+                                ),
+                              ),
+                              child: const Text(
+                                '회원가입',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16.0,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            );
+                          },
                         ),
                       ),
                       const SizedBox(height: 20.0),
@@ -683,9 +715,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           TextButton(
                             onPressed: () {
                               // 로그인 화면으로 이동
-                              Navigator.of(
-                                context,
-                              ).pushReplacementNamed('/home');
+                              Navigator.pushNamed(context, 'signIn');
                             },
                             style: TextButton.styleFrom(
                               minimumSize: Size.zero,
@@ -695,7 +725,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             child: const Text(
                               '로그인',
                               style: TextStyle(
-                                color: Color(0xFF567FD9),
+                                color: BLUE_SECONDARY_600,
                                 fontSize: 14.0,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -744,11 +774,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   shouldShowRedBorder ||
                           (errorText != null && errorText.isNotEmpty)
                       ? Colors.red.shade400
-                      : Colors.grey.shade300,
+                      : GRAYSCALE_LABEL_400,
               width: 1.0,
             ),
           ),
-          child: TextField(
+          child: TextFormField(
             controller: controller,
             focusNode: focusNode,
             obscureText: isPassword,
