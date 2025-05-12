@@ -42,6 +42,7 @@ dependencies:
   provider: ^6.1.5
   google_maps_flutter: ^2.12.1
   location: ^8.0.0
+  shimmer: ^3.0.0
 
 dev_dependencies:
   flutter_test:
