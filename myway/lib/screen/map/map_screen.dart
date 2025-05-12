@@ -128,6 +128,7 @@ class _MapScreenState extends State<MapScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: WHITE,
         title: Text(
           '마이웨이',
           style: TextStyle(
