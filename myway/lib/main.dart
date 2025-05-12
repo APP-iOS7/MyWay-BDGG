@@ -4,6 +4,7 @@ import 'package:myway/firebase_options.dart';
 import 'package:myway/screen/home_screen.dart';
 import 'package:myway/screen/signup_screen.dart';
 import 'package:myway/page/activity_log_screen.dart';
+import 'package:myway/page/notice_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,7 +21,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'MyWay',
-      home: const ActivityLogScreen(),
+      home: const NoticeScreen(),
     );
   }
 }
