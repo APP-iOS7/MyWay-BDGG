@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:myway/firebase_options.dart';
 import 'package:myway/screen/home_screen.dart';
 import 'package:myway/screen/signup_screen.dart';
+import 'package:myway/page/activity_log_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,8 +19,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Flutter Demo',
-      home: const SignUpScreen(),
+      title: 'MyWay',
+      home: const ActivityLogScreen(),
     );
   }
 }
