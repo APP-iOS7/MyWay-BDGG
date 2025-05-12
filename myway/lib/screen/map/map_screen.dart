@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:myway/const/colors.dart';
+import 'package:myway/temp/course_data.dart';
 
-import '../../model/park_model.dart';
 import 'start_tracking_screen.dart';
 
 class MapScreen extends StatefulWidget {
@@ -20,103 +20,165 @@ class _MapScreenState extends State<MapScreen>
   bool isTracking = false;
   List<LatLng> route = [];
   Set<Polyline> polylines = {};
-
-  late TabController _tabController;
-
-  Park? selectedPark;
-  List<Park> parks = [
-    Park(
-      name: "서울숲",
-      address: "서울특별시 성동구 성수동1가 685-1",
-      kind: "근린공원",
-      latitude: 37.5449,
-      longitude: 127.0452,
-      imageUrl: "https://example.com/image.jpg",
-    ),
-    Park(
-      name: "한강공원",
-      address: "서울특별시 용산구 한강로2가 1-1",
-      kind: "대공원",
-      latitude: 37.5299,
-      longitude: 126.9737,
-      imageUrl: "https://example.com/image.jpg",
-    ),
-    // 더 많은 공원 데이터...
-  ];
-
-  final LatLng _center = const LatLng(35.1691, 129.0874);
+  int? selectedIndex;
+  LocationData? currentPosition;
+  bool _initialPositionSet = false;
 
   void _onMapCreated(GoogleMapController controller) {
     mapController = controller;
-  }
-
-  void _onParkSelect(Park park) {
-    setState(() {
-      if (selectedPark == park) {
-        selectedPark = null; // 이미 선택된 공원은 취소
-      } else {
-        selectedPark = park; // 공원 선택
-      }
-    });
-  }
-
-  void _onSelectionComplete() {
-    if (selectedPark != null) {
-      // 선택 완료 후 다른 화면으로 이동 (예시로 ParkDetailPage로 이동)
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => StartTrackingScreen(park: selectedPark!),
-        ),
-      );
-    }
+    // 맵 컨트롤러가 생성된 후에 현재 위치로 이동
+    _updateCurrentLocation();
   }
 
   @override
   void initState() {
     super.initState();
-    print('📍 location: $location');
-    _tabController = TabController(length: 2, vsync: this);
+    _initLocationService();
   }
 
-  @override
-  void dispose() {
-    _tabController.dispose(); // TabController 해제
-    super.dispose();
+  Future<void> _initLocationService() async {
+    bool serviceEnabled;
+    PermissionStatus permissionGranted;
+
+    try {
+      // 위치 서비스가 활성화되어 있는지 확인
+      serviceEnabled = await location.serviceEnabled();
+      if (!serviceEnabled) {
+        serviceEnabled = await location.requestService();
+        if (!serviceEnabled) {
+          print('위치 서비스를 활성화할 수 없습니다.');
+          return;
+        }
+      }
+      print("위치서비스 통과");
+
+      // 위치 권한 확인
+      permissionGranted = await location.hasPermission();
+      if (permissionGranted == PermissionStatus.denied) {
+        permissionGranted = await location.requestPermission();
+        if (permissionGranted != PermissionStatus.granted) {
+          print('위치 권한을 얻을 수 없습니다.');
+          return;
+        }
+      }
+      print("위치 권한 통과");
+
+      // 위치 정보 설정
+      location.changeSettings(
+        accuracy: LocationAccuracy.high,
+        // distanceFilter: 10,
+        interval: 5000,
+      );
+
+      // 위치 정보 가져오기
+      _getLocation();
+
+      // 위치가 변경될 때마다 업데이트
+      location.onLocationChanged.listen((LocationData newLocation) {
+        _updateLocation(newLocation);
+      });
+    } catch (e) {
+      print('위치 서비스 초기화 중 오류 발생: $e');
+    }
   }
 
-  void _startTracking() {
-    route.clear();
-    polylines.clear();
-    setState(() {
-      isTracking = true;
-    });
+  Future<void> _getLocation() async {
+    try {
+      currentPosition = await location.getLocation();
+      print('📍 현재 위치 가져옴: $currentPosition');
 
-    location.onLocationChanged.listen((LocationData currentLocation) {
-      if (isTracking) {
-        // 경로 추적 중
+      if (currentPosition != null && mounted) {
         setState(() {
-          print('📍 latitude: ${currentLocation.latitude.toString()}');
-          print('📍 longitude: ${currentLocation.longitude.toString()}');
-          LatLng position = LatLng(
-            currentLocation.latitude ?? 0.0,
-            currentLocation.longitude ?? 0.0,
-          );
-          route.add(position);
-          polylines.add(
-            Polyline(
-              polylineId: PolylineId('route'),
-              color: ORANGE_PRIMARY_500,
-              width: 5,
-              points: route,
-            ),
-          );
-          // 카메라 위치 이동
-          mapController?.animateCamera(CameraUpdate.newLatLng(position));
+          _updateLocation(currentPosition!);
         });
       }
-    });
+    } catch (e) {
+      print('위치 가져오기 오류: $e');
+    }
   }
+
+  void _updateLocation(LocationData locationData) {
+    if (!mounted) return;
+
+    setState(() {
+      currentPosition = locationData;
+      print(
+        '📍 위치 업데이트됨: 위도=${locationData.latitude}, 경도=${locationData.longitude}',
+      );
+    });
+
+    _updateCurrentLocation();
+  }
+
+  void _updateCurrentLocation() {
+    if (!mounted) return;
+    if (currentPosition != null && mapController != null) {
+      LatLng position = LatLng(
+        currentPosition!.latitude ?? 35.1691,
+        currentPosition!.longitude ?? 129.0874,
+      );
+
+      // 초기 위치 설정이 안 되었다면 카메라 이동
+      if (!_initialPositionSet) {
+        mapController!.animateCamera(
+          CameraUpdate.newLatLngZoom(position, 17.0),
+        );
+        _initialPositionSet = true;
+      }
+
+      // 트래킹 중이라면 경로 추가
+      if (isTracking && mounted) {
+        route.add(position);
+        _updatePolylines();
+      }
+    }
+  }
+
+  void _updatePolylines() {
+    if (!mounted) return;
+
+    if (route.isNotEmpty) {
+      setState(() {
+        polylines.clear();
+        polylines.add(
+          Polyline(
+            polylineId: const PolylineId('route'),
+            color: ORANGE_PRIMARY_500,
+            width: 5,
+            points: List.from(route), // 복사본 생성
+          ),
+        );
+        print(polylines);
+      });
+    }
+  }
+
+  // void _startTracking() {
+  //   print("트래킹 시작");
+  //   route.clear();
+  //   polylines.clear();
+
+  //   if (mounted) {
+  //     setState(() {
+  //       isTracking = true;
+  //     });
+  //   }
+
+  //   location.changeSettings(
+  //     accuracy: LocationAccuracy.high,
+  //     distanceFilter: 10,
+  //   );
+
+  //   // 시작 위치 추가
+  //   if (currentPosition != null) {
+  //     LatLng position = LatLng(
+  //       currentPosition!.latitude ?? 35.1691,
+  //       currentPosition!.longitude ?? 129.0874,
+  //     );
+  //     route.add(position);
+  //     _updatePolylines();
+  //   }
+  // }
 
   void stopTracking() {
     setState(() {
@@ -128,6 +190,9 @@ class _MapScreenState extends State<MapScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: WHITE,
+        elevation: 0,
+        scrolledUnderElevation: 0,
         title: Text(
           '마이웨이',
           style: TextStyle(
@@ -139,147 +204,266 @@ class _MapScreenState extends State<MapScreen>
       ),
       body: Stack(
         children: [
-          // GoogleMap: 화면 전체를 차지하는 지도
-          GoogleMap(
-            onMapCreated: _onMapCreated,
-            initialCameraPosition: CameraPosition(target: _center, zoom: 17.0),
-            myLocationEnabled: true,
-            polylines: polylines,
+          LayoutBuilder(
+            builder: (BuildContext context, BoxConstraints constraints) {
+              return GoogleMap(
+                onMapCreated: _onMapCreated,
+                initialCameraPosition: CameraPosition(
+                  target: LatLng(
+                    currentPosition?.latitude ?? 35.1691,
+                    currentPosition?.longitude ?? 129.0874,
+                  ),
+                  zoom: 17.0,
+                ),
+                myLocationEnabled: true,
+                polylines: polylines,
+              );
+            },
           ),
-          // 하단 컨테이너
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              height: MediaQuery.of(context).size.height * 0.5,
-              decoration: const BoxDecoration(
-                color: WHITE,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-              ),
-              child: Column(
-                children: [
-                  const SizedBox(height: 10),
-                  Container(
-                    width: 80,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: GRAYSCALE_LABEL_300,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    margin: const EdgeInsets.only(top: 8, bottom: 8),
-                  ),
-
-                  // 탭 메뉴
-                  TabBar(
-                    controller: _tabController,
-                    labelColor: BLACK,
-                    unselectedLabelColor: GRAYSCALE_LABEL_500,
-                    indicatorColor: BLACK,
-                    indicatorSize: TabBarIndicatorSize.tab,
-                    onTap: (index) {
-                      if (index == 0) {
-                        // _scrollToRegion();
-                      } else {
-                        // _scrollToCategory();
-                      }
-                    },
-                    tabs: const [Tab(text: "공원"), Tab(text: "추천코스")],
-                  ),
-
-                  // 탭 컨텐츠
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: parks.length,
-                      itemBuilder: (context, index) {
-                        final park = parks[index]; // 각 공원 데이터 가져오기
-
-                        return ListTile(
-                          leading: const Icon(
-                            Icons.location_on,
-                            color: ORANGE_PRIMARY_500,
-                          ),
-                          title: Row(
-                            children: [
-                              Text(
-                                park.name,
-                                style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w600,
-                                  color: BLACK,
-                                ),
-                              ),
-                              const SizedBox(width: 5),
-                              Text(
-                                park.kind,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w300,
-                                  color: GRAYSCALE_LABEL_600,
-                                ),
-                              ),
-                            ],
-                          ),
-                          subtitle: Text(park.address),
-                          trailing:
-                              selectedPark == park
-                                  ? const Icon(
-                                    Icons.check,
-                                    color: GREEN_SECONDARY_600,
-                                  ) // 선택된 항목에 체크 표시
-                                  : null,
-                          tileColor:
-                              selectedPark == park ? GREEN_SECONDARY_600 : null,
-                          onTap: () {
-                            // 공원 클릭 시 동작 예시
-                            print("Tapped on ${park.name}");
-                            _onParkSelect(park);
-                          },
-                        );
-                      },
-                    ),
-                  ),
-                  // 하단 버튼
-                  Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: SizedBox(
-                      height: 56,
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          // 선택 완료 로직
-                          _onSelectionComplete();
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: ORANGE_PRIMARY_500,
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                        child: const Text(
-                          "선택 완료",
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          _buildBottomSheet(),
         ],
       ),
     );
   }
 
-  String formatTime(int seconds) {
-    int minutes = seconds ~/ 60;
-    int remainingSeconds = seconds % 60;
-    return '$minutes:${remainingSeconds.toString().padLeft(2, '0')}';
+  Widget _buildBottomSheet() {
+    return DraggableScrollableSheet(
+      initialChildSize: 0.5,
+      minChildSize: 0.3,
+      maxChildSize: 0.8,
+      snapSizes: [0.3, 0.7],
+      snap: false,
+      builder: (BuildContext context, scrollSheetController) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+          ),
+          child: Column(
+            children: [
+              SizedBox(height: 10),
+              Container(
+                width: 80,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: GRAYSCALE_LABEL_300,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                margin: const EdgeInsets.only(top: 8, bottom: 8),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                child: Row(
+                  children: [
+                    Column(
+                      children: [
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '추천코스',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              Text(
+                                '추천 코스 선택시 지도에 경로가 표시됩니다.',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w400,
+                                  color: GRAYSCALE_LABEL_600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Spacer(),
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) {
+                              return StartTrackingScreen(
+                                course:
+                                    selectedIndex != null
+                                        ? courses[selectedIndex!]
+                                        : null,
+                              );
+                            },
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: ORANGE_PRIMARY_500,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: Icon(Icons.play_arrow_rounded, color: WHITE),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 5),
+              if (selectedIndex != null)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                  child: SizedBox(
+                    height: 20,
+                    child: Row(
+                      children: [
+                        Text(
+                          '선택된 코스: ',
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        Text(
+                          courses[selectedIndex!].title,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        SizedBox(width: 5),
+                        Text(
+                          '${courses[selectedIndex!].distance}km',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color: GRAYSCALE_LABEL_800,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              else
+                SizedBox(height: 20),
+              Divider(color: GRAYSCALE_LABEL_200, thickness: 1),
+              const SizedBox(height: 5),
+              // 추천 코스 리스트
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                  child: GridView.builder(
+                    controller: scrollSheetController,
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2, // 2열
+                          crossAxisSpacing: 10,
+                          mainAxisSpacing: 10,
+                        ),
+                    itemCount: CourseData.getCourses().length,
+                    itemBuilder: (context, index) {
+                      return GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            // 선택된 카드만 선택 가능하도록 설정
+                            selectedIndex =
+                                selectedIndex == index ? null : index;
+                          });
+                          print('selectedIndex: $selectedIndex');
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color:
+                                selectedIndex == index
+                                    ? ORANGE_PRIMARY_500
+                                    : WHITE,
+                            borderRadius: BorderRadius.circular(8),
+                            boxShadow: [
+                              BoxShadow(
+                                color: GRAYSCALE_LABEL_200,
+                                blurRadius: 2,
+                                offset: const Offset(0, 1),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.only(
+                                  topLeft: Radius.circular(8),
+                                  topRight: Radius.circular(8),
+                                ),
+                                child: Image.network(
+                                  courses[index].imageUrl,
+                                  fit: BoxFit.cover,
+                                  width: double.infinity,
+                                  height: 120,
+                                ),
+                              ),
+                              const SizedBox(height: 5),
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.location_on,
+                                    size: 30,
+                                    color:
+                                        selectedIndex == index
+                                            ? WHITE
+                                            : ORANGE_PRIMARY_500,
+                                  ),
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Text(
+                                            courses[index].title,
+                                            style: const TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                          SizedBox(width: 5),
+                                          Text(
+                                            '${courses[index].distance}km',
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w500,
+                                              color: GRAYSCALE_LABEL_800,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      Text(
+                                        courses[index].park,
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w500,
+                                          color: GRAYSCALE_LABEL_800,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 }

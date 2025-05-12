@@ -3,12 +3,12 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:myway/const/colors.dart';
 
+import '../../model/course_model.dart';
 import '../../model/park_model.dart';
 
 class StartTrackingScreen extends StatefulWidget {
-  final Park? park;
-  // final Course? course;
-  const StartTrackingScreen({super.key, this.park});
+  final Course? course;
+  const StartTrackingScreen({super.key, this.course});
 
   @override
   _StartTrackingScreenState createState() => _StartTrackingScreenState();
@@ -32,7 +32,6 @@ class _StartTrackingScreenState extends State<StartTrackingScreen>
   void initState() {
     super.initState();
     print('📍 location: $location');
-    print('park name: ${widget.park}');
     // _startTracking();
   }
 

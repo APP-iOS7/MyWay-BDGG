@@ -1,0 +1,177 @@
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+
+import '../model/course_model.dart';
+
+class CourseData {
+  static List<Course> getCourses() {
+    return courses;
+  }
+}
+
+List<Course> courses = [
+  Course(
+    title: '코스1',
+    park: '공원1',
+    date: DateTime.now(),
+    distance: 2.0,
+    duration: '30분',
+    calories: 200,
+    steps: 3000,
+    imageUrl: 'https://picsum.photos/250?image=9',
+    route: [
+      LatLng(35.1691, 129.0874),
+      LatLng(35.1692, 129.0875),
+      LatLng(35.1693, 129.0876),
+    ],
+  ),
+  Course(
+    title: '코스2',
+    park: '공원2',
+    date: DateTime.now(),
+    distance: 3.5,
+    duration: '45분',
+    calories: 300,
+    steps: 4000,
+    imageUrl: 'https://picsum.photos/250?image=9',
+    route: [
+      LatLng(35.1694, 129.0877),
+      LatLng(35.1695, 129.0878),
+      LatLng(35.1696, 129.0879),
+    ],
+  ),
+  Course(
+    title: '코스2',
+    park: '공원2',
+    date: DateTime.now(),
+    distance: 3.5,
+    duration: '45분',
+    calories: 300,
+    steps: 4000,
+    imageUrl: 'https://picsum.photos/250?image=9',
+    route: [
+      LatLng(35.1694, 129.0877),
+      LatLng(35.1695, 129.0878),
+      LatLng(35.1696, 129.0879),
+    ],
+  ),
+  Course(
+    title: '코스2',
+    park: '공원2',
+    date: DateTime.now(),
+    distance: 3.5,
+    duration: '45분',
+    calories: 300,
+    steps: 4000,
+    imageUrl: 'https://picsum.photos/250?image=9',
+    route: [
+      LatLng(35.1694, 129.0877),
+      LatLng(35.1695, 129.0878),
+      LatLng(35.1696, 129.0879),
+    ],
+  ),
+  Course(
+    title: '코스2',
+    park: '공원2',
+    date: DateTime.now(),
+    distance: 3.5,
+    duration: '45분',
+    calories: 300,
+    steps: 4000,
+    imageUrl: 'https://picsum.photos/250?image=9',
+    route: [
+      LatLng(35.1694, 129.0877),
+      LatLng(35.1695, 129.0878),
+      LatLng(35.1696, 129.0879),
+    ],
+  ),
+  Course(
+    title: '코스2',
+    park: '공원2',
+    date: DateTime.now(),
+    distance: 3.5,
+    duration: '45분',
+    calories: 300,
+    steps: 4000,
+    imageUrl: 'https://picsum.photos/250?image=9',
+    route: [
+      LatLng(35.1694, 129.0877),
+      LatLng(35.1695, 129.0878),
+      LatLng(35.1696, 129.0879),
+    ],
+  ),
+  Course(
+    title: '코스2',
+    park: '공원2',
+    date: DateTime.now(),
+    distance: 3.5,
+    duration: '45분',
+    calories: 300,
+    steps: 4000,
+    imageUrl: 'https://picsum.photos/250?image=9',
+    route: [
+      LatLng(35.1694, 129.0877),
+      LatLng(35.1695, 129.0878),
+      LatLng(35.1696, 129.0879),
+    ],
+  ),
+  Course(
+    title: '코스2',
+    park: '공원2',
+    date: DateTime.now(),
+    distance: 3.5,
+    duration: '45분',
+    calories: 300,
+    steps: 4000,
+    imageUrl: 'https://picsum.photos/250?image=9',
+    route: [
+      LatLng(35.1694, 129.0877),
+      LatLng(35.1695, 129.0878),
+      LatLng(35.1696, 129.0879),
+    ],
+  ),
+  Course(
+    title: '코스2',
+    park: '공원2',
+    date: DateTime.now(),
+    distance: 3.5,
+    duration: '45분',
+    calories: 300,
+    steps: 4000,
+    imageUrl: 'https://picsum.photos/250?image=9',
+    route: [
+      LatLng(35.1694, 129.0877),
+      LatLng(35.1695, 129.0878),
+      LatLng(35.1696, 129.0879),
+    ],
+  ),
+  Course(
+    title: '코스2',
+    park: '공원2',
+    date: DateTime.now(),
+    distance: 3.5,
+    duration: '45분',
+    calories: 300,
+    steps: 4000,
+    imageUrl: 'https://picsum.photos/250?image=9',
+    route: [
+      LatLng(35.1694, 129.0877),
+      LatLng(35.1695, 129.0878),
+      LatLng(35.1696, 129.0879),
+    ],
+  ),
+  Course(
+    title: '코스2',
+    park: '공원2',
+    date: DateTime.now(),
+    distance: 3.5,
+    duration: '45분',
+    calories: 300,
+    steps: 4000,
+    imageUrl: 'https://picsum.photos/250?image=9',
+    route: [
+      LatLng(35.1694, 129.0877),
+      LatLng(35.1695, 129.0878),
+      LatLng(35.1696, 129.0879),
+    ],
+  ),
+];
