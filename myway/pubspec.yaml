@@ -37,6 +37,11 @@ dependencies:
   firebase_core: ^3.13.0
   google_fonts: ^6.2.1
   flutter_svg: ^2.1.0
+  firebase_auth: ^5.5.3
+  cloud_firestore: ^5.6.7
+  provider: ^6.1.5
+  google_maps_flutter: ^2.12.1
+  location: ^8.0.0
 
 dev_dependencies:
   flutter_test:
@@ -77,12 +82,26 @@ flutter:
   # list giving the asset and other descriptors for the font. For
   # example:
   fonts:
-    - family: Pretendard
+    - family: Freesentation
       fonts:
-        - asset: assets/fonts/Pretendard-Light.otf
-        - asset: assets/fonts/Pretendard-Regular.otf
-        - asset: assets/fonts/Pretendard-SemiBold.otf
-        - asset: assets/fonts/Pretendard-Bold.otf
+        - asset: assets/fonts/Freesentation-1Thin.ttf
+          weight: 100
+        - asset: assets/fonts/Freesentation-2ExtraLight.ttf
+          weight: 200
+        - asset: assets/fonts/Freesentation-3Light.ttf
+          weight: 300
+        - asset: assets/fonts/Freesentation-4Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Freesentation-5Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Freesentation-6SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Freesentation-7Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Freesentation-8ExtraBold.ttf
+          weight: 800
+        - asset: assets/fonts/Freesentation-9Black.ttf
+          weight: 900
   #         style: italic
   #   - family: Trajan Pro
   #     fonts:
