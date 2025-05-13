@@ -7,7 +7,7 @@ class HealthScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final stepProvider = context.watch<StepProvider>();
+    final stepProvider = context.watch<StepProvider>().steps;
 
     return Scaffold(
       appBar: AppBar(title: Text('걸음걸음')),
@@ -15,9 +15,8 @@ class HealthScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text('걸음 수:${stepProvider.steps}', style: TextStyle(fontSize: 32)),
-            SizedBox(height: 20),
-            Text('상태: ${stepProvider.status}', style: TextStyle(fontSize: 24)),
+            Text('걸음수:', style: TextStyle(fontSize: 32)),
+            Text('$stepProvider 걸음', style: TextStyle(fontSize: 60)),
           ],
         ),
       ),

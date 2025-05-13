@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:myway/firebase_options.dart';
 import 'package:myway/provider/step_provider.dart';
 import 'package:myway/provider/user_provider.dart';
-import 'package:myway/screen/health_screen.dart';
 import 'package:myway/screen/home_screen.dart';
 import 'package:myway/screen/login/signIn_screen.dart';
 import 'package:myway/screen/login/signup_screen.dart';
@@ -17,7 +16,7 @@ Future<void> main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => UserProvider()),
-        ChangeNotifierProvider(create: (context) => StepProvider()..init()),
+        ChangeNotifierProvider(create: (context) => StepProvider()),
       ],
       child: const MyApp(),
     ),
@@ -57,7 +56,7 @@ class AuthWrapper extends StatelessWidget {
         } else if (snapshot.hasError) {
           return const Center(child: Text('에러가 발생하였습니다.'));
         } else if (snapshot.hasData) {
-          return const HealthScreen(); // 로그인된 경우
+          return const HomeScreen(); // 로그인된 경우
         } else {
           return const SigninScreen(); // 로그인되지 않은 경우
         }
