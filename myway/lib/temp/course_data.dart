@@ -19,9 +19,18 @@ List<Course> courses = [
     steps: 3000,
     imageUrl: 'https://picsum.photos/250?image=9',
     route: [
-      LatLng(35.1691, 129.0874),
-      LatLng(35.1692, 129.0875),
-      LatLng(35.1693, 129.0876),
+      LatLng(37.40020, 126.93613),
+      LatLng(37.400120, 126.93657),
+      LatLng(37.39948, 126.93656),
+      LatLng(37.39948, 126.93656),
+      LatLng(37.399476, 126.937293),
+
+      LatLng(37.39953, 126.93780),
+      LatLng(37.400076, 126.938185),
+      LatLng(37.400675, 126.93859),
+      LatLng(37.40129, 126.93866),
+      LatLng(37.401855, 126.938573),
+      LatLng(37.40216, 126.93897),
     ],
   ),
   Course(
@@ -34,9 +43,10 @@ List<Course> courses = [
     steps: 4000,
     imageUrl: 'https://picsum.photos/250?image=9',
     route: [
-      LatLng(35.1694, 129.0877),
-      LatLng(35.1695, 129.0878),
-      LatLng(35.1696, 129.0879),
+      LatLng(37.4002, 126.9362),
+      LatLng(37.40046, 126.936581),
+      LatLng(37.40124, 126.9365),
+      LatLng(37.40194, 126.93660),
     ],
   ),
   Course(
