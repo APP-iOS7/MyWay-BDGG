@@ -36,8 +36,20 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>GOOGLE_MAPS_API_KEY</key>
+	<string>AIzaSyDelVDyjqTQyns5noConZiN8Q3jbOmwUDE</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSHealthShareUsageDescription</key>
+	<string>걸음 수 데이터를 읽기 위해 건강 데이터 접근 권한이 필요합니다.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>걸음 수 데이터를 업데이트하기 위해 건강 데이터 쓰기 권한이 필요합니다.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>앱에서 항상 현재 위치를 사용하기 위해 권한을 요청합니다.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>앱에서 현재 위치를 사용하기 위해 권한을 요청합니다.</string>
+	<key>NSMotionUsageDescription</key>
+	<string>걸음 수 측정을 위해 모션 센서를 사용합니다.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>

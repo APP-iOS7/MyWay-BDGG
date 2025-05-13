@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:myway/firebase_options.dart';
+import 'package:myway/provider/map_provider.dart';
 import 'package:myway/provider/step_provider.dart';
 import 'package:myway/provider/user_provider.dart';
 import 'package:myway/screen/home_screen.dart';
@@ -17,6 +18,7 @@ Future<void> main() async {
       providers: [
         ChangeNotifierProvider(create: (context) => UserProvider()),
         ChangeNotifierProvider(create: (context) => StepProvider()),
+        ChangeNotifierProvider(create: (context) => MapProvider()),
       ],
       child: const MyApp(),
     ),
@@ -33,7 +35,8 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: ThemeData(fontFamily: 'Freesentation'),
-      home: const AuthWrapper(),
+      // home: const AuthWrapper(),
+      home: HomeScreen(),
       routes: {
         'signUp': (context) => const SignUpScreen(),
         'signIn': (context) => const SigninScreen(),
