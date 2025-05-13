@@ -6,7 +6,6 @@ import 'package:myway/screen/map/course_recommend_bottomsheet.dart';
 import 'package:myway/temp/test_latlng.dart';
 import 'package:provider/provider.dart';
 
-import '../../model/course_model.dart';
 import '../../provider/map_provider.dart';
 import 'start_tracking_bottomsheet.dart';
 
@@ -27,39 +26,108 @@ class _MapScreenState extends State<MapScreen>
   int? selectedIndex;
   LocationData? currentPosition;
   bool _initialPositionSet = false;
+  bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
     route = TestLatlng().getTestLatlng();
 
-    _initLocationService();
+    _checkLocationPermission();
   }
 
-  Future<void> _initLocationService() async {
-    bool serviceEnabled = await location.serviceEnabled();
-    if (!serviceEnabled) {
-      serviceEnabled = await location.requestService();
-    }
+  Future<void> _checkLocationPermission() async {
+    PermissionStatus permissionStatus = await location.hasPermission();
 
-    PermissionStatus permissionGranted = await location.hasPermission();
-    if (permissionGranted == PermissionStatus.denied) {
-      permissionGranted = await location.requestPermission();
+    // 권한이 거부된 경우
+    if (permissionStatus == PermissionStatus.denied) {
+      print("위치 권한 거부됨");
+      // 권한 요청 다이얼로그 띄우기
+      _showPermissionDeniedDialog();
     }
+    // 권한이 영구적으로 거부된 경우
+    else if (permissionStatus == PermissionStatus.deniedForever) {
+      print("위치 권한 영구적으로 거부됨");
+      // 설정 화면으로 이동 안내
+      _showPermanentPermissionDeniedDialog();
+    } else {
+      print('위치 권한 허용');
+      if (permissionStatus == PermissionStatus.granted) {
+        location.changeSettings(
+          accuracy: LocationAccuracy.high,
+          interval: 1000,
+        );
+        _getLocation();
+      }
+    }
+  }
 
-    if (permissionGranted == PermissionStatus.granted) {
-      location.changeSettings(accuracy: LocationAccuracy.high, interval: 1000);
-      _getLocation();
-    }
+  // 권한 거부 후 다이얼로그
+  void _showPermissionDeniedDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("위치 권한 요청"),
+          content: Text("위치 권한을 허용해야 앱을 정상적으로 사용할 수 있습니다."),
+          actions: [
+            TextButton(
+              onPressed: () async {
+                Navigator.pop(context);
+                // 권한 요청
+                PermissionStatus status = await location.requestPermission();
+                if (status == PermissionStatus.granted) {
+                  print("위치 권한 허용됨");
+                } else {
+                  print("위치 권한 거부됨");
+                }
+              },
+              child: Text("다시 시도"),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text("취소"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // 영구적으로 거부된 경우 다이얼로그
+  void _showPermanentPermissionDeniedDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("위치 권한 영구 거부"),
+          content: Text("위치 권한이 영구적으로 거부되었습니다. 설정에서 권한을 수동으로 허용해야 합니다."),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                // 앱 설정 화면으로 이동
+              },
+              child: Text("설정으로 가기"),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text("취소"),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Future<void> _getLocation() async {
     print('📍 getLocation');
     currentPosition = await location.getLocation();
     if (currentPosition != null && mounted) {
-      print('📍 currentPosition : $currentPosition');
+      print('📍 currentPosition getLocation : $currentPosition');
 
       setState(() {
+        isLoading = false;
         _updateLocation(currentPosition!);
       });
     }
@@ -71,7 +139,7 @@ class _MapScreenState extends State<MapScreen>
     if (!mounted) return;
     setState(() {
       currentPosition = locationData;
-      print('📍 currentPosition : $currentPosition');
+      print('📍 currentPosition updateLocation : $currentPosition');
     });
 
     if (!_initialPositionSet &&
@@ -132,20 +200,22 @@ class _MapScreenState extends State<MapScreen>
         children: [
           LayoutBuilder(
             builder: (BuildContext context, BoxConstraints constraints) {
-              return GoogleMap(
-                onMapCreated: (controller) {
-                  mapController = controller;
-                },
-                initialCameraPosition: CameraPosition(
-                  target: LatLng(
-                    currentPosition?.latitude ?? 35.1691,
-                    currentPosition?.longitude ?? 129.0874,
-                  ),
-                  zoom: 17.0,
-                ),
-                myLocationEnabled: true,
-                polylines: polylines,
-              );
+              return isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : GoogleMap(
+                    onMapCreated: (controller) {
+                      mapController = controller;
+                    },
+                    initialCameraPosition: CameraPosition(
+                      target: LatLng(
+                        currentPosition?.latitude ?? 35.1691,
+                        currentPosition?.longitude ?? 129.0874,
+                      ),
+                      zoom: 17.0,
+                    ),
+                    myLocationEnabled: true,
+                    polylines: polylines,
+                  );
             },
           ),
           if (mapProvider.isCourseRecommendBottomSheetVisible)

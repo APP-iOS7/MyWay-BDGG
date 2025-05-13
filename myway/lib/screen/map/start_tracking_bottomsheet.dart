@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../../const/colors.dart';
-import '../../model/course_model.dart';
 
 class StartTrackingBottomsheet extends StatefulWidget {
   const StartTrackingBottomsheet({super.key});
@@ -34,14 +33,21 @@ class _StartTrackingBottomsheetState extends State<StartTrackingBottomsheet> {
               Column(
                 children: [
                   SizedBox(height: 10),
-                  Container(
-                    width: 80,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: GRAYSCALE_LABEL_300,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    margin: const EdgeInsets.only(top: 8, bottom: 8),
+                  Row(
+                    children: [
+                      Text(
+                        '산책중',
+                        style: TextStyle(
+                          color: GRAYSCALE_LABEL_900,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () {},
+                        icon: Icon(Icons.close_outlined),
+                      ),
+                    ],
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20.0),

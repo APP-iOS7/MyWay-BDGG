@@ -5,7 +5,6 @@ import 'package:shimmer/shimmer.dart';
 
 import '../../const/colors.dart';
 import '../../provider/map_provider.dart';
-import 'start_tracking_bottomsheet.dart';
 
 class CourseRecommendBottomsheet extends StatefulWidget {
   const CourseRecommendBottomsheet({super.key});
@@ -89,7 +88,14 @@ class _CourseRecommendBottomsheetState
                         ),
                         elevation: 0,
                       ),
-                      child: Icon(Icons.play_arrow_rounded, color: WHITE),
+                      child: Text(
+                        '시작',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: WHITE,
+                        ),
+                      ),
                     ),
                   ],
                 ),
