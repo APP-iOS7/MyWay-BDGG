@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:myway/provider/step_provider.dart';
 import 'package:provider/provider.dart';
 
