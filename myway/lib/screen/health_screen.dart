@@ -15,7 +15,10 @@ class HealthScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text('걸음수:', style: TextStyle(fontSize: 32)),
+            Text(
+              '걸음수:',
+              style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+            ),
             Text('$stepProvider 걸음', style: TextStyle(fontSize: 60)),
           ],
         ),

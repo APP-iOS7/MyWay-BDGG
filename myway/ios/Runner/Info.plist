@@ -2,18 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-   	<key>NSMotionUsageDescription</key>
-	<string>This application tracks your steps</string>
-	<key>UIBackgroundModes</key>
-	<array>
-    <string>processing</string>
-	</array>	
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>앱에서 현재 위치를 사용하기 위해 권한을 요청합니다.</string>
-	<key>NSLocationAlwaysUsageDescription</key>
-	<string>앱에서 항상 현재 위치를 사용하기 위해 권한을 요청합니다.</string>
-	<key>GOOGLE_MAPS_API_KEY</key>
-	<string>AIzaSyDelVDyjqTQyns5noConZiN8Q3jbOmwUDE</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>
@@ -52,6 +40,10 @@
 	<string>걸음 수 측정을 위해 모션 센서를 사용합니다.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>processing</string>
+	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>

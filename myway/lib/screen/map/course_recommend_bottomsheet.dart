@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:myway/provider/step_provider.dart';
 import 'package:myway/temp/course_data.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
@@ -20,6 +21,7 @@ class _CourseRecommendBottomsheetState
 
   @override
   Widget build(BuildContext context) {
+    final stepProvider = Provider.of<StepProvider>(context);
     final mapProvider = Provider.of<MapProvider>(context);
     return DraggableScrollableSheet(
       initialChildSize: 0.5,
@@ -79,6 +81,7 @@ class _CourseRecommendBottomsheetState
                     const Spacer(),
                     ElevatedButton(
                       onPressed: () {
+                        stepProvider.startTracking();
                         mapProvider.showStartTrackingBottomSheet();
                       },
                       style: ElevatedButton.styleFrom(
