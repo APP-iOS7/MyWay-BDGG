@@ -1,9 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:myway/model/step_model.dart';
 import 'package:pedometer/pedometer.dart';
 
-enum TrackingStatus { running, paused }
+enum TrackingStatus { running, paused, stopped }
 
 class StepProvider extends ChangeNotifier {
   int _baseSteps = 0;
@@ -12,23 +14,32 @@ class StepProvider extends ChangeNotifier {
 
   // 평균 보폭 기준으로 칼로리 계산 (고정 값)
   final double _strideLengthCm = 70.0; // 평균보폭
-  final double _caloriesPerStep = 0.04; // 1보당 소모 칼로리
 
   String get distanceKm =>
       (_currentSteps * _strideLengthCm / 100000).toStringAsFixed(2);
-  String get calories => (_currentSteps * _caloriesPerStep).toStringAsFixed(1);
 
   // 시간
   DateTime? _startTime;
+  DateTime? _stopTime;
   Timer? _timer;
   Duration _elapsed = Duration.zero;
+  String _formattedStopTime = '';
   String get formattedElapsed => _formatDuration(_elapsed);
+  String get formattedStopTime => _formattedStopTime;
 
   late Stream<StepCount> _stepStream;
   StreamSubscription<StepCount>? _subscription;
 
   TrackingStatus _status = TrackingStatus.running;
   TrackingStatus get status => _status;
+
+  void toggle() {
+    if (_status == TrackingStatus.running) {
+      pause();
+    } else {
+      resume();
+    }
+  }
 
   void startTracking() {
     _baseSteps = 0;
@@ -59,12 +70,25 @@ class StepProvider extends ChangeNotifier {
     );
   }
 
-  void toggle() {
-    if (_status == TrackingStatus.running) {
-      pause();
-    } else {
-      resume();
-    }
+  StepModel stopTracking() {
+    _subscription?.cancel();
+    _timer?.cancel();
+    _stopTime = DateTime.now();
+    _formattedStopTime = DateFormat('yyyy-MM-dd HH:mm').format(_stopTime!);
+
+    final result = StepModel(
+      steps: steps,
+      duration: formattedElapsed,
+      distance: distanceKm,
+    );
+
+    _baseSteps = 0;
+    _currentSteps = 0;
+    _elapsed = Duration.zero;
+    _status = TrackingStatus.stopped;
+
+    notifyListeners();
+    return result;
   }
 
   void pause() {
@@ -90,11 +114,6 @@ class StepProvider extends ChangeNotifier {
     });
 
     notifyListeners();
-  }
-
-  void stopTracking() {
-    _subscription?.cancel();
-    _timer?.cancel();
   }
 
   String _formatDuration(Duration duration) {

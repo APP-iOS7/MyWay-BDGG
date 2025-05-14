@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:myway/provider/step_provider.dart';
+import 'package:myway/screen/tracking_result_screen.dart';
 import 'package:provider/provider.dart';
 
 import '../../const/colors.dart';
@@ -158,7 +159,15 @@ class _StartTrackingBottomsheetState extends State<StartTrackingBottomsheet> {
                     Expanded(
                       child: GestureDetector(
                         onTap: () {
-                          stepProvider.stopTracking();
+                          final result = stepProvider.stopTracking();
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder:
+                                  (context) =>
+                                      TrackingResultScreen(result: result),
+                            ),
+                          );
                         },
                         child: Container(
                           alignment: Alignment.center,

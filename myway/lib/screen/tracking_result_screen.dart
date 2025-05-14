@@ -1,14 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:myway/const/colors.dart';
+import 'package:myway/model/step_model.dart';
+import 'package:myway/provider/step_provider.dart';
+import 'package:myway/screen/home_screen.dart';
+import 'package:provider/provider.dart';
 
-class TrackingEndScreen extends StatelessWidget {
-  const TrackingEndScreen({super.key});
+class TrackingResultScreen extends StatelessWidget {
+  final StepModel result;
+
+  const TrackingResultScreen({super.key, required this.result});
 
   @override
   Widget build(BuildContext context) {
+    final stepProvider = Provider.of<StepProvider>(context);
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
+        leading: IconButton(
+          onPressed: () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => HomeScreen()),
+            );
+          },
+          icon: Icon(Icons.arrow_back_ios, color: Colors.black),
+        ),
         backgroundColor: Colors.white,
         title: Text(
           '산책완료',
@@ -51,7 +67,7 @@ class TrackingEndScreen extends StatelessWidget {
                           style: TextStyle(color: Colors.black, fontSize: 18),
                         ),
                         Text(
-                          '2025.05.14',
+                          stepProvider.formattedStopTime,
                           style: TextStyle(color: Colors.black, fontSize: 13),
                         ),
                       ],
@@ -80,7 +96,7 @@ class TrackingEndScreen extends StatelessWidget {
                           children: [
                             Text.rich(
                               TextSpan(
-                                text: '20.4',
+                                text: result.distance,
                                 style: TextStyle(
                                   color: Colors.black,
                                   fontSize: 40,
@@ -120,7 +136,7 @@ class TrackingEndScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              '1시간 30분 50초',
+                              result.duration,
                               style: TextStyle(
                                 color: Colors.black,
                                 fontSize: 16,
@@ -141,7 +157,7 @@ class TrackingEndScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              '600',
+                              '${result.steps}',
                               style: TextStyle(
                                 color: Colors.black,
                                 fontSize: 16,

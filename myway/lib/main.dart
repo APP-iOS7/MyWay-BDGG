@@ -8,6 +8,7 @@ import 'package:myway/provider/user_provider.dart';
 import 'package:myway/screen/home_screen.dart';
 import 'package:myway/screen/login/signIn_screen.dart';
 import 'package:myway/screen/login/signup_screen.dart';
+import 'package:myway/screen/tracking_result_screen.dart';
 import 'package:provider/provider.dart';
 
 Future<void> main() async {
@@ -36,7 +37,7 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Demo',
       theme: ThemeData(fontFamily: 'Freesentation'),
       // home: const AuthWrapper(),
-      home: HomeScreen(),
+      home: AuthWrapper(),
       routes: {
         'signUp': (context) => const SignUpScreen(),
         'signIn': (context) => const SigninScreen(),
