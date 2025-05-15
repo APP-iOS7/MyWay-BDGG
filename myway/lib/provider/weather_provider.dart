@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../services/airquality_api_service.dart';
 import '../services/weather_api_service.dart';
 
-class WeatherViewModel extends ChangeNotifier {
+class WeatherProvider extends ChangeNotifier {
   final WeatherApiService _weatherApi = WeatherApiService();
   final AirQualityService _airApi = AirQualityService();
 
@@ -20,6 +20,8 @@ class WeatherViewModel extends ChangeNotifier {
   String pm10Grade = '-';
   String pm25Grade = '-';
 
+  List<Map<String, String>> hourlyForecast = [];
+
   Future<void> loadWeather() async {
     isLoading = true;
     notifyListeners();
@@ -28,17 +30,19 @@ class WeatherViewModel extends ChangeNotifier {
       _fetchCurrentWeather(),
       _fetchSkyPty(),
       _fetchAirQuality(),
+      _fetchHourlyForecast(),
     ]);
 
     isLoading = false;
     notifyListeners();
+
+    await _fetchHourlyForecast();
   }
 
   Future<void> _fetchCurrentWeather() async {
     final now = DateTime.now();
-    final baseDate =
-        '${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}';
-    final baseTime = _getUltraSrtNcstBaseTime(now);
+    final baseDate = WeatherServiceHelper.formatDate(now);
+    final baseTime = WeatherServiceHelper.getSafeUltraSrtNcstBaseTime(now);
     const nx = '59';
     const ny = '126';
 
@@ -71,10 +75,9 @@ class WeatherViewModel extends ChangeNotifier {
 
   Future<void> _fetchSkyPty() async {
     final now = DateTime.now();
-    final baseDate =
-        '${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}';
-    final baseTime = _getForecastBaseTime(now);
-    final fcstTime = _getFcstTime(now);
+    final baseDate = WeatherServiceHelper.formatDate(now);
+    final baseTime = WeatherServiceHelper.getSafeForecastBaseTime(now);
+    final fcstTime = WeatherServiceHelper.getFcstTargetTime(now);
     const nx = '59';
     const ny = '126';
 
@@ -88,17 +91,25 @@ class WeatherViewModel extends ChangeNotifier {
     if (data != null) {
       final items = data['response']['body']['items']['item'] as List<dynamic>;
 
-      final sky =
-          items.firstWhere(
-            (e) => e['category'] == 'SKY' && e['fcstTime'] == fcstTime,
-          )['fcstValue'];
-      final pty =
-          items.firstWhere(
-            (e) => e['category'] == 'PTY' && e['fcstTime'] == fcstTime,
-          )['fcstValue'];
+      final skyItem = items.firstWhere(
+        (e) => e['category'] == 'SKY' && e['fcstTime'] == fcstTime,
+        orElse: () => null,
+      );
+      final ptyItem = items.firstWhere(
+        (e) => e['category'] == 'PTY' && e['fcstTime'] == fcstTime,
+        orElse: () => null,
+      );
 
-      weatherStatus = _getWeatherStatus(sky, pty);
-      weatherIconPath = _getWeatherIconPath(weatherStatus, _isNightTime(now));
+      if (skyItem != null && ptyItem != null) {
+        final sky = skyItem['fcstValue'];
+        final pty = ptyItem['fcstValue'];
+
+        weatherStatus = _getWeatherStatus(sky, pty);
+        weatherIconPath = _getWeatherIconPath(
+          weatherStatus,
+          WeatherServiceHelper.isNightTime(now),
+        );
+      }
     }
   }
 
@@ -115,30 +126,65 @@ class WeatherViewModel extends ChangeNotifier {
     }
   }
 
-  String _getUltraSrtNcstBaseTime(DateTime now) =>
-      (now.minute < 40 ? now.subtract(Duration(hours: 1)) : now).hour
-          .toString()
-          .padLeft(2, '0') +
-      '00';
+  Future<void> _fetchHourlyForecast() async {
+    final now = DateTime.now();
+    final baseDate = WeatherServiceHelper.formatDate(now);
+    final baseTime = WeatherServiceHelper.getSafeForecastBaseTime(now);
 
-  String _getForecastBaseTime(DateTime now) {
-    final times = [2, 5, 8, 11, 14, 17, 20, 23];
-    return times.where((t) => now.hour >= t).last.toString().padLeft(2, '0') +
-        '00';
+    final data = await _weatherApi.fetchForecastWeather(
+      baseDate: baseDate,
+      baseTime: baseTime,
+      nx: '59',
+      ny: '126',
+    );
+
+    if (data != null) {
+      final items = data['response']['body']['items']['item'] as List<dynamic>;
+
+      final forecastMap = <String, Map<String, String>>{};
+      for (var item in items) {
+        final time = item['fcstTime'];
+        if (!_isEvery3Hour(time)) continue;
+
+        forecastMap.putIfAbsent(time, () => {});
+        if (item['category'] == 'TMP') {
+          forecastMap[time]!['temp'] = item['fcstValue'];
+        } else if (item['category'] == 'SKY') {
+          forecastMap[time]!['sky'] = item['fcstValue'];
+        } else if (item['category'] == 'PTY') {
+          forecastMap[time]!['pty'] = item['fcstValue'];
+        }
+      }
+
+      hourlyForecast =
+          forecastMap.entries.map((e) {
+            final timeLabel = '${e.key.substring(0, 2)}시';
+            final status = _getWeatherStatus(
+              e.value['sky'] ?? '1',
+              e.value['pty'] ?? '0',
+            );
+            final iconPath = _getWeatherIconPath(status, false);
+            return {
+              'time': timeLabel,
+              'temp': '${e.value['temp']}°',
+              'icon': iconPath,
+            };
+          }).toList();
+
+      notifyListeners();
+    }
   }
 
-  String _getFcstTime(DateTime now) =>
-      (now.minute >= 45 ? now.hour + 1 : now.hour).toString().padLeft(2, '0') +
-      '00';
-
-  bool _isNightTime(DateTime now) => now.hour < 6 || now.hour >= 18;
+  bool _isEvery3Hour(String fcstTime) {
+    final hour = int.tryParse(fcstTime.substring(0, 2)) ?? 0;
+    return hour % 3 == 0;
+  }
 
   String _getWeatherStatus(String sky, String pty) {
     if (pty != '0') {
       switch (pty) {
         case '1':
           return '비';
-
         case '3':
           return '눈';
         case '4':
@@ -170,10 +216,8 @@ class WeatherViewModel extends ChangeNotifier {
       case '흐림':
         return 'assets/icons/weather_cloud.svg';
       case '비':
-        return 'assets/icons/weather_rain.svg';
       case '소나기':
         return 'assets/icons/weather_rain.svg';
-
       case '눈':
         return 'assets/icons/weather_snow.svg';
       case '천둥':
@@ -189,5 +233,34 @@ class WeatherViewModel extends ChangeNotifier {
     if (value <= 80) return '보통';
     if (value <= 150) return '나쁨';
     return '매우 나쁨';
+  }
+}
+
+class WeatherServiceHelper {
+  static String formatDate(DateTime date) {
+    return '${date.year}${date.month.toString().padLeft(2, '0')}${date.day.toString().padLeft(2, '0')}';
+  }
+
+  static String getSafeUltraSrtNcstBaseTime(DateTime now) {
+    final baseTime = (now.minute < 40) ? now.subtract(Duration(hours: 1)) : now;
+    return '${baseTime.hour.toString().padLeft(2, '0')}00';
+  }
+
+  static String getSafeForecastBaseTime(DateTime now) {
+    final times = [2, 5, 8, 11, 14, 17, 20, 23];
+    int selected = times.first;
+    for (final t in times) {
+      if (now.hour >= t) selected = t;
+    }
+    return '${selected.toString().padLeft(2, '0')}00';
+  }
+
+  static String getFcstTargetTime(DateTime now) {
+    final targetHour = now.minute >= 45 ? now.hour + 1 : now.hour;
+    return '${targetHour.toString().padLeft(2, '0')}00';
+  }
+
+  static bool isNightTime(DateTime now) {
+    return now.hour < 6 || now.hour >= 18;
   }
 }

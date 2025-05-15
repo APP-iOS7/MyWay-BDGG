@@ -2,105 +2,168 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 
-import '../viewmodel/weather_viewmodel.dart';
+import '../provider/weather_provider.dart';
 
 class WeatherScreen extends StatelessWidget {
   const WeatherScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final vm = Provider.of<WeatherViewModel>(context);
+    final weatherProvider = Provider.of<WeatherProvider>(context);
 
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        leading: Icon(Icons.arrow_back),
         title: Text('서울특별시'),
         centerTitle: true,
         backgroundColor: Colors.white,
       ),
       body:
-          vm.isLoading
+          weatherProvider.isLoading
               ? Center(child: CircularProgressIndicator())
               : Center(
-                child: Column(
-                  children: [
-                    SvgPicture.asset(vm.weatherIconPath, height: 300),
-                    Text(
-                      '${vm.temperature}°',
-                      style: TextStyle(
-                        fontSize: 75,
-                        fontWeight: FontWeight.bold,
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 70),
+                  child: Column(
+                    children: [
+                      SvgPicture.asset(
+                        weatherProvider.weatherIconPath,
+                        height: 150,
                       ),
-                    ),
-                    SizedBox(height: 5),
-                    Text(
-                      vm.weatherStatus,
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: 20),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: Container(
-                        height: 100,
-                        decoration: BoxDecoration(
-                          color: Color(0xfffbf4ec),
-                          borderRadius: BorderRadius.circular(8),
+                      Text(
+                        '${weatherProvider.temperature}°',
+                        style: TextStyle(
+                          fontSize: 75,
+                          fontWeight: FontWeight.bold,
                         ),
-                        child: Center(
-                          child: Text(
-                            '오늘의 날씨는 ${vm.weatherStatus}이며 기온은 ${vm.temperature}도입니다.',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
+                      ),
+                      SizedBox(height: 5),
+                      Text(
+                        weatherProvider.weatherStatus,
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 40),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 20, right: 20),
+                        child: Container(
+                          height: 120,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: Color(0xFFFFEAC1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Consumer<WeatherProvider>(
+                            builder: (context, vm, _) {
+                              final forecast = vm.hourlyForecast;
+                              if (forecast.isEmpty) {
+                                return Center(child: Text('시간별 예보를 불러오는 중...'));
+                              }
+
+                              return ListView.builder(
+                                scrollDirection: Axis.horizontal,
+                                itemCount: forecast.length,
+                                itemBuilder: (context, index) {
+                                  final item = forecast[index];
+                                  return Padding(
+                                    padding: const EdgeInsets.only(
+                                      left: 25,
+                                      right: 25,
+                                    ),
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          item['time'] ?? '',
+                                          style: TextStyle(fontSize: 16),
+                                        ),
+                                        SizedBox(height: 6),
+                                        SvgPicture.asset(
+                                          item['icon'] ??
+                                              'assets/icons/weather_sun.svg',
+                                          width: 30,
+                                          height: 30,
+                                        ),
+                                        SizedBox(height: 6),
+                                        Text(
+                                          item['temp'] ?? '-',
+                                          style: TextStyle(fontSize: 18),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              );
+                            },
                           ),
                         ),
                       ),
-                    ),
-                    SizedBox(height: 20),
-                    Row(
-                      children: [
-                        _buildInfoCard(
-                          label: "습도",
-                          icon: Icons.water_drop_rounded,
-                          value: '${vm.humidity}%',
-                          color: Color(0xff93C5D8),
+                      SizedBox(height: 40),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: _buildInfoCard(
+                                label: "습도",
+                                icon: Icons.water_drop_rounded,
+                                value: '${weatherProvider.humidity}%',
+                                color: Color(0xff93C5D8),
+                              ),
+                            ),
+                            SizedBox(width: 10),
+                            Expanded(
+                              child: _buildInfoCard(
+                                label: "강수확률",
+                                icon: Icons.water_drop,
+                                value:
+                                    weatherProvider.rainProb.contains('비')
+                                        ? weatherProvider.rainProb
+                                        : '${weatherProvider.rainProb}%',
+                                color: Color(0xff164F6D),
+                              ),
+                            ),
+                          ],
                         ),
-                        SizedBox(width: 20),
-                        _buildInfoCard(
-                          label: "강수확률",
-                          icon: Icons.water_drop,
-                          value:
-                              vm.rainProb.contains('비')
-                                  ? vm.rainProb
-                                  : '${vm.rainProb}%',
-                          color: Color(0xff164F6D),
+                      ),
+                      SizedBox(height: 20),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 20, right: 20),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: _buildInfoCard(
+                                label: "미세먼지",
+                                icon: _getQualityIcon(
+                                  weatherProvider.pm10Grade,
+                                ),
+                                value: weatherProvider.pm10Grade,
+                                color: _getQualityColor(
+                                  weatherProvider.pm10Grade,
+                                ),
+                              ),
+                            ),
+                            SizedBox(width: 10),
+                            Expanded(
+                              child: _buildInfoCard(
+                                label: "초미세먼지",
+                                icon: _getQualityIcon(
+                                  weatherProvider.pm25Grade,
+                                ),
+                                value: weatherProvider.pm25Grade,
+                                color: _getQualityColor(
+                                  weatherProvider.pm25Grade,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    SizedBox(height: 20),
-                    Row(
-                      children: [
-                        _buildInfoCard(
-                          label: "미세먼지",
-                          icon: _getQualityIcon(vm.pm10Grade),
-                          value: vm.pm10Grade,
-                          color: _getQualityColor(vm.pm10Grade),
-                        ),
-                        SizedBox(width: 20),
-                        _buildInfoCard(
-                          label: "초미세먼지",
-                          icon: _getQualityIcon(vm.pm25Grade),
-                          value: vm.pm25Grade,
-                          color: _getQualityColor(vm.pm25Grade),
-                        ),
-                      ],
-                    ),
-                  ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
     );
@@ -112,35 +175,42 @@ class WeatherScreen extends StatelessWidget {
     required String value,
     required Color color,
   }) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 20),
-      child: Container(
-        width: 210,
-        height: 114,
-        decoration: BoxDecoration(
-          color: Color(0xFFF9FAFC),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Stack(
-          children: [
-            Positioned(
-              top: 8,
-              left: 12,
-              child: Text(label, style: TextStyle(fontSize: 16)),
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Color(0xFFF9FAFC),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        children: [
+          SizedBox(height: 10),
+          Padding(
+            padding: const EdgeInsets.only(left: 10),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [Text(label, style: TextStyle(fontSize: 20))],
             ),
-            Positioned(
-              bottom: 8,
-              right: 12,
-              child: Row(
-                children: [
-                  Icon(icon, size: 20, color: color),
-                  SizedBox(width: 5),
-                  Text(value, style: TextStyle(fontSize: 25, color: color)),
-                ],
-              ),
+          ),
+          SizedBox(height: 30),
+          Padding(
+            padding: const EdgeInsets.only(right: 10),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Icon(icon, size: 40, color: color),
+                SizedBox(width: 10),
+                Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 30,
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

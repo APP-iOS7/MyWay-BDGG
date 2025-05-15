@@ -46,7 +46,6 @@ class WeatherApiService {
     return null;
   }
 
-  // 예보 날씨 API (SKY, PTY 등 추출용)
   Future<Map<String, dynamic>?> fetchForecastWeather({
     required String baseDate,
     required String baseTime,
