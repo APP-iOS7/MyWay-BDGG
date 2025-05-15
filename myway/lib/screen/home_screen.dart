@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:myway/const/colors.dart';
 import 'package:myway/provider/user_provider.dart';
+import 'package:myway/screen/mycourse_screen.dart';
 import 'package:myway/screen/weather_screen.dart';
 import 'package:provider/provider.dart';
 
@@ -92,6 +93,7 @@ class HomeScreen extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(top: 10.0),
               child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text.rich(
                     TextSpan(
@@ -111,6 +113,26 @@ class HomeScreen extends StatelessWidget {
                           ),
                         ),
                       ],
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) {
+                            return const MycourseScreen();
+                          },
+                        ),
+                      );
+                    },
+                    child: Text(
+                      '더 보기 +',
+                      style: TextStyle(
+                        color: GRAYSCALE_LABEL_600,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w400,
+                      ),
                     ),
                   ),
                 ],
