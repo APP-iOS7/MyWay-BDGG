@@ -259,7 +259,7 @@ class _MapScreenState extends State<MapScreen>
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: Icon(Icons.arrow_back_ios),
           onPressed: () {
             // 뒤로가기 버튼을 누르면 Provider의 상태 변경
             Provider.of<MapProvider>(
