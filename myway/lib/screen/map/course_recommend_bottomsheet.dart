@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:myway/alert/countdown_diallog.dart';
 import 'package:myway/provider/step_provider.dart';
 import 'package:myway/temp/course_data.dart';
 import 'package:provider/provider.dart';
@@ -83,7 +86,12 @@ class _CourseRecommendBottomsheetState
                           onPressed: () {
                             mapProvider.setTracking(true);
                             mapProvider.showStartTrackingBottomSheet();
-                            stepProvider.startTracking();
+                            CountdownDiallog.show(
+                              context,
+                              onComplete: () {
+                                stepProvider.startTracking();
+                              },
+                            );
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: ORANGE_PRIMARY_500,

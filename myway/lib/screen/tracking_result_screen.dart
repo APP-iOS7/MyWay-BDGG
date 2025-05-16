@@ -2,13 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:myway/const/colors.dart';
 import 'package:myway/model/step_model.dart';
 import 'package:myway/provider/step_provider.dart';
-import 'package:myway/screen/home_screen.dart';
 import 'package:provider/provider.dart';
 
 class TrackingResultScreen extends StatelessWidget {
   final StepModel result;
+  final String courseName;
 
-  const TrackingResultScreen({super.key, required this.result});
+  const TrackingResultScreen({
+    super.key,
+    required this.result,
+    required this.courseName,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -18,10 +22,7 @@ class TrackingResultScreen extends StatelessWidget {
       appBar: AppBar(
         leading: IconButton(
           onPressed: () {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => HomeScreen()),
-            );
+            Navigator.popUntil(context, (route) => route.isFirst);
           },
           icon: Icon(Icons.arrow_back_ios, color: Colors.black),
         ),
@@ -63,7 +64,7 @@ class TrackingResultScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          '동네한바꾸',
+                          courseName,
                           style: TextStyle(color: Colors.black, fontSize: 18),
                         ),
                         Text(
