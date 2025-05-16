@@ -1,6 +1,7 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:myway/provider/step_provider.dart';
-import 'package:myway/screen/tracking_result_screen.dart';
+import 'package:myway/screen/cource_name_screen.dart';
 import 'package:provider/provider.dart';
 
 import '../../const/colors.dart';
@@ -124,7 +125,21 @@ class _StartTrackingBottomsheetState extends State<StartTrackingBottomsheet> {
                   ),
                 ),
                 SizedBox(height: 10),
-                Image.asset('assets/images/park.png'),
+                Stack(
+                  children: [
+                    Image.asset('assets/images/park.png'),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 20.0),
+                      child: Align(
+                        alignment: Alignment.center,
+                        child: Image.asset(
+                          'assets/images/turtle.gif',
+                          height: 90,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
                 SizedBox(height: 10),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -159,14 +174,59 @@ class _StartTrackingBottomsheetState extends State<StartTrackingBottomsheet> {
                     Expanded(
                       child: GestureDetector(
                         onTap: () {
-                          final result = stepProvider.stopTracking();
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder:
-                                  (context) =>
-                                      TrackingResultScreen(result: result),
-                            ),
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return CupertinoAlertDialog(
+                                content: Text(
+                                  '산책을 종료 하시겠습니까?',
+                                  style: TextStyle(
+                                    color: BLUE_SECONDARY_800,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                actions: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.pop(context);
+                                        },
+                                        child: Text(
+                                          '취소',
+                                          style: TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 15,
+                                          ),
+                                        ),
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder:
+                                                  (context) =>
+                                                      CourceNameScreen(),
+                                            ),
+                                          );
+                                        },
+                                        child: Text(
+                                          '종료',
+                                          style: TextStyle(
+                                            color: Colors.red,
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              );
+                            },
                           );
                         },
                         child: Container(

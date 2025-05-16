@@ -6,8 +6,6 @@ import 'package:myway/provider/user_provider.dart';
 import 'package:myway/screen/weather_screen.dart';
 import 'package:provider/provider.dart';
 
-import 'map/map_screen.dart';
-
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
@@ -130,14 +128,7 @@ class HomeScreen extends StatelessWidget {
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) {
-                              return const MapScreen();
-                            },
-                          ),
-                        );
+                        Navigator.pushNamed(context, 'map');
                       },
                       style: ElevatedButton.styleFrom(
                         shadowColor: Colors.transparent,
