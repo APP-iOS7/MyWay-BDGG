@@ -8,6 +8,8 @@ import 'package:myway/screen/login/signIn_screen.dart';
 import 'package:myway/screen/login/signup_screen.dart';
 import 'package:provider/provider.dart';
 
+import 'screen/login/findpassword_screen.dart';
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
@@ -34,6 +36,7 @@ class MyApp extends StatelessWidget {
         'signUp': (context) => const SignUpScreen(),
         'signIn': (context) => const SigninScreen(),
         'home': (context) => const HomeScreen(),
+        'findPassword': (context) => const FindpasswordScreen(),
       },
     );
   }
