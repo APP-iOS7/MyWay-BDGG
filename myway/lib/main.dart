@@ -8,7 +8,9 @@ import 'package:myway/screen/login/signIn_screen.dart';
 import 'package:myway/screen/login/signup_screen.dart';
 import 'package:provider/provider.dart';
 
-import 'screen/login/findpassword_screen.dart';
+import 'screen/change_password_screen.dart';
+import 'screen/find_password_screen.dart';
+import 'screen/nickname_change_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -36,7 +38,9 @@ class MyApp extends StatelessWidget {
         'signUp': (context) => const SignUpScreen(),
         'signIn': (context) => const SigninScreen(),
         'home': (context) => const HomeScreen(),
-        'findPassword': (context) => const FindpasswordScreen(),
+        'findPassword': (context) => const FindPasswordScreen(),
+        'nicknameChange': (context) => const NicknameChangeScreen(),
+        'changePassword': (context) => const ChangePasswordScreen(),
       },
     );
   }
