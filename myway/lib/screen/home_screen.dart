@@ -34,60 +34,64 @@ class HomeScreen extends StatelessWidget {
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) {
-                          return WeatherScreen();
-                        },
-                      ),
-                    );
-                  },
-                  child: Row(
-                    spacing: 10,
-                    children: [
-                      SvgPicture.asset(
-                        weatherProvider.weatherIconPath,
-                        height: 40,
-                      ),
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            '${weatherProvider.weatherStatus}',
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w500,
-                              color: GREEN_SUCCESS_TEXT_50,
+                SizedBox(width: 40),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) {
+                            return WeatherScreen();
+                          },
+                        ),
+                      );
+                    },
+                    child: Row(
+                      spacing: 10,
+                      children: [
+                        SvgPicture.asset(
+                          weatherProvider.weatherIconPath,
+                          height: 40,
+                        ),
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              '${weatherProvider.weatherStatus}',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                                color: GREEN_SUCCESS_TEXT_50,
+                              ),
                             ),
-                          ),
-                          Text(
-                            '${weatherProvider.temperature}°',
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w500,
-                              color: BLACK,
+                            Text(
+                              '${weatherProvider.temperature}°',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                                color: BLACK,
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ],
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
+                IconButton(onPressed: () {}, icon: Icon(Icons.settings)),
                 // 임시 로그아웃 버튼
-                Consumer<UserProvider>(
-                  builder: (context, userProvider, child) {
-                    return IconButton(
-                      onPressed: () {
-                        userProvider.signOut();
-                        Navigator.pushReplacementNamed(context, 'signIn');
-                      },
-                      icon: Icon(Icons.output_rounded),
-                    );
-                  },
-                ),
+                // Consumer<UserProvider>(
+                //   builder: (context, userProvider, child) {
+                //     return IconButton(
+                //       onPressed: () {
+                //         userProvider.signOut();
+                //         Navigator.pushReplacementNamed(context, 'signIn');
+                //       },
+                //       icon: Icon(Icons.output_rounded),
+                //     );
+                //   },
+                // ),
               ],
             ),
             // username님의 코스
