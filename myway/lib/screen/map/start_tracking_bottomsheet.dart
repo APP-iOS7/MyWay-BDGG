@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:myway/provider/step_provider.dart';
-import 'package:myway/screen/cource_name_screen.dart';
+import 'package:myway/screen/result/cource_name_screen.dart';
 import 'package:provider/provider.dart';
 
 import '../../const/colors.dart';
@@ -204,14 +204,19 @@ class _StartTrackingBottomsheetState extends State<StartTrackingBottomsheet> {
                                       ),
                                       TextButton(
                                         onPressed: () {
+                                          final stepModel =
+                                              stepProvider.createStepModel();
                                           Navigator.push(
                                             context,
                                             MaterialPageRoute(
                                               builder:
-                                                  (context) =>
-                                                      CourceNameScreen(),
+                                                  (context) => CourceNameScreen(
+                                                    stepModel: stepModel,
+                                                  ),
                                             ),
-                                          );
+                                          ).then((_) {
+                                            stepProvider.resetTracking();
+                                          });
                                         },
                                         child: Text(
                                           '종료',

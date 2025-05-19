@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:myway/alert/countdown_diallog.dart';
 import 'package:myway/provider/step_provider.dart';
