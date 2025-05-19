@@ -16,6 +16,8 @@ import 'package:provider/provider.dart';
 import 'screen/change_password_screen.dart';
 import 'screen/find_password_screen.dart';
 import 'screen/nickname_change_screen.dart';
+import 'package:myway/page/activity_log_screen.dart';
+import 'package:myway/page/notice_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
