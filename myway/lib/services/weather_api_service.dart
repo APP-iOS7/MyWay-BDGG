@@ -46,6 +46,7 @@ class WeatherApiService {
     return null;
   }
 
+  // 예보 날씨 API (SKY, PTY 등 추출용)
   Future<Map<String, dynamic>?> fetchForecastWeather({
     required String baseDate,
     required String baseTime,
@@ -82,5 +83,16 @@ class WeatherApiService {
       print('예보 날씨 파싱 실패: $e');
     }
     return null;
+  }
+
+  // base_time을 안전하게 계산 (예보 가능 시간만 사용)
+  String getSafeForecastBaseTime(DateTime now) {
+    final baseHours = [2, 5, 8, 11, 14, 17, 20, 23];
+    final adjustedNow = now.subtract(Duration(hours: 2)); // 2시간 전 기준
+    int selected = baseHours.first;
+    for (final h in baseHours) {
+      if (adjustedNow.hour >= h) selected = h;
+    }
+    return selected.toString().padLeft(2, '0') + '00';
   }
 }
