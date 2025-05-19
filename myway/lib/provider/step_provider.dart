@@ -70,17 +70,21 @@ class StepProvider extends ChangeNotifier {
     );
   }
 
-  StepModel stopTracking() {
-    _subscription?.cancel();
-    _timer?.cancel();
+  StepModel createStepModel() {
     _stopTime = DateTime.now();
     _formattedStopTime = DateFormat('yyyy-MM-dd HH:mm').format(_stopTime!);
 
-    final result = StepModel(
+    return StepModel(
       steps: steps,
       duration: formattedElapsed,
       distance: distanceKm,
+      stopTime: formattedStopTime,
     );
+  }
+
+  void resetTracking() {
+    _subscription?.cancel();
+    _timer?.cancel();
 
     _baseSteps = 0;
     _currentSteps = 0;
@@ -88,6 +92,25 @@ class StepProvider extends ChangeNotifier {
     _status = TrackingStatus.stopped;
 
     notifyListeners();
+  }
+
+  StepModel stopTracking() {
+    _subscription?.cancel();
+    _timer?.cancel();
+
+    final result = createStepModel();
+
+    _baseSteps = 0;
+    _currentSteps = 0;
+    _elapsed = Duration.zero;
+    _status = TrackingStatus.stopped;
+
+    try {
+      notifyListeners();
+    } catch (e) {
+      print('StepProvider stopTracking notifyListeners 오류: $e');
+    }
+
     return result;
   }
 
