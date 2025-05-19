@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:myway/const/colors.dart';
 
@@ -13,11 +15,13 @@ class _NicknameChangeScreenState extends State<NicknameChangeScreen> {
   String _enteredNickname = "";
   bool _isNicknameChangeConfirmed = false;
   String _currentNicknameHint = "현재 닉네임: 대장보현(칼바람)";
+  String? _currentNickname;
 
   @override
   void dispose() {
     _nicknameController.dispose();
     super.dispose();
+    _loadCurrentNickname();
   }
 
   void _onNicknameChanged(String value) {
@@ -95,6 +99,22 @@ class _NicknameChangeScreenState extends State<NicknameChangeScreen> {
         );
       },
     );
+  }
+
+  Future<void> _loadCurrentNickname() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+
+    final doc =
+        await FirebaseFirestore.instance.collection('users').doc(uid).get();
+    final nickname = doc.data()?['nickname'] ?? '닉네임 없음';
+
+    if (mounted) {
+      setState(() {
+        _currentNickname = nickname;
+        _currentNicknameHint = "현재 닉네임: $nickname";
+      });
+    }
   }
 
   @override

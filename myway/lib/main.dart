@@ -6,6 +6,8 @@ import 'package:myway/provider/user_provider.dart';
 import 'package:myway/screen/home_screen.dart';
 import 'package:myway/screen/login/signIn_screen.dart';
 import 'package:myway/screen/login/signup_screen.dart';
+import 'package:myway/screen/weather_screen.dart';
+import 'package:myway/provider/weather_provider.dart';
 import 'package:provider/provider.dart';
 
 import 'screen/login/findpassword_screen.dart';
@@ -15,7 +17,13 @@ Future<void> main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(
     MultiProvider(
-      providers: [ChangeNotifierProvider(create: (context) => UserProvider())],
+      providers: [
+        ChangeNotifierProvider(create: (context) => UserProvider()),
+        ChangeNotifierProvider(
+          create: (context) => WeatherProvider()..loadWeather(),
+          child: WeatherScreen(),
+        ),
+      ],
       child: const MyApp(),
     ),
   );

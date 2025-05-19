@@ -6,6 +6,7 @@ import 'package:myway/provider/user_provider.dart';
 import 'package:myway/screen/weather_screen.dart';
 import 'package:provider/provider.dart';
 
+import '../provider/weather_provider.dart';
 import 'map/map_screen.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -14,6 +15,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     User? user = FirebaseAuth.instance.currentUser;
+    final weatherProvider = Provider.of<WeatherProvider>(context);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -47,14 +49,14 @@ class HomeScreen extends StatelessWidget {
                     spacing: 10,
                     children: [
                       SvgPicture.asset(
-                        'assets/icons/weather_sunny.svg',
+                        weatherProvider.weatherIconPath,
                         height: 40,
                       ),
                       Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            '좋음',
+                            '${weatherProvider.weatherStatus}',
                             style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w500,
@@ -62,7 +64,7 @@ class HomeScreen extends StatelessWidget {
                             ),
                           ),
                           Text(
-                            '18.3',
+                            '${weatherProvider.temperature}°',
                             style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w500,
