@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:myway/const/colors.dart';
 import 'package:myway/provider/user_provider.dart';
+import 'package:myway/screen/result/activity_log_screen.dart';
 import 'package:myway/screen/weather_screen.dart';
 import 'package:provider/provider.dart';
 
@@ -176,7 +177,14 @@ class HomeScreen extends StatelessWidget {
                       ),
                     ),
                     GestureDetector(
-                      onTap: () {},
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ActivityLogScreen(),
+                          ),
+                        );
+                      },
                       child: Container(
                         width: 114,
                         height: 114,
@@ -216,7 +224,14 @@ class HomeScreen extends StatelessWidget {
                         ),
                       ),
                       TextButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ActivityLogScreen(),
+                            ),
+                          );
+                        },
                         child: Text(
                           '나의 기록',
                           style: TextStyle(
