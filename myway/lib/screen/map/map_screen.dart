@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
@@ -22,7 +24,8 @@ class _MapScreenState extends State<MapScreen>
   GoogleMapController? mapController;
   Location location = Location();
   List<LatLng> route = [];
-  Set<Polyline> polylines = {};
+  Set<Polyline> walkingPolylines = {};
+  Set<Polyline> recommendCourse = {};
   int? selectedIndex;
   LocationData? currentPosition;
   bool _initialPositionSet = false;
@@ -34,7 +37,8 @@ class _MapScreenState extends State<MapScreen>
     // route = TestLatlng().getTestLatlng();
 
     route.clear();
-    polylines.clear();
+    recommendCourse.clear();
+    walkingPolylines.clear();
     _checkLocationPermission();
   }
 
@@ -122,12 +126,14 @@ class _MapScreenState extends State<MapScreen>
     );
   }
 
-  // 위치 추적 시작 (B 상태용)
+  // 위치 추적 시작
   void startLocationTracking() {
     print('📍 startLocationTracking');
+    // location.changeSettings(accuracy: LocationAccuracy.high, distanceFilter: 5);
+    location.changeSettings(accuracy: LocationAccuracy.high, interval: 3000);
 
     route.clear();
-    polylines.clear();
+    walkingPolylines.clear();
 
     location.onLocationChanged.listen((LocationData locationData) {
       if (context.read<MapProvider>().isTracking) {
@@ -138,12 +144,13 @@ class _MapScreenState extends State<MapScreen>
           // print("latitude : "+currentPosition.latitude.toString());
           // print("longitude : "+currentLocation.longitude!.toString());
           LatLng position = LatLng(
-            currentPosition?.latitude ?? 0.0,
-            currentPosition?.longitude ?? 0.0,
+            (currentPosition?.latitude ?? 0.0) + 0.1,
+            (currentPosition?.longitude ?? 0.0) + 0.1,
           );
           route.add(position);
-          print(route);
-          polylines.add(
+          print('route $route');
+          print('walkingPolylines $walkingPolylines');
+          walkingPolylines.add(
             Polyline(
               polylineId: PolylineId("route"),
               points: route,
@@ -218,8 +225,8 @@ class _MapScreenState extends State<MapScreen>
     print('📍 _updatePolylines');
     if (route.isNotEmpty) {
       setState(() {
-        polylines.clear();
-        polylines.add(
+        recommendCourse.clear();
+        recommendCourse.add(
           Polyline(
             polylineId: PolylineId('route'),
             color: Colors.orange,
@@ -233,8 +240,8 @@ class _MapScreenState extends State<MapScreen>
 
   void drawRecommendPolylines(Course selectedCourse) {
     print('📍 drawRecommendPolylines');
-    polylines.clear();
-    polylines.add(
+    recommendCourse.clear();
+    recommendCourse.add(
       Polyline(
         polylineId: PolylineId(selectedCourse.title),
         color: BLUE_SECONDARY_600,
@@ -288,7 +295,8 @@ class _MapScreenState extends State<MapScreen>
               }
               if (mapProvider.selectedCourse == null) {
                 print("provider selectedCourse is null");
-                polylines.clear();
+                recommendCourse.clear();
+                walkingPolylines.clear();
                 route.clear();
               }
               return LayoutBuilder(
@@ -307,7 +315,7 @@ class _MapScreenState extends State<MapScreen>
                           zoom: 17.0,
                         ),
                         myLocationEnabled: true,
-                        polylines: polylines,
+                        polylines: walkingPolylines,
                       );
                 },
               );
