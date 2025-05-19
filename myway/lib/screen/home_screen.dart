@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:myway/const/colors.dart';
 import 'package:myway/provider/user_provider.dart';
 import 'package:myway/screen/mycourse_screen.dart';
@@ -20,11 +22,14 @@ class HomeScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Padding(
-        padding: const EdgeInsets.only(left: 20.0, right: 20.0, top: 70),
-        child: Column(
-          children: [
-            Row(
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 20.0,
+              vertical: 80.0,
+            ),
+            child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
@@ -59,7 +64,7 @@ class HomeScreen extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              '${weatherProvider.weatherStatus}',
+                              weatherProvider.weatherStatus,
                               style: TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w500,
@@ -95,181 +100,181 @@ class HomeScreen extends StatelessWidget {
                 // ),
               ],
             ),
-            // username님의 코스
-            Padding(
-              padding: const EdgeInsets.only(top: 10.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text.rich(
-                    TextSpan(
-                      text: user?.displayName,
-                      style: TextStyle(
-                        color: GRAYSCALE_LABEL_700,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      children: <TextSpan>[
-                        TextSpan(
-                          text: '님의 코스',
-                          style: TextStyle(
-                            color: GRAYSCALE_LABEL_600,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) {
-                            return const MycourseScreen();
-                          },
-                        ),
-                      );
-                    },
-                    child: Text(
-                      '더 보기 +',
-                      style: TextStyle(
-                        color: GRAYSCALE_LABEL_600,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: Column(
-                children: [Card(color: Colors.black, child: Text(''))],
-              ),
-            ),
-
-            Column(
+          ),
+          // username님의 코스
+          Padding(
+            padding: const EdgeInsets.only(top: 10.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 10.0),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) {
-                              return const MapScreen();
-                            },
-                          ),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        shadowColor: Colors.transparent,
-                        backgroundColor: ORANGE_PRIMARY_600,
-                        foregroundColor: WHITE,
-                        padding: const EdgeInsets.symmetric(vertical: 15),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Text(
-                        '산책 시작',
+                Text.rich(
+                  TextSpan(
+                    text: user?.displayName,
+                    style: TextStyle(
+                      color: GRAYSCALE_LABEL_700,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    children: <TextSpan>[
+                      TextSpan(
+                        text: '님의 코스',
                         style: TextStyle(
+                          color: GRAYSCALE_LABEL_600,
                           fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                          color: WHITE,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    GestureDetector(
-                      onTap: () {},
-                      child: Container(
-                        width: 114,
-                        height: 114,
-                        decoration: BoxDecoration(
-                          color: Color(0xffe8f2f5),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: () {},
-                      child: Container(
-                        width: 114,
-                        height: 114,
-                        decoration: BoxDecoration(
-                          color: Color(0xffeaf7eb),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: () {},
-                      child: Container(
-                        width: 114,
-                        height: 114,
-                        decoration: BoxDecoration(
-                          color: Color(0xfffef3f3),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(left: 20.0, right: 20.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      TextButton(
-                        onPressed: () {},
-                        child: Text(
-                          '추천 경로',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 13,
-                            fontFamily: 'Pretendard',
-                          ),
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () {},
-                        child: Text(
-                          '공원 찾기',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 13,
-                            fontFamily: 'Pretendard',
-                          ),
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () {},
-                        child: Text(
-                          '나의 기록',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 13,
-                            fontFamily: 'Pretendard',
-                          ),
+                          fontWeight: FontWeight.w400,
                         ),
                       ),
                     ],
                   ),
                 ),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) {
+                          return const MycourseScreen();
+                        },
+                      ),
+                    );
+                  },
+                  child: Text(
+                    '더 보기 +',
+                    style: TextStyle(
+                      color: GRAYSCALE_LABEL_600,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ),
               ],
             ),
-          ],
-        ),
+          ),
+          Expanded(
+            child: Column(
+              children: [Card(color: Colors.black, child: Text(''))],
+            ),
+          ),
+
+          Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10.0),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) {
+                            return const MapScreen();
+                          },
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      shadowColor: Colors.transparent,
+                      backgroundColor: ORANGE_PRIMARY_600,
+                      foregroundColor: WHITE,
+                      padding: const EdgeInsets.symmetric(vertical: 15),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text(
+                      '산책 시작',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: WHITE,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  GestureDetector(
+                    onTap: () {},
+                    child: Container(
+                      width: 114,
+                      height: 114,
+                      decoration: BoxDecoration(
+                        color: Color(0xffe8f2f5),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () {},
+                    child: Container(
+                      width: 114,
+                      height: 114,
+                      decoration: BoxDecoration(
+                        color: Color(0xffeaf7eb),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () {},
+                    child: Container(
+                      width: 114,
+                      height: 114,
+                      decoration: BoxDecoration(
+                        color: Color(0xfffef3f3),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              Padding(
+                padding: const EdgeInsets.only(left: 20.0, right: 20.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    TextButton(
+                      onPressed: () {},
+                      child: Text(
+                        '추천 경로',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 13,
+                          fontFamily: 'Pretendard',
+                        ),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () {},
+                      child: Text(
+                        '공원 찾기',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 13,
+                          fontFamily: 'Pretendard',
+                        ),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () {},
+                      child: Text(
+                        '나의 기록',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 13,
+                          fontFamily: 'Pretendard',
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
