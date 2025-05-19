@@ -9,6 +9,8 @@ import 'package:myway/screen/health_screen.dart';
 import 'package:myway/screen/home_screen.dart';
 import 'package:myway/screen/login/signIn_screen.dart';
 import 'package:myway/screen/login/signup_screen.dart';
+import 'package:myway/screen/weather_screen.dart';
+import 'package:myway/provider/weather_provider.dart';
 import 'package:provider/provider.dart';
 
 Future<void> main() async {
@@ -18,6 +20,10 @@ Future<void> main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => UserProvider()),
+        ChangeNotifierProvider(
+          create: (context) => WeatherProvider()..loadWeather(),
+          child: WeatherScreen(),
+        ),
         ChangeNotifierProvider(create: (context) => StepProvider()..init()),
         ChangeNotifierProvider(create: (context) => MapProvider()),
       ],
