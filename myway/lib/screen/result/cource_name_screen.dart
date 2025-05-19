@@ -116,23 +116,26 @@ class _CourceNameScreenState extends State<CourceNameScreen> {
                         );
                         return;
                       }
-                      try {
-                        await _firestore
-                            .collection('trackingResult')
-                            .doc(currentUser.uid)
-                            .set({
-                              'TrackingResult': FieldValue.arrayUnion([
-                                widget.stepModel.toJson(),
-                              ]),
-                            }, SetOptions(merge: true));
-                        print('산책결과가 FireStore에 저장되었습니다.');
-                      } catch (firestoreError) {
-                        print('Firestore 저장 오류: $firestoreError');
-                      }
-                      final courseName = courseNameController.text;
-                      final result = widget.stepModel;
+                              try {
+                                await _firestore
+                                    .collection('trackingResult')
+                                    .doc(currentUser.uid)
+                                    .set({
+                                      'Result': FieldValue.arrayUnion([
+                                        widget.stepModel.toJson(),
+                                      ]),
+                                    });
+                                print('산책결과가 FireStore에 저장되었습니다.');
+                              } catch (firestoreError) {
+                                print('Firestore 저장 오류: $firestoreError');
+                              }
+                              final courseName = courseNameController.text;
+                              
+                              // 여기서는 이미 stepModel이 전달되었으므로 stopTracking을 호출할 필요가 없음
+                              // final result = stepProvider.stopTracking();
+                              final result = widget.stepModel;  // 이미 받은 stepModel 사용
 
-                      Navigator.push(
+                              Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder:

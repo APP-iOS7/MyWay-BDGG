@@ -203,21 +203,23 @@ class _StartTrackingBottomsheetState extends State<StartTrackingBottomsheet> {
                                         ),
                                       ),
                                       TextButton(
-                                        onPressed: () {
-                                          final stepModel =
-                                              stepProvider.createStepModel();
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder:
-                                                  (context) => CourceNameScreen(
-                                                    stepModel: stepModel,
-                                                  ),
-                                            ),
-                                          ).then((_) {
-                                            stepProvider.resetTracking();
-                                          });
-                                        },
+                                                onPressed: () {
+                                                  // 먼저 StepModel 생성 (상태 변경 없이)
+                                                  final stepModel = stepProvider.createStepModel();
+                                                  
+                                                  // 다음 화면으로 이동
+                                                  Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                      builder: (context) => CourceNameScreen(
+                                                        stepModel: stepModel,
+                                                      ),
+                                                    ),
+                                                  ).then((_) {
+                                                    // 화면 이동 후 상태 초기화
+                                                    stepProvider.resetTracking();
+                                                  });
+                                                },
                                         child: Text(
                                           '종료',
                                           style: TextStyle(

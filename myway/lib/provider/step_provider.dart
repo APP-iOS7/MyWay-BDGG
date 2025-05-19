@@ -70,10 +70,11 @@ class StepProvider extends ChangeNotifier {
     );
   }
 
+  // 새로운 메서드: StepModel만 생성하고 상태는 변경하지 않음
   StepModel createStepModel() {
     _stopTime = DateTime.now();
     _formattedStopTime = DateFormat('yyyy-MM-dd HH:mm').format(_stopTime!);
-
+    
     return StepModel(
       steps: steps,
       duration: formattedElapsed,
@@ -82,10 +83,11 @@ class StepProvider extends ChangeNotifier {
     );
   }
 
+  // 기존 메서드: 내부 상태를 초기화하고 notifyListeners 호출
   void resetTracking() {
     _subscription?.cancel();
     _timer?.cancel();
-
+    
     _baseSteps = 0;
     _currentSteps = 0;
     _elapsed = Duration.zero;
@@ -93,24 +95,26 @@ class StepProvider extends ChangeNotifier {
 
     notifyListeners();
   }
-
+  
+  // 기존 메서드를 유지하되 내부 구현을 변경 (하위 호환성 유지)
   StepModel stopTracking() {
     _subscription?.cancel();
     _timer?.cancel();
-
+    
     final result = createStepModel();
-
+    
+    // 상태 초기화 (동기적으로 실행)
     _baseSteps = 0;
     _currentSteps = 0;
     _elapsed = Duration.zero;
     _status = TrackingStatus.stopped;
-
+    
     try {
       notifyListeners();
     } catch (e) {
       print('StepProvider stopTracking notifyListeners 오류: $e');
     }
-
+    
     return result;
   }
 
