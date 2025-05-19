@@ -26,14 +26,6 @@ class _SigninScreenState extends State<SigninScreen> {
             password: _passwordController.text,
           );
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('로그인 성공: ${userCredential.user?.displayName}'),
-          ),
-        );
-      }
-
       debugPrint('로그인 성공: ${userCredential.user}');
       Navigator.pushReplacement(
         context,
