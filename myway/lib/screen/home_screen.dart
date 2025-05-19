@@ -25,10 +25,7 @@ class HomeScreen extends StatelessWidget {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 20.0,
-              vertical: 60.0,
-            ),
+            padding: const EdgeInsets.only(top: 80.0, left: 20, right: 20),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -105,7 +102,7 @@ class HomeScreen extends StatelessWidget {
           ),
           // username님의 코스
           Padding(
-            padding: const EdgeInsets.only(top: 10.0),
+            padding: const EdgeInsets.only(top: 10.0, left: 20, right: 20),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -119,9 +116,9 @@ class HomeScreen extends StatelessWidget {
                     ),
                     children: <TextSpan>[
                       TextSpan(
-                        text: '님의 코스',
+                        text: ' 님의 코스',
                         style: TextStyle(
-                          color: GRAYSCALE_LABEL_600,
+                          color: GRAYSCALE_LABEL_800,
                           fontSize: 18,
                           fontWeight: FontWeight.w400,
                         ),
@@ -141,7 +138,7 @@ class HomeScreen extends StatelessWidget {
                     );
                   },
                   child: Text(
-                    '더 보기 +',
+                    '더보기 +',
                     style: TextStyle(
                       color: GRAYSCALE_LABEL_600,
                       fontSize: 15,
@@ -157,125 +154,124 @@ class HomeScreen extends StatelessWidget {
               children: [Card(color: Colors.black, child: Text(''))],
             ),
           ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20),
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10.0),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) {
+                              return const MapScreen();
+                            },
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        shadowColor: Colors.transparent,
+                        backgroundColor: ORANGE_PRIMARY_600,
+                        foregroundColor: WHITE,
 
-          Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 10.0),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) {
-                            return const MapScreen();
-                          },
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      shadowColor: Colors.transparent,
-                      backgroundColor: ORANGE_PRIMARY_600,
-                      foregroundColor: WHITE,
-                      padding: const EdgeInsets.symmetric(vertical: 15),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
                       ),
-                    ),
-                    child: const Text(
-                      '산책 시작',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: WHITE,
+                      child: const Text(
+                        '산책 시작',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: WHITE,
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  GestureDetector(
-                    onTap: () {},
-                    child: Container(
-                      width: 114,
-                      height: 114,
-                      decoration: BoxDecoration(
-                        color: Color(0xffe8f2f5),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: () {},
-                    child: Container(
-                      width: 114,
-                      height: 114,
-                      decoration: BoxDecoration(
-                        color: Color(0xffeaf7eb),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: () {},
-                    child: Container(
-                      width: 114,
-                      height: 114,
-                      decoration: BoxDecoration(
-                        color: Color(0xfffef3f3),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              Padding(
-                padding: const EdgeInsets.only(left: 20.0, right: 20.0),
-                child: Row(
+                Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    TextButton(
-                      onPressed: () {},
-                      child: Text(
-                        '추천 경로',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 13,
-                          fontFamily: 'Pretendard',
-                        ),
+                    GestureDetector(
+                      onTap: () {},
+                      child: Column(
+                        children: [
+                          Container(
+                            width: 114,
+                            height: 114,
+                            decoration: BoxDecoration(
+                              color: Color(0xffe8f2f5),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          Text(
+                            '추천 경로',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 13,
+                              fontFamily: 'Pretendard',
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    TextButton(
-                      onPressed: () {},
-                      child: Text(
-                        '공원 찾기',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 13,
-                          fontFamily: 'Pretendard',
-                        ),
+                    GestureDetector(
+                      onTap: () {},
+                      child: Column(
+                        children: [
+                          Container(
+                            width: 114,
+                            height: 114,
+                            decoration: BoxDecoration(
+                              color: Color(0xffeaf7eb),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          Text(
+                            '공원 찾기',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 13,
+                              fontFamily: 'Pretendard',
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    TextButton(
-                      onPressed: () {},
-                      child: Text(
-                        '나의 기록',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 13,
-                          fontFamily: 'Pretendard',
-                        ),
+                    GestureDetector(
+                      onTap: () {},
+                      child: Column(
+                        children: [
+                          Container(
+                            width: 114,
+                            height: 114,
+                            decoration: BoxDecoration(
+                              color: Color(0xfffef3f3),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          Text(
+                            '나의 기록',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 13,
+                              fontFamily: 'Pretendard',
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
+          SizedBox(height: 20),
         ],
       ),
     );
