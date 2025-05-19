@@ -24,12 +24,12 @@ class _MapScreenState extends State<MapScreen>
   GoogleMapController? mapController;
   Location location = Location();
   List<LatLng> route = [];
-  Set<Polyline> walkingPolylines = {};
-  Set<Polyline> recommendCourse = {};
+  Set<Polyline> polylines = {};
   int? selectedIndex;
   LocationData? currentPosition;
   bool _initialPositionSet = false;
   bool isLoading = true;
+  bool isTrackingStarted = false;
 
   @override
   void initState() {
@@ -37,9 +37,14 @@ class _MapScreenState extends State<MapScreen>
     // route = TestLatlng().getTestLatlng();
 
     route.clear();
-    recommendCourse.clear();
-    walkingPolylines.clear();
+    polylines.clear();
     _checkLocationPermission();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    isTrackingStarted = false;
   }
 
   Future<void> _checkLocationPermission() async {
@@ -129,45 +134,48 @@ class _MapScreenState extends State<MapScreen>
   // 위치 추적 시작
   void startLocationTracking() {
     print('📍 startLocationTracking');
+    if (isTrackingStarted) return;
     // location.changeSettings(accuracy: LocationAccuracy.high, distanceFilter: 5);
     location.changeSettings(accuracy: LocationAccuracy.high, interval: 3000);
 
     route.clear();
-    walkingPolylines.clear();
+    polylines.clear();
 
     location.onLocationChanged.listen((LocationData locationData) {
       if (context.read<MapProvider>().isTracking) {
-        setState(() {
-          print(currentPosition);
-          print(currentPosition?.latitude);
-          print(currentPosition?.longitude);
-          // print("latitude : "+currentPosition.latitude.toString());
-          // print("longitude : "+currentLocation.longitude!.toString());
-          LatLng position = LatLng(
-            (currentPosition?.latitude ?? 0.0) + 0.1,
-            (currentPosition?.longitude ?? 0.0) + 0.1,
-          );
-          route.add(position);
-          print('route $route');
-          print('walkingPolylines $walkingPolylines');
-          walkingPolylines.add(
-            Polyline(
-              polylineId: PolylineId("route"),
-              points: route,
-              color: ORANGE_PRIMARY_500,
-              width: 5,
-            ),
-          );
-          mapController?.animateCamera(CameraUpdate.newLatLng(position));
-        });
+        // setState(() {
+        print(currentPosition);
+        print(currentPosition?.latitude);
+        print(currentPosition?.longitude);
+        //   LatLng position = LatLng(
+        //     (currentPosition?.latitude ?? 0.0) + 0.1,
+        //     (currentPosition?.longitude ?? 0.0) + 0.1,
+        //   );
+        //   route.add(position);
+        //   print('route $route');
+        //   polylines.add(
+        //     Polyline(
+        //       polylineId: PolylineId("route"),
+        //       points: route,
+        //       color: ORANGE_PRIMARY_500,
+        //       width: 5,s
+        //     ),
+        //   );
+        //   mapController?.animateCamera(CameraUpdate.newLatLng(position));
+        // });
+
+        _updateLocation(locationData);
       }
     });
+
+    isTrackingStarted = true;
   }
 
   // 위치 추적 중지
   void stopLocationTracking() {
     print('📍 stopLocationTracking');
     print('📍 위치 추적 일시정지됨');
+    isTrackingStarted = false;
   }
 
   Future<void> _getLocation() async {
@@ -214,6 +222,9 @@ class _MapScreenState extends State<MapScreen>
 
     // 추적 모드일 때만 경로에 위치 추가
     if (context.read<MapProvider>().isTracking) {
+      print(
+        '📍 위치 업데이트됨: ${currentPosition?.latitude}, ${currentPosition?.longitude}',
+      );
       route.add(
         LatLng(currentPosition!.latitude!, currentPosition!.longitude!),
       );
@@ -225,8 +236,8 @@ class _MapScreenState extends State<MapScreen>
     print('📍 _updatePolylines');
     if (route.isNotEmpty) {
       setState(() {
-        recommendCourse.clear();
-        recommendCourse.add(
+        polylines.clear();
+        polylines.add(
           Polyline(
             polylineId: PolylineId('route'),
             color: Colors.orange,
@@ -240,23 +251,22 @@ class _MapScreenState extends State<MapScreen>
 
   void drawRecommendPolylines(Course selectedCourse) {
     print('📍 drawRecommendPolylines');
-    recommendCourse.clear();
-    recommendCourse.add(
-      Polyline(
-        polylineId: PolylineId(selectedCourse.title),
-        color: BLUE_SECONDARY_600,
-        width: 5,
-        points: selectedCourse.route,
-      ),
+    polylines.clear();
+    Polyline recommendCourse = Polyline(
+      polylineId: PolylineId(selectedCourse.title),
+      color: BLUE_SECONDARY_600,
+      width: 5,
+      points: selectedCourse.route,
     );
+    polylines.add(recommendCourse);
   }
 
   @override
   Widget build(BuildContext context) {
     final mapProvider = Provider.of<MapProvider>(context);
-    if (mapProvider.isTracking) {
+    if (mapProvider.isTracking && !isTrackingStarted) {
       startLocationTracking();
-    } else {
+    } else if (!mapProvider.isTracking && isTrackingStarted) {
       stopLocationTracking();
     }
 
@@ -295,8 +305,8 @@ class _MapScreenState extends State<MapScreen>
               }
               if (mapProvider.selectedCourse == null) {
                 print("provider selectedCourse is null");
-                recommendCourse.clear();
-                walkingPolylines.clear();
+                polylines.clear();
+                polylines.clear();
                 route.clear();
               }
               return LayoutBuilder(
@@ -315,7 +325,7 @@ class _MapScreenState extends State<MapScreen>
                           zoom: 17.0,
                         ),
                         myLocationEnabled: true,
-                        polylines: walkingPolylines,
+                        polylines: polylines,
                       );
                 },
               );

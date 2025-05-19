@@ -27,7 +27,7 @@ class HomeScreen extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(
               horizontal: 20.0,
-              vertical: 80.0,
+              vertical: 60.0,
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -40,52 +40,54 @@ class HomeScreen extends StatelessWidget {
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                SizedBox(width: 40),
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) {
-                            return WeatherScreen();
-                          },
-                        ),
-                      );
-                    },
-                    child: Row(
-                      spacing: 10,
-                      children: [
-                        SvgPicture.asset(
-                          weatherProvider.weatherIconPath,
-                          height: 40,
-                        ),
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              weatherProvider.weatherStatus,
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w500,
-                                color: GREEN_SUCCESS_TEXT_50,
-                              ),
+                SizedBox(width: 20),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) {
+                          return WeatherScreen();
+                        },
+                      ),
+                    );
+                  },
+                  child: Row(
+                    spacing: 2,
+                    children: [
+                      SvgPicture.asset(
+                        weatherProvider.weatherIconPath,
+                        height: 30,
+                      ),
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            weatherProvider.weatherStatus,
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500,
+                              color: GREEN_SUCCESS_TEXT_50,
                             ),
-                            Text(
-                              '${weatherProvider.temperature}°',
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w500,
-                                color: BLACK,
-                              ),
+                          ),
+                          Text(
+                            '${weatherProvider.temperature}°',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500,
+                              color: BLACK,
                             ),
-                          ],
-                        ),
-                      ],
-                    ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
-                IconButton(onPressed: () {}, icon: Icon(Icons.settings)),
+                Spacer(),
+                IconButton(
+                  onPressed: () {},
+                  icon: Icon(Icons.settings_outlined),
+                ),
                 // 임시 로그아웃 버튼
                 // Consumer<UserProvider>(
                 //   builder: (context, userProvider, child) {
