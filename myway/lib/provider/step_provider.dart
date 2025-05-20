@@ -11,7 +11,14 @@ class StepProvider extends ChangeNotifier {
   int _baseSteps = 0;
   int _currentSteps = 0;
   int get steps => _currentSteps;
+  final TextEditingController courseName = TextEditingController();
 
+  bool _isCourseNameValid = false;
+  bool get isCourseNameValid => _isCourseNameValid;
+
+  StepProvider() {
+    courseName.addListener(_validateCourseName);
+  }
   // 평균 보폭 기준으로 칼로리 계산 (고정 값)
   final double _strideLengthCm = 70.0; // 평균보폭
 
@@ -74,12 +81,13 @@ class StepProvider extends ChangeNotifier {
   StepModel createStepModel() {
     _stopTime = DateTime.now();
     _formattedStopTime = DateFormat('yyyy-MM-dd HH:mm').format(_stopTime!);
-    
+
     return StepModel(
       steps: steps,
       duration: formattedElapsed,
       distance: distanceKm,
       stopTime: formattedStopTime,
+      courseName: courseName.text,
     );
   }
 
@@ -87,7 +95,7 @@ class StepProvider extends ChangeNotifier {
   void resetTracking() {
     _subscription?.cancel();
     _timer?.cancel();
-    
+
     _baseSteps = 0;
     _currentSteps = 0;
     _elapsed = Duration.zero;
@@ -95,26 +103,26 @@ class StepProvider extends ChangeNotifier {
 
     notifyListeners();
   }
-  
+
   // 기존 메서드를 유지하되 내부 구현을 변경 (하위 호환성 유지)
   StepModel stopTracking() {
     _subscription?.cancel();
     _timer?.cancel();
-    
+
     final result = createStepModel();
-    
+
     // 상태 초기화 (동기적으로 실행)
     _baseSteps = 0;
     _currentSteps = 0;
     _elapsed = Duration.zero;
     _status = TrackingStatus.stopped;
-    
+
     try {
       notifyListeners();
     } catch (e) {
       print('StepProvider stopTracking notifyListeners 오류: $e');
     }
-    
+
     return result;
   }
 
@@ -141,6 +149,22 @@ class StepProvider extends ChangeNotifier {
     });
 
     notifyListeners();
+  }
+
+  void _validateCourseName() {
+    final isValid = courseName.text.trim().isNotEmpty;
+
+    if (_isCourseNameValid != isValid) {
+      _isCourseNameValid = isValid;
+      notifyListeners();
+    }
+  }
+
+  @override
+  void dispose() {
+    courseName.removeListener(_validateCourseName);
+    courseName.dispose();
+    super.dispose();
   }
 
   String _formatDuration(Duration duration) {
