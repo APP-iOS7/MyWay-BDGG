@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:myway/provider/step_provider.dart';
-import 'package:myway/screen/result/cource_name_screen.dart';
+import 'package:myway/screen/result/course_name_screen.dart';
 import 'package:provider/provider.dart';
 
 import '../../const/colors.dart';
@@ -203,23 +203,19 @@ class _StartTrackingBottomsheetState extends State<StartTrackingBottomsheet> {
                                         ),
                                       ),
                                       TextButton(
-                                                onPressed: () {
-                                                  // 먼저 StepModel 생성 (상태 변경 없이)
-                                                  final stepModel = stepProvider.createStepModel();
-                                                  
-                                                  // 다음 화면으로 이동
-                                                  Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                      builder: (context) => CourceNameScreen(
-                                                        stepModel: stepModel,
-                                                      ),
-                                                    ),
-                                                  ).then((_) {
-                                                    // 화면 이동 후 상태 초기화
-                                                    stepProvider.resetTracking();
-                                                  });
-                                                },
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder:
+                                                  (context) =>
+                                                      CourseNameScreen(),
+                                            ),
+                                          ).then((_) {
+                                            // 화면 이동 후 상태 초기화
+                                            stepProvider.resetTracking();
+                                          });
+                                        },
                                         child: Text(
                                           '종료',
                                           style: TextStyle(
