@@ -42,7 +42,7 @@ class _TrackingResultScreenState extends State<TrackingResultScreen> {
       context: context,
       style: ToastificationStyle.flat,
       type: ToastificationType.success,
-      autoCloseDuration: Duration(seconds: 3),
+      autoCloseDuration: Duration(seconds: 1),
       alignment: Alignment.bottomCenter,
       title: Text(message),
     );
