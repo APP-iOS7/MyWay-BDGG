@@ -57,6 +57,7 @@ class SettingScreen extends StatelessWidget {
             ),
             _buildSettingItem(text: '개인정보 처리방침', onTap: () {}),
             _buildSettingItem(
+              showArrow: false,
               text: '로그아웃',
               textColor: Colors.red,
               onTap: () async {

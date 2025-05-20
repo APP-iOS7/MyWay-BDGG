@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:myway/firebase_options.dart';
 import 'package:myway/provider/user_provider.dart';
+import 'package:myway/screen/find_password_screen.dart';
 import 'package:myway/screen/home_screen.dart';
 import 'package:myway/screen/login/signIn_screen.dart';
 import 'package:myway/screen/login/signup_screen.dart';
@@ -13,7 +14,6 @@ import 'package:provider/provider.dart';
 
 import 'screen/change_password_screen.dart';
 import 'screen/customer_center_screen.dart';
-import 'screen/login/findpassword_screen.dart';
 import 'screen/setting_screen.dart';
 
 Future<void> main() async {
@@ -48,7 +48,7 @@ class MyApp extends StatelessWidget {
         'signUp': (context) => const SignUpScreen(),
         'signIn': (context) => const SigninScreen(),
         'home': (context) => const HomeScreen(),
-        'findPassword': (context) => const FindpasswordScreen(),
+        'findPassword': (context) => const FindPasswordScreen(),
         'setting': (context) => const SettingScreen(),
         'changeNickname': (context) => const NicknameChangeScreen(),
         'changePassword': (context) => const ChangePasswordScreen(),
