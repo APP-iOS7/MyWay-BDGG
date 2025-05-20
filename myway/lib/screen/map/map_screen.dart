@@ -1,15 +1,13 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
-import 'package:myway/const/colors.dart';
-import 'package:myway/screen/map/course_recommend_bottomsheet.dart';
-import 'package:myway/temp/test_latlng.dart';
 import 'package:provider/provider.dart';
 
-import '../../model/course_model.dart';
-import '../../provider/map_provider.dart';
+import '/const/colors.dart';
+import '/screen/map/course_recommend_bottomsheet.dart';
+import '/model/course_model.dart';
+import '/provider/map_provider.dart';
 import 'start_tracking_bottomsheet.dart';
 
 class MapScreen extends StatefulWidget {
@@ -43,6 +41,7 @@ class _MapScreenState extends State<MapScreen>
   void dispose() {
     super.dispose();
     isTrackingStarted = false;
+    location.onLocationChanged.drain();
   }
 
   Future<void> _checkLocationPermission() async {
@@ -62,10 +61,7 @@ class _MapScreenState extends State<MapScreen>
     } else {
       print('위치 권한 허용');
       if (permissionStatus == PermissionStatus.granted) {
-        location.changeSettings(
-          accuracy: LocationAccuracy.powerSave,
-          interval: 1000,
-        );
+        location.changeSettings(accuracy: LocationAccuracy.low, interval: 1000);
         _getLocation();
       }
     }
@@ -139,30 +135,29 @@ class _MapScreenState extends State<MapScreen>
     walkingRoute.clear();
 
     location.onLocationChanged.listen((LocationData locationData) {
-      if (context.read<MapProvider>().isTracking) {
-        if (mounted) {
-          setState(() {
-            print(currentPosition);
-            print(currentPosition?.latitude);
-            print(currentPosition?.longitude);
-            LatLng position = LatLng(
-              currentPosition?.latitude ?? 0.0,
-              currentPosition?.longitude ?? 0.0,
-            );
-            walkingRoute.add(position);
-            print('route $walkingRoute');
-            polylines.removeWhere((polyline) => polyline.polylineId == "route");
-            polylines.add(
-              Polyline(
-                polylineId: PolylineId("route"),
-                points: walkingRoute,
-                color: ORANGE_PRIMARY_500,
-                width: 5,
-              ),
-            );
-            mapController?.animateCamera(CameraUpdate.newLatLng(position));
-          });
-        }
+      if (context.read<MapProvider>().isTracking && mounted) {
+        setState(() {
+          print(currentPosition);
+          print(currentPosition?.latitude);
+          print(currentPosition?.longitude);
+          LatLng position = LatLng(
+            currentPosition?.latitude ?? 0.0,
+            currentPosition?.longitude ?? 0.0,
+          );
+          walkingRoute.add(position);
+          print('route $walkingRoute');
+          polylines.removeWhere((polyline) => polyline.polylineId == "route");
+          polylines.add(
+            Polyline(
+              polylineId: PolylineId("route"),
+              points: walkingRoute,
+              color: ORANGE_PRIMARY_500,
+              width: 5,
+            ),
+          );
+          mapController?.animateCamera(CameraUpdate.newLatLng(position));
+        });
+
         print('walkingRoute 0 : $walkingRoute');
       }
     });

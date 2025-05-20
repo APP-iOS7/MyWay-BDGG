@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:myway/provider/step_provider.dart';
 import 'package:provider/provider.dart';
+
+import '/provider/step_provider.dart';
 
 class HealthScreen extends StatelessWidget {
   const HealthScreen({super.key});

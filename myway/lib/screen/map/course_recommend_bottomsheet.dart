@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:myway/alert/countdown_diallog.dart';
+import 'package:myway/provider/step_provider.dart';
+import 'package:myway/temp/course_data.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -20,8 +23,8 @@ class _CourseRecommendBottomsheetState
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<MapProvider>(
-      builder: (context, mapProvider, child) {
+    return Consumer2<MapProvider, StepProvider>(
+      builder: (context, mapProvider, stepProvider, child) {
         return DraggableScrollableSheet(
           initialChildSize: 0.5,
           minChildSize: 0.3,
@@ -82,6 +85,12 @@ class _CourseRecommendBottomsheetState
                           onPressed: () {
                             mapProvider.setTracking(true);
                             mapProvider.showStartTrackingBottomSheet();
+                            CountdownDiallog.show(
+                              context,
+                              onComplete: () {
+                                stepProvider.startTracking();
+                              },
+                            );
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: ORANGE_PRIMARY_500,

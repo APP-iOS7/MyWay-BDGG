@@ -8,6 +8,7 @@ import '/screen/mycourse_screen.dart';
 import '/screen/weather_screen.dart';
 import '/provider/weather_provider.dart';
 import 'map/map_screen.dart';
+import 'result/activity_log_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -167,14 +168,7 @@ class HomeScreen extends StatelessWidget {
                     height: 56,
                     child: ElevatedButton(
                       onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) {
-                              return const MapScreen();
-                            },
-                          ),
-                        );
+                        Navigator.pushNamed(context, 'map');
                       },
                       style: ElevatedButton.styleFrom(
                         shadowColor: Colors.transparent,
@@ -213,11 +207,7 @@ class HomeScreen extends StatelessWidget {
                           ),
                           Text(
                             '추천 경로',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 13,
-                              fontFamily: 'Pretendard',
-                            ),
+                            style: TextStyle(color: Colors.black, fontSize: 13),
                           ),
                         ],
                       ),
@@ -236,17 +226,20 @@ class HomeScreen extends StatelessWidget {
                           ),
                           Text(
                             '공원 찾기',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 13,
-                              fontFamily: 'Pretendard',
-                            ),
+                            style: TextStyle(color: Colors.black, fontSize: 13),
                           ),
                         ],
                       ),
                     ),
                     GestureDetector(
-                      onTap: () {},
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ActivityLogScreen(),
+                          ),
+                        );
+                      },
                       child: Column(
                         children: [
                           Container(
@@ -259,11 +252,7 @@ class HomeScreen extends StatelessWidget {
                           ),
                           Text(
                             '나의 기록',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 13,
-                              fontFamily: 'Pretendard',
-                            ),
+                            style: TextStyle(color: Colors.black, fontSize: 13),
                           ),
                         ],
                       ),

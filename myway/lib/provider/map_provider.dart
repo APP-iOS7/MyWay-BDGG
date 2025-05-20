@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 
-import '../model/course_model.dart';
+import '/model/course_model.dart';
 
 class MapProvider with ChangeNotifier {
   bool _isCourseRecommendBottomSheetVisible = true;
