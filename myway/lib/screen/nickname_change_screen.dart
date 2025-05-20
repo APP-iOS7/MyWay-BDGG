@@ -1,7 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:myway/const/colors.dart';
+
+import '/const/colors.dart';
 
 class NicknameChangeScreen extends StatefulWidget {
   const NicknameChangeScreen({super.key});
@@ -141,7 +142,7 @@ class _NicknameChangeScreenState extends State<NicknameChangeScreen> {
           style: TextStyle(
             color: GRAYSCALE_LABEL_950,
             fontSize: 18,
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w700,
           ),
         ),
         centerTitle: true,
@@ -221,8 +222,8 @@ class _NicknameChangeScreenState extends State<NicknameChangeScreen> {
                     child: ElevatedButton(
                       onPressed: _showConfirmationDialog,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: ORANGE_PRIMARY_200,
-                        foregroundColor: GRAYSCALE_LABEL_950,
+                        backgroundColor: ORANGE_PRIMARY_500,
+                        foregroundColor: WHITE,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(
                             borderRadiusValue,
@@ -235,7 +236,7 @@ class _NicknameChangeScreenState extends State<NicknameChangeScreen> {
                         "변경하기",
                         style: TextStyle(
                           fontSize: 14,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ),
