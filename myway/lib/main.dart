@@ -6,11 +6,15 @@ import 'package:myway/provider/user_provider.dart';
 import 'package:myway/screen/home_screen.dart';
 import 'package:myway/screen/login/signIn_screen.dart';
 import 'package:myway/screen/login/signup_screen.dart';
+import 'package:myway/screen/nickname_change_screen.dart';
 import 'package:myway/screen/weather_screen.dart';
 import 'package:myway/provider/weather_provider.dart';
 import 'package:provider/provider.dart';
 
+import 'screen/change_password_screen.dart';
+import 'screen/customer_center_screen.dart';
 import 'screen/login/findpassword_screen.dart';
+import 'screen/setting_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -45,6 +49,10 @@ class MyApp extends StatelessWidget {
         'signIn': (context) => const SigninScreen(),
         'home': (context) => const HomeScreen(),
         'findPassword': (context) => const FindpasswordScreen(),
+        'setting': (context) => const SettingScreen(),
+        'changeNickname': (context) => const NicknameChangeScreen(),
+        'changePassword': (context) => const ChangePasswordScreen(),
+        'customerCenter': (context) => const CustomerCenterScreen(),
       },
     );
   }

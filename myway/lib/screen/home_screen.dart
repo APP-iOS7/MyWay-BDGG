@@ -79,19 +79,12 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                IconButton(onPressed: () {}, icon: Icon(Icons.settings)),
-                // 임시 로그아웃 버튼
-                // Consumer<UserProvider>(
-                //   builder: (context, userProvider, child) {
-                //     return IconButton(
-                //       onPressed: () {
-                //         userProvider.signOut();
-                //         Navigator.pushReplacementNamed(context, 'signIn');
-                //       },
-                //       icon: Icon(Icons.output_rounded),
-                //     );
-                //   },
-                // ),
+                IconButton(
+                  onPressed: () {
+                    Navigator.pushNamed(context, 'setting');
+                  },
+                  icon: Icon(Icons.settings),
+                ),
               ],
             ),
             // username님의 코스
