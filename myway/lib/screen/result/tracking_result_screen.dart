@@ -73,10 +73,10 @@ class _TrackingResultScreenState extends State<TrackingResultScreen> {
       // firestore에 url저장
       final user = FirebaseAuth.instance.currentUser;
       await FirebaseFirestore.instance
-          .collection('walk_results')
+          .collection('trackingResult')
           .doc(user!.uid)
           .set({
-            'result_images': FieldValue.arrayUnion([downloadUrl]),
+            'TrackingResult': FieldValue.arrayUnion([downloadUrl]),
           }, SetOptions(merge: true));
       final message =
           pngBytes.isEmpty ? '이미지 업로드 및 저장완료' : 'Saved to $pngBytes';
@@ -123,146 +123,146 @@ class _TrackingResultScreenState extends State<TrackingResultScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            RepaintBoundary(
-              key: repaintBoundary,
-              child: Container(
-                width: double.infinity,
-                padding: EdgeInsets.only(bottom: 22),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color.fromARGB(69, 148, 147, 147),
-                      offset: Offset(2, 2),
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.only(bottom: 22),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color.fromARGB(69, 148, 147, 147),
+                    offset: Offset(2, 2),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  RepaintBoundary(
+                    key: repaintBoundary,
+                    child: Image.asset('assets/images/map.png'),
+                  ),
+                  SizedBox(height: 20),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 20.0, right: 20.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          widget.courseName,
+                          style: TextStyle(color: Colors.black, fontSize: 18),
+                        ),
+                        Text(
+                          stepProvider.formattedStopTime,
+                          style: TextStyle(color: Colors.black, fontSize: 13),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    Image.asset('assets/images/map.png'),
-                    SizedBox(height: 20),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 20.0, right: 20.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            widget.courseName,
-                            style: TextStyle(color: Colors.black, fontSize: 18),
-                          ),
-                          Text(
-                            stepProvider.formattedStopTime,
-                            style: TextStyle(color: Colors.black, fontSize: 13),
-                          ),
-                        ],
-                      ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 20.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Text(
+                          '중앙공원',
+                          style: TextStyle(color: Colors.black, fontSize: 16),
+                        ),
+                      ],
                     ),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 20.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          Text(
-                            '중앙공원',
-                            style: TextStyle(color: Colors.black, fontSize: 16),
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(height: 40),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 20.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text.rich(
-                                TextSpan(
-                                  text: widget.result.distance,
-                                  style: TextStyle(
-                                    color: Colors.black,
-                                    fontSize: 40,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  children: <TextSpan>[
-                                    TextSpan(
-                                      text: ' Km',
-                                      style: TextStyle(
-                                        color: Colors.black,
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
-                                      ),
+                  ),
+                  SizedBox(height: 40),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 20.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text.rich(
+                              TextSpan(
+                                text: widget.result.distance,
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 40,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                children: <TextSpan>[
+                                  TextSpan(
+                                    text: ' Km',
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                ],
                               ),
-                              Text(
-                                '거리',
-                                style: TextStyle(
-                                  color: GRAYSCALE_LABEL_400,
-                                  fontSize: 14,
-                                ),
+                            ),
+                            Text(
+                              '거리',
+                              style: TextStyle(
+                                color: GRAYSCALE_LABEL_400,
+                                fontSize: 14,
                               ),
-                            ],
-                          ),
-                        ],
-                      ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
-                    SizedBox(height: 20),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 20.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                widget.result.duration,
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                  ),
+                  SizedBox(height: 20),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 20.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              widget.result.duration,
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
                               ),
-                              Text(
-                                '시간',
-                                style: TextStyle(
-                                  color: GRAYSCALE_LABEL_400,
-                                  fontSize: 14,
-                                ),
+                            ),
+                            Text(
+                              '시간',
+                              style: TextStyle(
+                                color: GRAYSCALE_LABEL_400,
+                                fontSize: 14,
                               ),
-                            ],
-                          ),
-                          SizedBox(width: 30),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                '${widget.result.steps}',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(width: 30),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '${widget.result.steps}',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
                               ),
-                              Text(
-                                '걸음수',
-                                style: TextStyle(
-                                  color: GRAYSCALE_LABEL_400,
-                                  fontSize: 14,
-                                ),
+                            ),
+                            Text(
+                              '걸음수',
+                              style: TextStyle(
+                                color: GRAYSCALE_LABEL_400,
+                                fontSize: 14,
                               ),
-                            ],
-                          ),
-                        ],
-                      ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
             SizedBox(height: 30),

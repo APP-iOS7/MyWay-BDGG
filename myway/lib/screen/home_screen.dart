@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:myway/const/colors.dart';
@@ -7,13 +8,40 @@ import 'package:myway/screen/result/activity_log_screen.dart';
 import 'package:myway/screen/weather_screen.dart';
 import 'package:provider/provider.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    User? user = FirebaseAuth.instance.currentUser;
+  State<HomeScreen> createState() => _HomeScreenState();
+}
 
+class _HomeScreenState extends State<HomeScreen> {
+  User? user = FirebaseAuth.instance.currentUser;
+  List<String> imageUrls = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchImages();
+  }
+
+  Future<void> fetchImages() async {
+    final ref = FirebaseStorage.instance.ref().child('walk_result');
+    final result = await ref.listAll();
+
+    final urls = await Future.wait(
+      result.items.map((item) => item.getDownloadURL()),
+    );
+
+    setState(() {
+      imageUrls = urls;
+      isLoading = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       body: Padding(
@@ -116,11 +144,38 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
             Expanded(
-              child: Column(
-                children: [Card(color: Colors.black, child: Text(''))],
-              ),
+              child:
+                  isLoading
+                      ? Center(child: CircularProgressIndicator())
+                      : StreamBuilder<Object>(
+                        stream: null,
+                        builder: (context, snapshot) {
+                          return ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: imageUrls.length,
+                            itemBuilder:
+                                (context, index) => Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Stack(
+                                    children: [
+                                      Container(
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(
+                                            20,
+                                          ),
+                                        ),
+                                      ),
+                                      Image.network(
+                                        imageUrls[index],
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                          );
+                        },
+                      ),
             ),
-
             Column(
               children: [
                 Padding(
