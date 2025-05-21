@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../services/airquality_api_service.dart';
-import '../services/weather_api_service.dart';
+import '/services/airquality_api_service.dart';
+import '/services/weather_api_service.dart';
 
 class WeatherProvider extends ChangeNotifier {
   final WeatherApiService _weatherApi = WeatherApiService();

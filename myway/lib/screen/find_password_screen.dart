@@ -1,5 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:myway/const/colors.dart'; // colors.dart 파일 import
+
+import '/const/colors.dart';
 
 class FindPasswordScreen extends StatefulWidget {
   const FindPasswordScreen({super.key});
@@ -10,6 +12,35 @@ class FindPasswordScreen extends StatefulWidget {
 
 class _FindPasswordScreenState extends State<FindPasswordScreen> {
   final TextEditingController _emailController = TextEditingController();
+
+  Future<void> _sendPasswordResetEmail() async {
+    final email = _emailController.text.trim();
+
+    if (email.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("이메일을 입력해주세요."),
+          backgroundColor: RED_DANGER_TEXT_50,
+        ),
+      );
+      return;
+    }
+
+    try {
+      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("비밀번호 재설정 이메일이 전송되었습니다.")));
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("이메일 전송 실패: ${e.toString()}")));
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -104,7 +135,7 @@ class _FindPasswordScreenState extends State<FindPasswordScreen> {
                 height: fieldHeight,
                 child: ElevatedButton(
                   onPressed: () {
-                    print("입력된 이메일: ${_emailController.text}");
+                    _sendPasswordResetEmail();
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: ORANGE_PRIMARY_400,
@@ -118,7 +149,7 @@ class _FindPasswordScreenState extends State<FindPasswordScreen> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  child: Text("이메일 전송"),
+                  child: Text("이메일 전송", style: TextStyle(color: Colors.white)),
                 ),
               ),
               SizedBox(height: 60),

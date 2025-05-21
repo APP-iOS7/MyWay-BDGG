@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 
-import '../provider/weather_provider.dart';
+import '/provider/weather_provider.dart';
 
 class WeatherScreen extends StatelessWidget {
   const WeatherScreen({super.key});

@@ -26,14 +26,6 @@ class _SigninScreenState extends State<SigninScreen> {
             password: _passwordController.text,
           );
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('로그인 성공: ${userCredential.user?.displayName}'),
-          ),
-        );
-      }
-
       debugPrint('로그인 성공: ${userCredential.user}');
       Navigator.pushReplacement(
         context,
@@ -171,7 +163,9 @@ class _SigninScreenState extends State<SigninScreen> {
                   Transform.translate(
                     offset: Offset(0, -15),
                     child: TextButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.pushNamed(context, 'findPassword');
+                      },
                       child: Text(
                         '비밀번호 찾기',
                         style: GoogleFonts.inter(
