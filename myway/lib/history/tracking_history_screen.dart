@@ -63,11 +63,6 @@ class _TrackingHistoryScreenState extends State<TrackingHistoryScreen> {
                   enlargeCenterPage: true, // 가운데 아이템 확대
                   enlargeFactor: 0.2,
                   autoPlay: false,
-                  // onPageChanged: (index, reason) {
-                  //   setState(() {
-                  //     _currentIndex = index;
-                  //   });
-                  // },
                 ),
                 items:
                     trackingResult.map((result) {
