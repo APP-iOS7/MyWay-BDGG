@@ -82,14 +82,10 @@ class HomeScreen extends StatelessWidget {
                 ),
                 Spacer(),
                 IconButton(
-                  onPressed: () {},
-                  icon: Icon(Icons.settings_outlined),
-                ),
-                IconButton(
                   onPressed: () {
                     Navigator.pushNamed(context, 'setting');
                   },
-                  icon: Icon(Icons.settings),
+                  icon: Icon(Icons.settings_outlined),
                 ),
               ],
             ),
