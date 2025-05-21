@@ -1,15 +1,13 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:myway/const/colors.dart';
-import 'package:myway/provider/user_provider.dart';
-import 'package:myway/screen/mycourse_screen.dart';
-import 'package:myway/screen/weather_screen.dart';
 import 'package:provider/provider.dart';
 
-import '../provider/weather_provider.dart';
+import '../page/activity_log_screen.dart';
+import '/const/colors.dart';
+import '/screen/mycourse_screen.dart';
+import '/screen/weather_screen.dart';
+import '/provider/weather_provider.dart';
 import 'map/map_screen.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -50,7 +48,7 @@ class HomeScreen extends StatelessWidget {
                     );
                   },
                   child: Row(
-                    spacing: 2,
+                    spacing: 5,
                     children: [
                       SvgPicture.asset(
                         weatherProvider.weatherIconPath,
@@ -100,7 +98,7 @@ class HomeScreen extends StatelessWidget {
                   TextSpan(
                     text: user?.displayName,
                     style: TextStyle(
-                      color: GRAYSCALE_LABEL_700,
+                      color: BLUE_SECONDARY_600,
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                     ),
@@ -130,7 +128,7 @@ class HomeScreen extends StatelessWidget {
                   child: Text(
                     '더보기 +',
                     style: TextStyle(
-                      color: GRAYSCALE_LABEL_600,
+                      color: GRAYSCALE_LABEL_900,
                       fontSize: 15,
                       fontWeight: FontWeight.w400,
                     ),
@@ -155,14 +153,7 @@ class HomeScreen extends StatelessWidget {
                     height: 56,
                     child: ElevatedButton(
                       onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) {
-                              return const MapScreen();
-                            },
-                          ),
-                        );
+                        Navigator.pushNamed(context, 'map');
                       },
                       style: ElevatedButton.styleFrom(
                         shadowColor: Colors.transparent,
@@ -201,11 +192,7 @@ class HomeScreen extends StatelessWidget {
                           ),
                           Text(
                             '추천 경로',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 13,
-                              fontFamily: 'Pretendard',
-                            ),
+                            style: TextStyle(color: Colors.black, fontSize: 13),
                           ),
                         ],
                       ),
@@ -224,17 +211,20 @@ class HomeScreen extends StatelessWidget {
                           ),
                           Text(
                             '공원 찾기',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 13,
-                              fontFamily: 'Pretendard',
-                            ),
+                            style: TextStyle(color: Colors.black, fontSize: 13),
                           ),
                         ],
                       ),
                     ),
                     GestureDetector(
-                      onTap: () {},
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ActivityLogScreen(),
+                          ),
+                        );
+                      },
                       child: Column(
                         children: [
                           Container(
@@ -247,11 +237,7 @@ class HomeScreen extends StatelessWidget {
                           ),
                           Text(
                             '나의 기록',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 13,
-                              fontFamily: 'Pretendard',
-                            ),
+                            style: TextStyle(color: Colors.black, fontSize: 13),
                           ),
                         ],
                       ),
