@@ -73,7 +73,7 @@ class SettingScreen extends StatelessWidget {
                   _buildSettingItem(
                     text: '공지사항',
                     onTap: () {
-                      // 공지사항 이동
+                      Navigator.pushNamed(context, 'notice');
                     },
                   ),
                   _buildSettingItem(

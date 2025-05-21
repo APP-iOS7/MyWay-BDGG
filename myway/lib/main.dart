@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:myway/firebase_options.dart';
+import 'package:myway/screen/notice_screen.dart';
 import 'package:provider/provider.dart';
 
 import 'provider/user_provider.dart';
@@ -63,6 +64,7 @@ class MyApp extends StatelessWidget {
         'changeNickname': (context) => const NicknameChangeScreen(),
         'changePassword': (context) => const ChangePasswordScreen(),
         'customerCenter': (context) => const CustomerCenterScreen(),
+        'notice': (context) => const NoticeScreen(),
       },
     );
   }
