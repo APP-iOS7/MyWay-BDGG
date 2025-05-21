@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 
+import '../page/activity_log_screen.dart';
 import '/const/colors.dart';
 import '/screen/mycourse_screen.dart';
 import '/screen/weather_screen.dart';
 import '/provider/weather_provider.dart';
 import 'map/map_screen.dart';
-import 'result/activity_log_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -83,23 +83,8 @@ class HomeScreen extends StatelessWidget {
                   onPressed: () {
                     Navigator.pushNamed(context, 'setting');
                   },
-                  icon: Icon(
-                    Icons.settings_outlined,
-                    color: GRAYSCALE_LABEL_600,
-                  ),
+                  icon: Icon(Icons.settings_outlined),
                 ),
-                // 임시 로그아웃 버튼
-                // Consumer<UserProvider>(
-                //   builder: (context, userProvider, child) {
-                //     return IconButton(
-                //       onPressed: () {
-                //         userProvider.signOut();
-                //         Navigator.pushReplacementNamed(context, 'signIn');
-                //       },
-                //       icon: Icon(Icons.output_rounded),
-                //     );
-                //   },
-                // ),
               ],
             ),
           ),

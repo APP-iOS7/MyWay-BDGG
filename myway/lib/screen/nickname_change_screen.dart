@@ -1,8 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-
-import '/const/colors.dart';
+import 'package:myway/const/colors.dart';
 
 class NicknameChangeScreen extends StatefulWidget {
   const NicknameChangeScreen({super.key});
@@ -144,7 +143,7 @@ class _NicknameChangeScreenState extends State<NicknameChangeScreen> {
           style: TextStyle(
             color: GRAYSCALE_LABEL_950,
             fontSize: 18,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.bold,
           ),
         ),
         centerTitle: true,

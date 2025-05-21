@@ -1,6 +1,6 @@
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
-import '/model/course_model.dart';
+import '../model/course_model.dart';
 
 class CourseData {
   static List<Course> getCourses() {

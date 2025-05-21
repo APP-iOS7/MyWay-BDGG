@@ -1,7 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-
-import '/const/colors.dart';
+import 'package:myway/const/colors.dart'; // colors.dart 파일 import
 
 class FindPasswordScreen extends StatefulWidget {
   const FindPasswordScreen({super.key});

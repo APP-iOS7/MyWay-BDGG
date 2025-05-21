@@ -6,8 +6,7 @@
     <application
         android:label="myway"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher"
-        android:requestLegacyExternalStorage="true">
+        android:icon="@mipmap/ic_launcher">
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyDelVDyjqTQyns5noConZiN8Q3jbOmwUDE" />

@@ -46,10 +46,6 @@ dependencies:
   permission_handler: ^12.0.0+1
   intl: ^0.20.2
   pedometer: ^4.1.1
-  path_provider: ^2.1.5
-  toastification: ^3.0.2
-  flutter_image_saver: ^1.0.1
-  firebase_storage: ^12.4.5
 
 dev_dependencies:
   flutter_test:
