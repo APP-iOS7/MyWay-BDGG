@@ -44,7 +44,6 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
   @override
   void initState() {
     super.initState();
-    print('ActivityLogScreen initState called. Instance: $this');
   }
 
   Widget _buildPeriodSelector() {
@@ -252,9 +251,6 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final stepProvider = Provider.of<StepProvider>(context);
-    print('ActivityLogScreen build called. Instance: $this');
-
     const double horizontalPageMargin = 20.0;
     const double labelToTextMargin = 5.0;
 
@@ -290,7 +286,7 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
               textBaseline: TextBaseline.alphabetic,
               children: [
                 Text(
-                  stepProvider.distanceKm,
+                  '12345',
                   style: TextStyle(
                     fontSize: 36,
                     fontWeight: FontWeight.bold,
@@ -315,13 +311,20 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
             SizedBox(height: labelToTextMargin - 1),
             Text(
               "거리",
-              style: TextStyle(fontSize: 12, color: GRAYSCALE_LABEL_600),
+              style: TextStyle(
+                fontSize: 14,
+                color: GRAYSCALE_LABEL_800,
+                fontWeight: FontWeight.w500,
+              ),
             ),
             SizedBox(height: 20),
             Row(
+              spacing: 20,
               children: [
-                Text(stepProvider.formattedElapsed),
-                Text('${stepProvider.steps}'),
+                _buildValueText(value: '12시간 32분', title: '시간'),
+                _buildValueText(value: '123344', title: '칼로리(kcal)'),
+                _buildValueText(value: '12', title: '횟수'),
+                _buildValueText(value: '1233245', title: '걸음수'),
               ],
             ),
             SizedBox(height: 24),
@@ -330,6 +333,31 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildValueText({required String value, required String title}) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+            color: GRAYSCALE_LABEL_950,
+          ),
+        ),
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: 14,
+            color: GRAYSCALE_LABEL_800,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
     );
   }
 }

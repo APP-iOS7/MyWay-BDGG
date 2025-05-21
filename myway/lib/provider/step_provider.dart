@@ -1,7 +1,4 @@
 import 'dart:async';
-import 'dart:typed_data';
-
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:myway/model/step_model.dart';
@@ -14,7 +11,6 @@ class StepProvider extends ChangeNotifier {
   int _baseSteps = 0;
   int _currentSteps = 0;
   int get steps => _currentSteps;
-  Uint8List? _imageBytes;
 
   bool _isCourseNameValid = false;
   bool get isCourseNameValid => _isCourseNameValid;
@@ -80,19 +76,6 @@ class StepProvider extends ChangeNotifier {
         print("걸음 수 오류: $e");
       },
     );
-  }
-
-  void setImageBytes(Uint8List bytes) {
-    _imageBytes = bytes;
-  }
-
-  Future<String?> uploadImageAndGetUrl(String userId) async {
-    if (_imageBytes == null) return null;
-    final ref = FirebaseStorage.instance.ref().child(
-      'walk_result/$userId/${DateTime.now().millisecondsSinceEpoch}.png',
-    );
-    await ref.putData(_imageBytes!);
-    return await ref.getDownloadURL();
   }
 
   // 새로운 메서드: StepModel만 생성하고 상태는 변경하지 않음

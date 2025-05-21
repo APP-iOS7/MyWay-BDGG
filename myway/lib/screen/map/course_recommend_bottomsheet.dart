@@ -4,9 +4,8 @@ import 'package:myway/provider/step_provider.dart';
 import 'package:myway/temp/course_data.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
-
-import '../../const/colors.dart';
-import '../../provider/map_provider.dart';
+import '/const/colors.dart';
+import '/provider/map_provider.dart';
 
 class CourseRecommendBottomsheet extends StatefulWidget {
   const CourseRecommendBottomsheet({super.key});

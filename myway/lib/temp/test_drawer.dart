@@ -1,143 +1,99 @@
-import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:myway/const/colors.dart';
+// import 'package:flutter/material.dart';
+// import 'package:google_maps_flutter/google_maps_flutter.dart';
+// import 'package:location/location.dart';
 
-List cars = [
-  {'id': 0, 'name': 'Select a Ride', 'price': 0.0},
-  {'id': 1, 'name': 'UberGo', 'price': 230.0},
-  {'id': 2, 'name': 'Go Sedan', 'price': 300.0},
-  {'id': 3, 'name': 'UberXL', 'price': 500.0},
-  {'id': 4, 'name': 'UberAuto', 'price': 140.0},
-];
+// class MapScreen extends StatefulWidget {
+//   const MapScreen({super.key});
 
-class TestDrawer extends StatefulWidget {
-  const TestDrawer({super.key});
-  @override
-  _TestDrawerState createState() => _TestDrawerState();
-}
+//   @override
+//   State<MapScreen> createState() => _MapScreenState();
+// }
 
-class _TestDrawerState extends State<TestDrawer> {
-  late CameraPosition _initialPosition;
-  GoogleMapController? mapController;
+// class _MapScreenState extends State<MapScreen> {
+//   GoogleMapController? _controller;
+//   final Location _location = Location();
+//   bool _tracking = false; // 경로 추적 상태
+//   final List<LatLng> _route = []; // 경로를 저장할 리스트
+//   final Set<Polyline> _polylines = {}; // 지도에 표시할 Polyline
 
-  Map<PolylineId, Polyline> polylines = {};
-  List<LatLng> polylineCoordinates = [];
-  final LatLng _center = const LatLng(35.1691, 129.0874);
+//   @override
+//   void initState() {
+//     super.initState();
+//   }
 
-  int selectedCarId = 1;
-  bool backButtonVisible = true;
+//   // 경로 추적 시작
+//   void _startTracking() {
+//     _route.clear(); // 이전 경로 초기화
+//     _polylines.clear(); // 지도에서 경로 초기화
+//     setState(() {
+//       _tracking = true; // 추적 상태로 변경
+//     });
 
-  void _onMapCreated(GoogleMapController controller) {
-    mapController = controller;
-  }
+//     // 위치 추적 시작
+//     _location.onLocationChanged.listen((LocationData currentLocation) {
+//       if (_tracking) {
+//         setState(() {
+//           print("latitude : ${currentLocation.latitude!}");
+//           print("longitude : ${currentLocation.longitude!}");
+//           LatLng position = LatLng(
+//             currentLocation.latitude!,
+//             currentLocation.longitude!,
+//           );
+//           _route.add(position); // 새로운 좌표 추가
+//           _polylines.add(
+//             Polyline(
+//               polylineId: PolylineId("route"),
+//               points: _route,
+//               color: Colors.blue,
+//               width: 5,
+//             ),
+//           );
+//           _controller?.animateCamera(
+//             CameraUpdate.newLatLng(position),
+//           ); // 카메라 위치 이동
+//         });
+//       }
+//     });
+//   }
 
-  // 시트 열고 닫는 메소드
-  void _toggleSheet() {
-    // 여기에 시트 열고 닫기 로직 추가
-    // 예를 들어, DraggableScrollableSheet의 상태를 변경하는 로직
-    setState(() {
-      backButtonVisible = !backButtonVisible; // 예시로 backButtonVisible을 변경
-    });
-  }
+//   // 경로 추적 중지
+//   void _stopTracking() {
+//     setState(() {
+//       _tracking = false; // 추적 중지 상태로 변경
+//     });
+//   }
 
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading:
-            backButtonVisible
-                ? IconButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  icon: CircleAvatar(
-                    backgroundColor: Colors.white,
-                    child: const Icon(Icons.arrow_back, color: Colors.black),
-                  ),
-                )
-                : null,
-      ),
-      body: Stack(
-        children: [
-          LayoutBuilder(
-            builder: (BuildContext context, BoxConstraints constraints) {
-              return SizedBox(
-                height: constraints.maxHeight / 2,
-                child: Container(color: BLUE_SECONDARY_500),
-
-                //  GoogleMap(
-                //   polylines: Set<Polyline>.of(polylines.values),
-                //   initialCameraPosition: CameraPosition(
-                //     target: _center,
-                //     zoom: 17.0,
-                //   ),
-                //   onMapCreated: _onMapCreated,
-                // ),
-              );
-            },
-          ),
-          DraggableScrollableSheet(
-            initialChildSize: 0.4,
-            minChildSize: 0.1,
-            maxChildSize: 0.4,
-            snapSizes: [0.1, 0.4],
-            snap: true,
-            builder: (BuildContext context, scrollSheetController) {
-              return Container(
-                color: Colors.white,
-                child: ListView.builder(
-                  padding: EdgeInsets.zero,
-                  physics: ClampingScrollPhysics(),
-                  controller: scrollSheetController,
-                  itemCount: cars.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    final car = cars[index];
-                    if (index == 0) {
-                      return Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Column(
-                          children: [
-                            SizedBox(width: 50, child: Divider(thickness: 5)),
-                            Text('Choose a trip or swipe up for more'),
-                          ],
-                        ),
-                      );
-                    }
-                    return Card(
-                      margin: EdgeInsets.zero,
-                      elevation: 0,
-                      child: ListTile(
-                        contentPadding: EdgeInsets.all(10),
-                        onTap: () {
-                          setState(() {
-                            selectedCarId = car['id'];
-                          });
-                        },
-                        leading: Icon(Icons.car_rental),
-                        title: Text(car['name']),
-                        trailing: Text(car['price'].toString()),
-                        selected: selectedCarId == car['id'],
-                        selectedTileColor: Colors.grey[200],
-                      ),
-                    );
-                  },
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-main() {
-  runApp(MaterialApp(home: TestDrawer()));
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: AppBar(title: Text("맵 루트 표시 테스트"), centerTitle: true),
+//       body: Column(
+//         children: [
+//           Expanded(
+//             flex: 2,
+//             child: GoogleMap(
+//               initialCameraPosition: CameraPosition(
+//                 target: LatLng(35.1691, 129.0874), // 초기 카메라 위치
+//                 zoom: 17,
+//               ),
+//               myLocationEnabled: true, // 현재 위치 표시
+//               onMapCreated: (GoogleMapController controller) {
+//                 _controller = controller;
+//               },
+//               polylines: _polylines, // 경로를 지도에 표시
+//             ),
+//             // child: Container(),
+//           ),
+//           Expanded(
+//             child: Center(
+//               child: ElevatedButton(
+//                 onPressed: _tracking ? _stopTracking : _startTracking,
+//                 child: Text(_tracking ? '중지' : '시작'),
+//               ),
+//             ),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+// }
