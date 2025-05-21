@@ -125,20 +125,26 @@ class _StartTrackingBottomsheetState extends State<StartTrackingBottomsheet> {
                   ),
                 ),
                 SizedBox(height: 10),
-                Stack(
-                  children: [
-                    Image.asset('assets/images/park.png'),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 40.0),
-                      child: Align(
-                        alignment: Alignment.center,
-                        child: Image.asset(
-                          'assets/images/walking_turtle.gif',
-                          height: 90,
+                Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: Colors.lightBlue[50],
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Stack(
+                      children: [
+                        Align(
+                          alignment: Alignment.center,
+                          child: Image.asset(
+                            'assets/images/walking_turtle.gif',
+                            height: 90,
+                          ),
                         ),
-                      ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
                 SizedBox(height: 10),
                 Row(
