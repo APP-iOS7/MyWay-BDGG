@@ -15,6 +15,7 @@ import 'package:myway/screen/weather_screen.dart';
 import 'package:myway/provider/weather_provider.dart';
 import 'package:provider/provider.dart';
 
+import 'screen/announcemnet_screen.dart';
 import 'screen/change_password_screen.dart';
 import 'screen/customer_center_screen.dart';
 import 'screen/setting_screen.dart';
@@ -59,6 +60,7 @@ class MyApp extends StatelessWidget {
         'changeNickname': (context) => const NicknameChangeScreen(),
         'changePassword': (context) => const ChangePasswordScreen(),
         'customerCenter': (context) => const CustomerCenterScreen(),
+        'announcement': (context) => const AnnouncemnetScreen(),
       },
     );
   }

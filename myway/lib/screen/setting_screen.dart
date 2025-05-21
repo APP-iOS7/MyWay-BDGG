@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import 'announcemnet_screen.dart';
+
 class SettingScreen extends StatelessWidget {
   const SettingScreen({super.key});
 
@@ -48,7 +50,12 @@ class SettingScreen extends StatelessWidget {
             _buildSettingItem(
               text: '공지사항',
               onTap: () {
-                // 공지사항 이동
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const AnnouncemnetScreen(),
+                  ),
+                );
               },
             ),
             _buildSettingItem(
