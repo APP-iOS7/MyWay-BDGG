@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:myway/const/colors.dart';
+import 'package:myway/screen/health_screen.dart';
 import 'package:myway/screen/home_screen.dart';
 
 class SigninScreen extends StatefulWidget {
@@ -26,18 +27,10 @@ class _SigninScreenState extends State<SigninScreen> {
             password: _passwordController.text,
           );
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('로그인 성공: ${userCredential.user?.displayName}'),
-          ),
-        );
-      }
-
       debugPrint('로그인 성공: ${userCredential.user}');
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => HomeScreen()),
+        MaterialPageRoute(builder: (context) => HealthScreen()),
       );
     } catch (e) {
       if (mounted) {

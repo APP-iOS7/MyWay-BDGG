@@ -1,6 +1,36 @@
-// ignore_for_file: constant_identifier_names
-
 import 'package:flutter/material.dart';
+
+const PRIMARY_BLUE_200 = Color(0xFFE1EFFF);
+const PRIMARY_BLUE_300 = Color(0xFFD0E6FF);
+const PRIMARY_BLUE_400 = Color(0xFFBEDDFF);
+const PRIMARY_BLUE_500 = Color(0xFF9EC6F3); // mainColor
+const PRIMARY_BLUE_600 = Color(0xFF86B3E5);
+const PRIMARY_BLUE_700 = Color(0xFF558ECD);
+const PRIMARY_BLUE_800 = Color(0xFF3F71A9);
+
+const SECONDARY_PINK_200 = Color(0xFFFFF3F3);
+const SECONDARY_PINK_300 = Color(0xFFFFE9E9);
+const SECONDARY_PINK_400 = Color(0xFFFFE1E1);
+const SECONDARY_PINK_500 = Color(0xFFFFD9D9); // mainColor
+const SECONDARY_PINK_600 = Color(0xFFFFC5C5);
+const SECONDARY_PINK_700 = Color(0xFFFF9A9A);
+const SECONDARY_PINK_800 = Color(0xFFFF9A9A);
+
+const CHIP_YELLOW_200 = Color(0xFFFFFBF2);
+const CHIP_YELLOW_300 = Color(0xFFFFF8EB);
+const CHIP_YELLOW_400 = Color(0xFFFFF4DE);
+const CHIP_YELLOW_500 = Color(0xFFFFF1D5); // mainColor
+const CHIP_YELLOW_600 = Color(0xFFFFE7B7);
+const CHIP_YELLOW_700 = Color(0xFFFFD88D);
+const CHIP_YELLOW_800 = Color(0xFFFFC654);
+
+const BLUE_DEEP_200 = Color(0xFFE3ECFF);
+const BLUE_DEEP_300 = Color(0xFFCFDEFD);
+const BLUE_DEEP_400 = Color(0xFFB9CAEF);
+const BLUE_DEEP_500 = Color(0xFF9FB3DF);
+const BLUE_DEEP_600 = Color(0xFF6D8ED7);
+const BLUE_DEEP_700 = Color(0xFF567FD9); // 하단 버튼 색상
+const BLUE_DEEP_800 = Color(0xFF3B64BD);
 
 // GRAY
 const GRAYSCALE_LABEL_50 = Color(0xFFF9FAFC); // background color 과 동일
@@ -41,34 +71,3 @@ const HEART_FILL = Color(0xFFFF6262);
 const HOME_HOSPITAL_TEXTCOLOR = Color(0xFF5890D0);
 const HOME_PHARMACY_TEXTCOLOR = Color(0xFF4BC7A8);
 const HOME_COMMUNITY_TEXTCOLOR = Color(0xFFC651A1);
-
-// PRIMARY
-const ORANGE_PRIMARY_200 = Color(0xFFFFF2DF);
-const ORANGE_PRIMARY_300 = Color(0xFFFFD59A);
-const ORANGE_PRIMARY_400 = Color(0xFFFFC26A);
-const ORANGE_PRIMARY_500 = Color(0xFFFFB03A); // mainColor
-const ORANGE_PRIMARY_600 = Color(0xFFEA9935);
-const ORANGE_PRIMARY_700 = Color(0xFFDA8A2E);
-const ORANGE_PRIMARY_800 = Color(0xFFC97A27);
-const ORANGE_PRIMARY_900 = Color(0xFFB36A20);
-const ORANGE_PRIMARY_950 = Color(0xFF9B5A19);
-
-// secondary_BLUE
-const BLUE_SECONDARY_200 = Color(0xFFE1FBFF);
-const BLUE_SECONDARY_300 = Color(0xFFBFE9F0);
-const BLUE_SECONDARY_400 = Color(0xFF93CBD8);
-const BLUE_SECONDARY_500 = Color(0xFF73AEC0);
-const BLUE_SECONDARY_600 = Color(0xFF4A8DA3);
-const BLUE_SECONDARY_700 = Color(0xFF2C718D);
-const BLUE_SECONDARY_800 = Color(0xFF164F6D);
-
-// secondary_GREEN
-const GREEN_SECONDARY_300 = Color(0xFFF6FFE8);
-const GREEN_SECONDARY_400 = Color(0xFFE5F1D1);
-const GREEN_SECONDARY_500 = Color(0xFFCADCAE);
-const GREEN_SECONDARY_600 = Color(0xFFADCC7C);
-const GREEN_SECONDARY_700 = Color(0xFF8EAD5D);
-const GREEN_SECONDARY_800 = Color(0XFF759248);
-
-const WHITE = Color(0xFFFFFFFF);
-const BLACK = Color(0xFF000000);

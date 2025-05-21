@@ -2,7 +2,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:myway/firebase_options.dart';
+import 'package:myway/provider/map_provider.dart';
+import 'package:myway/provider/step_provider.dart';
 import 'package:myway/provider/user_provider.dart';
+import 'package:myway/screen/health_screen.dart';
 import 'package:myway/screen/find_password_screen.dart';
 import 'package:myway/screen/home_screen.dart';
 import 'package:myway/screen/login/signIn_screen.dart';
@@ -13,6 +16,10 @@ import 'package:myway/provider/weather_provider.dart';
 import 'package:provider/provider.dart';
 
 import 'screen/change_password_screen.dart';
+import 'screen/find_password_screen.dart';
+import 'screen/nickname_change_screen.dart';
+import 'package:myway/page/activity_log_screen.dart';
+import 'package:myway/page/notice_screen.dart';
 import 'screen/customer_center_screen.dart';
 import 'screen/setting_screen.dart';
 
@@ -27,6 +34,8 @@ Future<void> main() async {
           create: (context) => WeatherProvider()..loadWeather(),
           child: WeatherScreen(),
         ),
+        ChangeNotifierProvider(create: (context) => StepProvider()..init()),
+        ChangeNotifierProvider(create: (context) => MapProvider()),
       ],
       child: const MyApp(),
     ),
@@ -43,7 +52,8 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: ThemeData(fontFamily: 'Freesentation'),
-      home: const AuthWrapper(),
+      // home: const AuthWrapper(),
+      home: HomeScreen(),
       routes: {
         'signUp': (context) => const SignUpScreen(),
         'signIn': (context) => const SigninScreen(),
@@ -71,7 +81,7 @@ class AuthWrapper extends StatelessWidget {
         } else if (snapshot.hasError) {
           return const Center(child: Text('에러가 발생하였습니다.'));
         } else if (snapshot.hasData) {
-          return const HomeScreen(); // 로그인된 경우
+          return const HealthScreen(); // 로그인된 경우
         } else {
           return const SigninScreen(); // 로그인되지 않은 경우
         }
