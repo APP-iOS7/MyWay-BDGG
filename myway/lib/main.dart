@@ -19,6 +19,7 @@ import 'screen/change_password_screen.dart';
 import 'screen/login/signIn_screen.dart';
 import 'screen/customer_center_screen.dart';
 import 'screen/setting_screen.dart';
+import 'temp/test_drawer.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
