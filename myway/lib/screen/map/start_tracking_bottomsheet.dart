@@ -129,11 +129,11 @@ class _StartTrackingBottomsheetState extends State<StartTrackingBottomsheet> {
                   children: [
                     Image.asset('assets/images/park.png'),
                     Padding(
-                      padding: const EdgeInsets.only(top: 20.0),
+                      padding: const EdgeInsets.only(top: 40.0),
                       child: Align(
                         alignment: Alignment.center,
                         child: Image.asset(
-                          'assets/images/turtle.gif',
+                          'assets/images/walking_turtle.gif',
                           height: 90,
                         ),
                       ),

@@ -4,12 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:myway/firebase_options.dart';
 import 'package:provider/provider.dart';
 
-<<<<<<< Updated upstream
-=======
 import 'screen/notice_screen.dart';
 import 'provider/map_provider.dart';
 import 'provider/step_provider.dart';
->>>>>>> Stashed changes
 import 'provider/user_provider.dart';
 import 'screen/find_password_screen.dart';
 import 'screen/health_screen.dart';

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:myway/const/colors.dart';
 
@@ -31,37 +32,44 @@ class CountdownDiallog {
             switch (count) {
               case 3:
                 content = Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Row(
-                      children: [
-                        Text(
-                          '3',
-                          style: GoogleFonts.instrumentSans(
-                            color: ORANGE_PRIMARY_500,
-                            fontSize: 120,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Transform.translate(
-                          offset: Offset(20, 20),
-                          child: Text(
-                            '마음은 가볍게',
-                            style: TextStyle(
-                              color: BLUE_SECONDARY_800,
-                              fontSize: 35,
-                              fontWeight: FontWeight.bold,
+                    SizedBox(
+                      height: 120,
+                      child: Align(
+                        alignment: Alignment.bottomCenter,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(
+                              '3',
+                              style: TextStyle(
+                                color: ORANGE_PRIMARY_500,
+                                fontSize: 100,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-                          ),
+                            SizedBox(width: 10),
+                            Text(
+                              '마음은 가볍게',
+                              style: TextStyle(
+                                color: BLUE_SECONDARY_800,
+                                fontSize: 30,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    Transform.translate(
-                      offset: Offset(20, -50),
-                      child: Image.asset(
-                        'assets/images/alert_turtle_3.png',
-                        // height: 150,
                       ),
+                    ),
+                    Spacer(),
+                    Image.asset(
+                      'assets/images/alert_turtle_cut_3.png',
+                      height: 100,
                     ),
                   ],
                 );
@@ -69,36 +77,44 @@ class CountdownDiallog {
               case 2:
                 content = Column(
                   mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Row(
-                      children: [
-                        Text(
-                          '2',
-                          style: GoogleFonts.instrumentSans(
-                            color: ORANGE_PRIMARY_500,
-                            fontSize: 120,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Transform.translate(
-                          offset: Offset(20, 20),
-                          child: Text(
-                            '스텝은 신나게',
-                            style: TextStyle(
-                              color: BLUE_SECONDARY_800,
-                              fontSize: 35,
-                              fontWeight: FontWeight.bold,
+                    SizedBox(
+                      height: 120,
+                      child: Align(
+                        alignment: Alignment.bottomCenter,
+                        child: Row(
+                          spacing: 10,
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(
+                              '2',
+                              style: GoogleFonts.instrumentSans(
+                                color: ORANGE_PRIMARY_500,
+                                fontSize: 100,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-                          ),
+
+                            Text(
+                              '스텝은 신나게',
+                              style: TextStyle(
+                                color: BLUE_SECONDARY_800,
+                                fontSize: 30,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    Transform.translate(
-                      offset: Offset(0, -50),
-                      child: Image.asset(
-                        'assets/images/alert_turtle_2.png',
-                        // height: 150,
                       ),
+                    ),
+                    Spacer(),
+                    Image.asset(
+                      'assets/images/alert_turtle_2.png',
+                      height: 120,
                     ),
                   ],
                 );
@@ -106,36 +122,43 @@ class CountdownDiallog {
               case 1:
                 content = Column(
                   mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Row(
-                      children: [
-                        Text(
-                          '1',
-                          style: GoogleFonts.interTight(
-                            color: ORANGE_PRIMARY_500,
-                            fontSize: 120,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Transform.translate(
-                          offset: Offset(20, 20),
-                          child: Text(
-                            '산책은 즐겁게',
-                            style: TextStyle(
-                              color: BLUE_SECONDARY_800,
-                              fontSize: 35,
-                              fontWeight: FontWeight.bold,
+                    SizedBox(
+                      height: 120,
+                      child: Align(
+                        alignment: Alignment.bottomCenter,
+                        child: Row(
+                          spacing: 10,
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(
+                              '1',
+                              style: GoogleFonts.interTight(
+                                color: ORANGE_PRIMARY_500,
+                                fontSize: 100,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-                          ),
+                            Text(
+                              '산책은 즐겁게',
+                              style: TextStyle(
+                                color: BLUE_SECONDARY_800,
+                                fontSize: 30,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    Transform.translate(
-                      offset: Offset(0, -50),
-                      child: Image.asset(
-                        'assets/images/alert_turtle_4.png',
-                        // height: 150,
                       ),
+                    ),
+                    Spacer(),
+                    Image.asset(
+                      'assets/images/alert_turtle_4.png',
+                      height: 120,
                     ),
                   ],
                 );
@@ -147,7 +170,7 @@ class CountdownDiallog {
                     Text(
                       '시작!',
                       style: TextStyle(
-                        fontSize: 100,
+                        fontSize: 120,
                         fontWeight: FontWeight.bold,
                         color: BLUE_SECONDARY_800,
                       ),
@@ -158,7 +181,7 @@ class CountdownDiallog {
 
             return AlertDialog(
               backgroundColor: Colors.white,
-              content: SizedBox(width: 352, height: 352, child: content),
+              content: SizedBox(height: 250, width: 200, child: content),
             );
           },
         );

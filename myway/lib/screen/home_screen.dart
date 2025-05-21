@@ -3,10 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 
-<<<<<<< Updated upstream
-=======
-import 'activity_log_screen.dart';
->>>>>>> Stashed changes
 import '/const/colors.dart';
 import '/screen/mycourse_screen.dart';
 import '/screen/weather_screen.dart';
