@@ -1,99 +1,121 @@
-// import 'package:flutter/material.dart';
-// import 'package:google_maps_flutter/google_maps_flutter.dart';
-// import 'package:location/location.dart';
+import 'dart:async';
 
-// class MapScreen extends StatefulWidget {
-//   const MapScreen({super.key});
+import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:location/location.dart';
 
-//   @override
-//   State<MapScreen> createState() => _MapScreenState();
-// }
+class MapInputScreen extends StatefulWidget {
+  const MapInputScreen({super.key});
 
-// class _MapScreenState extends State<MapScreen> {
-//   GoogleMapController? _controller;
-//   final Location _location = Location();
-//   bool _tracking = false; // 경로 추적 상태
-//   final List<LatLng> _route = []; // 경로를 저장할 리스트
-//   final Set<Polyline> _polylines = {}; // 지도에 표시할 Polyline
+  @override
+  State<MapInputScreen> createState() => _MapInputScreenState();
+}
 
-//   @override
-//   void initState() {
-//     super.initState();
-//   }
+class _MapInputScreenState extends State<MapInputScreen> {
+  GoogleMapController? _controller;
+  final Location _location = Location();
+  LatLng _currentPosition = const LatLng(37.5665, 126.9780); // 초기 위치 (서울시청)
 
-//   // 경로 추적 시작
-//   void _startTracking() {
-//     _route.clear(); // 이전 경로 초기화
-//     _polylines.clear(); // 지도에서 경로 초기화
-//     setState(() {
-//       _tracking = true; // 추적 상태로 변경
-//     });
+  final List<LatLng> _route = []; // 경로 저장 리스트
+  Set<Polyline> _polylines = {}; // 지도에 표시할 Polyline
+  bool _tracking = false;
+  StreamSubscription<LocationData>? _locationSub;
 
-//     // 위치 추적 시작
-//     _location.onLocationChanged.listen((LocationData currentLocation) {
-//       if (_tracking) {
-//         setState(() {
-//           print("latitude : ${currentLocation.latitude!}");
-//           print("longitude : ${currentLocation.longitude!}");
-//           LatLng position = LatLng(
-//             currentLocation.latitude!,
-//             currentLocation.longitude!,
-//           );
-//           _route.add(position); // 새로운 좌표 추가
-//           _polylines.add(
-//             Polyline(
-//               polylineId: PolylineId("route"),
-//               points: _route,
-//               color: Colors.blue,
-//               width: 5,
-//             ),
-//           );
-//           _controller?.animateCamera(
-//             CameraUpdate.newLatLng(position),
-//           ); // 카메라 위치 이동
-//         });
-//       }
-//     });
-//   }
+  @override
+  void initState() {
+    super.initState();
+    _initializeLocation();
+  }
 
-//   // 경로 추적 중지
-//   void _stopTracking() {
-//     setState(() {
-//       _tracking = false; // 추적 중지 상태로 변경
-//     });
-//   }
+  Future<void> _initializeLocation() async {
+    final serviceEnabled = await _location.serviceEnabled();
+    if (!serviceEnabled) {
+      final serviceRequested = await _location.requestService();
+      if (!serviceRequested) return;
+    }
 
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(title: Text("맵 루트 표시 테스트"), centerTitle: true),
-//       body: Column(
-//         children: [
-//           Expanded(
-//             flex: 2,
-//             child: GoogleMap(
-//               initialCameraPosition: CameraPosition(
-//                 target: LatLng(35.1691, 129.0874), // 초기 카메라 위치
-//                 zoom: 17,
-//               ),
-//               myLocationEnabled: true, // 현재 위치 표시
-//               onMapCreated: (GoogleMapController controller) {
-//                 _controller = controller;
-//               },
-//               polylines: _polylines, // 경로를 지도에 표시
-//             ),
-//             // child: Container(),
-//           ),
-//           Expanded(
-//             child: Center(
-//               child: ElevatedButton(
-//                 onPressed: _tracking ? _stopTracking : _startTracking,
-//                 child: Text(_tracking ? '중지' : '시작'),
-//               ),
-//             ),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }
+    final permissionGranted = await _location.hasPermission();
+    if (permissionGranted == PermissionStatus.denied) {
+      final permissionRequested = await _location.requestPermission();
+      if (permissionRequested != PermissionStatus.granted) return;
+    }
+
+    final current = await _location.getLocation();
+    if (mounted) {
+      setState(() {
+        _currentPosition = LatLng(current.latitude!, current.longitude!);
+        _controller?.animateCamera(CameraUpdate.newLatLng(_currentPosition));
+      });
+    }
+  }
+
+  void _startTracking() {
+    _route.clear();
+    _polylines.clear();
+    setState(() => _tracking = true);
+
+    _locationSub = _location.onLocationChanged.listen((loc) {
+      if (!_tracking ||
+          !mounted ||
+          loc.latitude == null ||
+          loc.longitude == null)
+        return;
+
+      final newPos = LatLng(loc.latitude!, loc.longitude!);
+      setState(() {
+        _currentPosition = newPos;
+        _route.add(newPos);
+        _polylines = {
+          Polyline(
+            polylineId: const PolylineId("route"),
+            points: List<LatLng>.from(_route),
+            color: Colors.blue,
+            width: 5,
+          ),
+        };
+      });
+      _controller?.animateCamera(CameraUpdate.newLatLng(newPos));
+    });
+  }
+
+  void _stopTracking() {
+    _locationSub?.cancel();
+    setState(() => _tracking = false);
+  }
+
+  @override
+  void dispose() {
+    _locationSub?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text("실시간 경로 추적 지도")),
+      body: Stack(
+        children: [
+          GoogleMap(
+            initialCameraPosition: CameraPosition(
+              target: _currentPosition,
+              zoom: 16,
+            ),
+            onMapCreated: (controller) => _controller = controller,
+            polylines: _polylines,
+            myLocationEnabled: true,
+            myLocationButtonEnabled: false,
+          ),
+          Positioned(
+            bottom: 40,
+            left: 20,
+            right: 20,
+            child: ElevatedButton(
+              onPressed: _tracking ? _stopTracking : _startTracking,
+              child: Text(_tracking ? '중지' : '시작'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

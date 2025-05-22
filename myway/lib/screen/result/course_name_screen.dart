@@ -1,6 +1,10 @@
+import 'dart:ui';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:myway/const/colors.dart';
 import 'package:myway/provider/step_provider.dart';
 import 'package:myway/screen/result/tracking_result_screen.dart';
@@ -17,6 +21,32 @@ class _CourseNameScreenState extends State<CourseNameScreen> {
   final TextEditingController courseNameController = TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final repaintBoundary = GlobalKey();
+
+  Future<String?> imageUpload() async {
+    try {
+      final boundary =
+          repaintBoundary.currentContext!.findRenderObject()!
+              as RenderRepaintBoundary;
+      final image = await boundary.toImage(pixelRatio: 2.0);
+      final byteData = await image.toByteData(format: ImageByteFormat.png);
+      final pngBytes = byteData!.buffer.asUint8List();
+
+      // Storage업로드
+      final fileName =
+          'walk_result_map${DateTime.now().millisecondsSinceEpoch}.png';
+      final ref = FirebaseStorage.instance.ref().child('walk_result/$fileName');
+
+      final uploadTask = await ref.putData(pngBytes);
+
+      // 업로드 완료 후 URL 얻기
+      final downloadUrl = await uploadTask.ref.getDownloadURL();
+      return downloadUrl;
+    } catch (e) {
+      print('업로드 및 저장 실패: $e');
+      return null;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,13 +70,9 @@ class _CourseNameScreenState extends State<CourseNameScreen> {
           padding: const EdgeInsets.only(left: 20.0, right: 20.0),
           child: Column(
             children: [
-              Container(
-                padding: EdgeInsets.only(bottom: 362),
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: Colors.amber,
-                  borderRadius: BorderRadius.circular(12),
-                ),
+              RepaintBoundary(
+                key: repaintBoundary,
+                child: Image.asset('assets/images/map.png'),
               ),
               SizedBox(height: 20),
               Row(
@@ -117,31 +143,38 @@ class _CourseNameScreenState extends State<CourseNameScreen> {
                                 return;
                               }
 
-                              final result =
-                                  stepProvider
-                                      .createStepModel(); // tf에 입력된 값을 반영하기 위해 provider에 생성된 모델 사용
-                              try {
-                                await _firestore
-                                    .collection('trackingResult')
-                                    .doc(currentUser.uid)
-                                    .set({
-                                      'TrackingResult': FieldValue.arrayUnion([
-                                        result.toJson(),
-                                      ]),
-                                    }, SetOptions(merge: true));
-                                print('산책결과가 FireStore에 저장되었습니다.');
-                              } catch (firestoreError) {
-                                print('Firestore 저장 오류: $firestoreError');
-                              }
-                              final courseName = result.courseName;
+                              // 이미지 업로드는 비동기로 처리
+                              imageUpload().then((imageUrl) async {
+                                final result = stepProvider.createStepModel(
+                                  imageUrl: imageUrl ?? '',
+                                );
 
+                                try {
+                                  await _firestore
+                                      .collection('trackingResult')
+                                      .doc(currentUser.uid)
+                                      .set({
+                                        'TrackingResult': FieldValue.arrayUnion(
+                                          [result.toJson()],
+                                        ),
+                                      }, SetOptions(merge: true));
+                                  print('산책결과가 FireStore에 저장되었습니다.');
+                                } catch (firestoreError) {
+                                  print('Firestore 저장 오류: $firestoreError');
+                                }
+                              });
+
+                              // 먼저 다음 페이지로 이동
+                              final result = stepProvider.createStepModel(
+                                imageUrl: '',
+                              );
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
                                   builder:
                                       (context) => TrackingResultScreen(
                                         result: result,
-                                        courseName: courseName,
+                                        courseName: result.courseName,
                                       ),
                                 ),
                               );

@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:myway/firebase_options.dart';
+import 'package:myway/temp/test_map.dart';
 import 'package:provider/provider.dart';
 
 import 'screen/notice_screen.dart';
@@ -9,7 +10,6 @@ import 'provider/map_provider.dart';
 import 'provider/step_provider.dart';
 import 'provider/user_provider.dart';
 import 'screen/find_password_screen.dart';
-import 'screen/health_screen.dart';
 import 'screen/home_screen.dart';
 import 'screen/login/signup_screen.dart';
 import 'screen/map/map_screen.dart';
@@ -22,6 +22,7 @@ import 'screen/change_password_screen.dart';
 import 'screen/login/signIn_screen.dart';
 import 'screen/customer_center_screen.dart';
 import 'screen/setting_screen.dart';
+import 'temp/test_drawer.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -54,7 +55,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(fontFamily: 'Freesentation'),
       // home: const AuthWrapper(),
       home: AuthWrapper(),
-      initialRoute: 'home',
+      // initialRoute: 'home',
       routes: {
         'signUp': (context) => const SignUpScreen(),
         'signIn': (context) => const SigninScreen(),
@@ -62,10 +63,11 @@ class MyApp extends StatelessWidget {
         'map': (context) => const MapScreen(),
         'findPassword': (context) => const FindPasswordScreen(),
         'setting': (context) => const SettingScreen(),
-        'map': (context) => const MapScreen(),
         'changeNickname': (context) => const NicknameChangeScreen(),
         'changePassword': (context) => const ChangePasswordScreen(),
         'customerCenter': (context) => const CustomerCenterScreen(),
+        'test': (context) => const TestMapScreen(),
+        'testMap': (context) => const MapInputScreen(),
       },
     );
   }

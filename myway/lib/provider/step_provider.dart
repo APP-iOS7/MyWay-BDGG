@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:myway/model/step_model.dart';
@@ -8,10 +7,10 @@ import 'package:pedometer/pedometer.dart';
 enum TrackingStatus { running, paused, stopped }
 
 class StepProvider extends ChangeNotifier {
+  final TextEditingController courseName = TextEditingController();
   int _baseSteps = 0;
   int _currentSteps = 0;
   int get steps => _currentSteps;
-  final TextEditingController courseName = TextEditingController();
 
   bool _isCourseNameValid = false;
   bool get isCourseNameValid => _isCourseNameValid;
@@ -24,6 +23,8 @@ class StepProvider extends ChangeNotifier {
 
   String get distanceKm =>
       (_currentSteps * _strideLengthCm / 100000).toStringAsFixed(2);
+
+  // 이미지
 
   // 시간
   DateTime? _startTime;
@@ -78,7 +79,7 @@ class StepProvider extends ChangeNotifier {
   }
 
   // 새로운 메서드: StepModel만 생성하고 상태는 변경하지 않음
-  StepModel createStepModel() {
+  StepModel createStepModel({String imageUrl = ''}) {
     _stopTime = DateTime.now();
     _formattedStopTime = DateFormat('yyyy-MM-dd HH:mm').format(_stopTime!);
 
@@ -88,6 +89,7 @@ class StepProvider extends ChangeNotifier {
       distance: distanceKm,
       stopTime: formattedStopTime,
       courseName: courseName.text,
+      imageUrl: imageUrl,
     );
   }
 
@@ -105,11 +107,11 @@ class StepProvider extends ChangeNotifier {
   }
 
   // 기존 메서드를 유지하되 내부 구현을 변경 (하위 호환성 유지)
-  StepModel stopTracking() {
+  StepModel stopTracking(String imageUrl) {
     _subscription?.cancel();
     _timer?.cancel();
 
-    final result = createStepModel();
+    final result = createStepModel(imageUrl: imageUrl);
 
     // 상태 초기화 (동기적으로 실행)
     _baseSteps = 0;

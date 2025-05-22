@@ -17,6 +17,8 @@ class _NicknameChangeScreenState extends State<NicknameChangeScreen> {
   bool _isNicknameChangeConfirmed = false;
   String _currentNicknameHint = "현재 닉네임: 대장보현(칼바람)";
   String? _currentNickname;
+  String initialNickname = '대장보현(칼바람)';
+  String validationLabelString = '';
 
   @override
   void dispose() {
@@ -35,12 +37,12 @@ class _NicknameChangeScreenState extends State<NicknameChangeScreen> {
 
   Future<void> _showConfirmationDialog() async {
     if (_nicknameController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("변경할 닉네임을 입력해주세요."),
-          backgroundColor: RED_DANGER_TEXT_50,
-        ),
-      );
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   SnackBar(
+      //     content: Text("변경할 닉네임을 입력해주세요."),
+      //     backgroundColor: RED_DANGER_TEXT_50,
+      //   ),
+      // );
       return;
     }
     if (_nicknameController.text ==
@@ -48,12 +50,12 @@ class _NicknameChangeScreenState extends State<NicknameChangeScreen> {
               _currentNicknameHint.indexOf(':') + 2,
             ) &&
         _currentNicknameHint.startsWith("현재 닉네임:")) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("현재 닉네임과 동일합니다."),
-          backgroundColor: YELLOW_INFO_BASE_30,
-        ),
-      );
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   SnackBar(
+      //     content: Text("현재 닉네임과 동일합니다."),
+      //     backgroundColor: YELLOW_INFO_BASE_30,
+      //   ),
+      // );
       return;
     }
 
@@ -125,9 +127,9 @@ class _NicknameChangeScreenState extends State<NicknameChangeScreen> {
     const double borderRadiusValue = 8.0;
 
     return Scaffold(
-      backgroundColor: BACKGROUND_COLOR,
+      backgroundColor: WHITE,
       appBar: AppBar(
-        backgroundColor: BACKGROUND_COLOR,
+        backgroundColor: WHITE,
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios, color: GRAYSCALE_LABEL_950),
@@ -152,7 +154,7 @@ class _NicknameChangeScreenState extends State<NicknameChangeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            SizedBox(height: 60),
+            SizedBox(height: 40),
             Text(
               "변경하실 닉네임을 입력해주세요",
               style: TextStyle(
@@ -178,7 +180,7 @@ class _NicknameChangeScreenState extends State<NicknameChangeScreen> {
                           fontSize: 14,
                         ),
                         filled: true,
-                        fillColor: GRAYSCALE_LABEL_100,
+                        fillColor: WHITE,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(
                             borderRadiusValue,
@@ -190,7 +192,7 @@ class _NicknameChangeScreenState extends State<NicknameChangeScreen> {
                             borderRadiusValue,
                           ),
                           borderSide: BorderSide(
-                            color: GRAYSCALE_LABEL_300,
+                            color: GRAYSCALE_LABEL_400,
                             width: 1.0,
                           ),
                         ),
@@ -220,9 +222,20 @@ class _NicknameChangeScreenState extends State<NicknameChangeScreen> {
                   SizedBox(
                     height: fieldHeight,
                     child: ElevatedButton(
-                      onPressed: _showConfirmationDialog,
+                      onPressed: () {
+                        if (_enteredNickname.isEmpty ||
+                            _nicknameController.text == initialNickname) {
+                          ();
+                        } else {
+                          _showConfirmationDialog();
+                        }
+                      },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: ORANGE_PRIMARY_500,
+                        backgroundColor:
+                            (_enteredNickname.isEmpty ||
+                                    _nicknameController.text == initialNickname)
+                                ? GRAYSCALE_LABEL_200
+                                : ORANGE_PRIMARY_600,
                         foregroundColor: WHITE,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(
@@ -236,18 +249,26 @@ class _NicknameChangeScreenState extends State<NicknameChangeScreen> {
                         "변경하기",
                         style: TextStyle(
                           fontSize: 14,
-                          fontWeight: FontWeight.w500,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
                   ),
               ],
             ),
+            if (_enteredNickname.isEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 10.0),
+                child: Text(
+                  "변경할 닉네임을 입력해주세요.",
+                  style: TextStyle(fontSize: 14, color: GRAYSCALE_LABEL_700),
+                ),
+              ),
             if (_enteredNickname.isNotEmpty && !_isNicknameChangeConfirmed)
               Padding(
                 padding: const EdgeInsets.only(top: 10.0),
                 child: Text(
-                  "변경하실 닉네임: $_enteredNickname",
+                  "변경 전 닉네임: $initialNickname",
                   style: TextStyle(fontSize: 14, color: GRAYSCALE_LABEL_700),
                 ),
               ),
@@ -264,27 +285,7 @@ class _NicknameChangeScreenState extends State<NicknameChangeScreen> {
                   ),
                 ),
               ),
-            const Spacer(),
-            if (_isNicknameChangeConfirmed)
-              Align(
-                alignment: Alignment.bottomRight,
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: 0.0, right: 0),
-                  child: ElevatedButton(
-                    onPressed: () {
-                      print("다음 화면으로 이동!");
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: ORANGE_PRIMARY_500,
-                      foregroundColor: GRAYSCALE_LABEL_950,
-                      shape: CircleBorder(),
-                      padding: EdgeInsets.all(16),
-                      elevation: 0,
-                    ),
-                    child: Icon(Icons.arrow_forward),
-                  ),
-                ),
-              ),
+
             SizedBox(height: _isNicknameChangeConfirmed ? 60 : 0),
           ],
         ),
