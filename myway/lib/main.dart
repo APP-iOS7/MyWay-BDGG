@@ -9,6 +9,7 @@ import 'provider/map_provider.dart';
 import 'provider/step_provider.dart';
 import 'provider/user_provider.dart';
 import 'provider/weather_provider.dart';
+import 'screen/announcemnet_screen.dart';
 import 'screen/change_password_screen.dart';
 import 'screen/customer_center_screen.dart';
 import 'screen/find_password_screen.dart';
@@ -61,6 +62,7 @@ class MyApp extends StatelessWidget {
         'changePassword': (context) => const ChangePasswordScreen(),
         'customerCenter': (context) => const CustomerCenterScreen(),
         'notice': (context) => const NoticeScreen(),
+        'announcement': (context) => const AnnouncemnetScreen(),
       },
     );
   }
