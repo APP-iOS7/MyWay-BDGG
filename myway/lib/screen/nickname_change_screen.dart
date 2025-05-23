@@ -1,5 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:myway/const/colors.dart';
+
+import '/const/colors.dart';
 
 class NicknameChangeScreen extends StatefulWidget {
   const NicknameChangeScreen({super.key});
@@ -13,11 +16,13 @@ class _NicknameChangeScreenState extends State<NicknameChangeScreen> {
   String _enteredNickname = "";
   bool _isNicknameChangeConfirmed = false;
   String _currentNicknameHint = "현재 닉네임: 대장보현(칼바람)";
+  String? _currentNickname;
 
   @override
   void dispose() {
     _nicknameController.dispose();
     super.dispose();
+    _loadCurrentNickname();
   }
 
   void _onNicknameChanged(String value) {
@@ -97,6 +102,22 @@ class _NicknameChangeScreenState extends State<NicknameChangeScreen> {
     );
   }
 
+  Future<void> _loadCurrentNickname() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+
+    final doc =
+        await FirebaseFirestore.instance.collection('users').doc(uid).get();
+    final nickname = doc.data()?['nickname'] ?? '닉네임 없음';
+
+    if (mounted) {
+      setState(() {
+        _currentNickname = nickname;
+        _currentNicknameHint = "현재 닉네임: $nickname";
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     const double fieldHeight = 52.0;
@@ -121,7 +142,7 @@ class _NicknameChangeScreenState extends State<NicknameChangeScreen> {
           style: TextStyle(
             color: GRAYSCALE_LABEL_950,
             fontSize: 18,
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w700,
           ),
         ),
         centerTitle: true,
@@ -201,8 +222,8 @@ class _NicknameChangeScreenState extends State<NicknameChangeScreen> {
                     child: ElevatedButton(
                       onPressed: _showConfirmationDialog,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: ORANGE_PRIMARY_200,
-                        foregroundColor: GRAYSCALE_LABEL_950,
+                        backgroundColor: ORANGE_PRIMARY_500,
+                        foregroundColor: WHITE,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(
                             borderRadiusValue,
@@ -215,7 +236,7 @@ class _NicknameChangeScreenState extends State<NicknameChangeScreen> {
                         "변경하기",
                         style: TextStyle(
                           fontSize: 14,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ),

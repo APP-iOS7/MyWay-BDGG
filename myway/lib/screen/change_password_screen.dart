@@ -1,6 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-import '../const/colors.dart';
+import '/const/colors.dart';
 
 class ChangePasswordScreen extends StatefulWidget {
   const ChangePasswordScreen({super.key});
@@ -103,6 +104,63 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     );
   }
 
+  Future<void> _onPasswordChanged() async {
+    final currentPassword = _currentPasswordController.text.trim();
+    final newPassword = _newPasswordController.text.trim();
+    final confirmNewPassword = _confirmNewPasswordController.text.trim();
+
+    if (currentPassword.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("현재 비밀번호를 입력해주세요.")));
+      return;
+    }
+
+    if (newPassword.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("새 비밀번호를 입력해주세요.")));
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("비밀번호는 8자 이상이어야 합니다.")));
+      return;
+    }
+
+    if (newPassword != confirmNewPassword) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("비밀번호가 일치하지 않습니다.")));
+      return;
+    }
+
+    try {
+      User? user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        // 현재 비밀번호로 재인증
+        AuthCredential credential = EmailAuthProvider.credential(
+          email: user.email!,
+          password: currentPassword,
+        );
+
+        await user.reauthenticateWithCredential(credential);
+
+        // 비밀번호 변경
+        await user.updatePassword(newPassword);
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("비밀번호가 변경되었습니다.")));
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("비밀번호 변경 실패: ${e.toString()}")));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     const double horizontalPageMargin = 20.0;
@@ -184,9 +242,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                 height: fieldHeight,
                 child: ElevatedButton(
                   onPressed: () {
-                    print("현재 비밀번호: ${_currentPasswordController.text}");
-                    print("새 비밀번호: ${_newPasswordController.text}");
-                    print("새 비밀번호 확인: ${_confirmNewPasswordController.text}");
+                    _onPasswordChanged();
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Color(0xFFFFC654), // 버튼 배경색
