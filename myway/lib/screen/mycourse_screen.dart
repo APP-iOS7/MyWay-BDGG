@@ -13,13 +13,40 @@ class MycourseScreen extends StatefulWidget {
 class _MycourseScreenState extends State<MycourseScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  bool isEditing = false;
+
+  final List<Map<String, dynamic>> _courses = List.generate(
+    5,
+    (index) => {'title': '코스 ${index + 1}', 'selected': false},
+  );
+
+  void toggleEditing() {
+    setState(() {
+      isEditing = !isEditing;
+      if (!isEditing) {
+        for (var course in _courses) {
+          course['selected'] = false;
+        }
+      }
+    });
+  }
+
+  void deleteSelected() {
+    setState(() {
+      _courses.removeWhere((course) => course['selected']);
+      isEditing = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
-        title: Text(
+        scrolledUnderElevation: 0,
+        centerTitle: true,
+        title: const Text(
           '나의 코스',
           style: TextStyle(
             color: Colors.black,
@@ -27,11 +54,36 @@ class _MycourseScreenState extends State<MycourseScreen> {
             fontWeight: FontWeight.w700,
           ),
         ),
-        scrolledUnderElevation: 0,
-        centerTitle: true,
+        actions:
+            isEditing
+                ? [
+                  TextButton(
+                    onPressed: deleteSelected,
+                    child: const Text(
+                      '삭제',
+                      style: TextStyle(color: Colors.red),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: toggleEditing,
+                    child: const Text(
+                      '취소',
+                      style: TextStyle(color: Colors.black),
+                    ),
+                  ),
+                ]
+                : [
+                  TextButton(
+                    onPressed: toggleEditing,
+                    child: const Text(
+                      '편집',
+                      style: TextStyle(color: Colors.black),
+                    ),
+                  ),
+                ],
         bottom: PreferredSize(
-          preferredSize: Size.fromHeight(40),
-          child: Divider(height: 1, thickness: 1, color: GRAYSCALE_LABEL_300),
+          preferredSize: const Size.fromHeight(40),
+          child: Divider(height: 1, thickness: 1, color: Colors.grey[300]),
         ),
       ),
       body: StreamBuilder<DocumentSnapshot>(
