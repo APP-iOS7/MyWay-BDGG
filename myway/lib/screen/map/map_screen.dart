@@ -135,6 +135,7 @@ class _MapScreenState extends State<MapScreen>
     setState(() {
       _tracking = true; // 추적 상태로 변경
     });
+    location.changeSettings(accuracy: LocationAccuracy.high, distanceFilter: 5);
 
     // 위치 추적 시작
     location.onLocationChanged.listen((LocationData currentLocation) {
