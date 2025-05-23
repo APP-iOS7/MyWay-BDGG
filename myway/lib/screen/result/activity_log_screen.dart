@@ -16,6 +16,7 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
   ActivityPeriod _selectedPeriod = ActivityPeriod.weekly;
   final String _currentDisplayDateWeekly = "2025년 5월 1주";
   final String _currentDisplayDateMonthly = "2025년";
+  String selectedValue = '5월';
 
   final Map<String, double> weeklyChartData = {
     "월": 80.0,
@@ -167,7 +168,48 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
             color: GRAYSCALE_LABEL_950,
           ),
         ),
-        Icon(Icons.arrow_drop_down, color: GRAYSCALE_LABEL_700, size: 28),
+        SizedBox(width: 5),
+        DropdownButtonHideUnderline(
+          child: DropdownButton<String>(
+            value: selectedValue,
+            icon: Icon(
+              Icons.keyboard_arrow_down_outlined,
+              color: GRAYSCALE_LABEL_950,
+            ),
+            style: TextStyle(
+              color: GRAYSCALE_LABEL_950,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+            items:
+                [
+                  '1월',
+                  '2월',
+                  '3월',
+                  '4월',
+                  '5월',
+                  '6월',
+                  '7월',
+                  '8월',
+                  '9월',
+                  '10월',
+                  '11월',
+                  '12월',
+                ].map((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
+            onChanged: (String? newValue) {
+              if (newValue != null) {
+                setState(() {
+                  selectedValue = newValue;
+                });
+              }
+            },
+          ),
+        ),
       ],
     );
   }
