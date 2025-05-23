@@ -89,14 +89,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.19.1"
-  cross_file:
-    dependency: transitive
-    description:
-      name: cross_file
-      sha256: "7caf6a750a0c04effbb52a676dce9a4a592e10ad35c34d6d2d0e4811160d5670"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.3.4+2"
   crypto:
     dependency: transitive
     description:
@@ -254,14 +246,6 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-  flutter_image_saver:
-    dependency: "direct main"
-    description:
-      name: flutter_image_saver
-      sha256: "5bd34b1bbf289eaea767d1ca6ca741cae34462283318836503e7985fbd1640b8"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.1"
   flutter_lints:
     dependency: "direct dev"
     description:
@@ -296,6 +280,14 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  gallery_saver_plus:
+    dependency: "direct main"
+    description:
+      name: gallery_saver_plus
+      sha256: "179a2cf0a8d5d61957724e39cf5664a336d5ef28a4222543462dd9fc4c1a6af9"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.2.4"
   google_fonts:
     dependency: "direct main"
     description:
@@ -757,14 +749,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.4.0"
-  universal_platform:
-    dependency: transitive
-    description:
-      name: universal_platform
-      sha256: "64e16458a0ea9b99260ceb5467a214c1f298d647c659af1bff6d3bf82536b1ec"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.1.0"
   uuid:
     dependency: transitive
     description:

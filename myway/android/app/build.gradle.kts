@@ -29,13 +29,7 @@ android {
 
     defaultConfig {
         applicationId = "com.bdgg.myway"
-<<<<<<< HEAD
-        minSdkVersion(23)
-=======
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = 23
->>>>>>> eca42a57abdea54fcfa2747f0d11aef9dfd0c59c
+        minSdkVersion(26)
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
