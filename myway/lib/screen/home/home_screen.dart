@@ -443,7 +443,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       GestureDetector(
-                        onTap: () {},
+                        onTap: () {
+                          Navigator.pushNamed(context, 'recommendCourse');
+                        },
                         child: Column(
                           children: [
                             Container(

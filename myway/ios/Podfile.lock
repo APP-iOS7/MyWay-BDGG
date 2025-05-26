@@ -1272,6 +1272,9 @@ PODS:
   - Flutter (1.0.0)
   - gallery_saver_plus (0.0.1):
     - Flutter
+  - geolocator_apple (1.2.0):
+    - Flutter
+    - FlutterMacOS
   - Google-Maps-iOS-Utils (6.1.0):
     - GoogleMaps (~> 9.0)
   - google_maps_flutter_ios (0.0.1):
@@ -1422,6 +1425,7 @@ DEPENDENCIES:
   - firebase_storage (from `.symlinks/plugins/firebase_storage/ios`)
   - Flutter (from `Flutter`)
   - gallery_saver_plus (from `.symlinks/plugins/gallery_saver_plus/ios`)
+  - geolocator_apple (from `.symlinks/plugins/geolocator_apple/darwin`)
   - google_maps_flutter_ios (from `.symlinks/plugins/google_maps_flutter_ios/ios`)
   - health (from `.symlinks/plugins/health/ios`)
   - location (from `.symlinks/plugins/location/ios`)
@@ -1469,6 +1473,8 @@ EXTERNAL SOURCES:
     :path: Flutter
   gallery_saver_plus:
     :path: ".symlinks/plugins/gallery_saver_plus/ios"
+  geolocator_apple:
+    :path: ".symlinks/plugins/geolocator_apple/darwin"
   google_maps_flutter_ios:
     :path: ".symlinks/plugins/google_maps_flutter_ios/ios"
   health:
@@ -1503,6 +1509,7 @@ SPEC CHECKSUMS:
   FirebaseStorage: e83d1b9c8a5318d46ccfb2955f0d98095e0bf598
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
   gallery_saver_plus: c4b59c605df1049a02d036ef81d82972b6dfd606
+  geolocator_apple: 66b711889fd333205763b83c9dcf0a57a28c7afd
   Google-Maps-iOS-Utils: 0a484b05ed21d88c9f9ebbacb007956edd508a96
   google_maps_flutter_ios: e31555a04d1986ab130f2b9f24b6cdc861acc6d3
   GoogleMaps: 0608099d4870cac8754bdba9b6953db543432438
