@@ -13,111 +13,116 @@ class MycourseScreen extends StatefulWidget {
 class _MycourseScreenState extends State<MycourseScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+
   bool isEditing = false;
+  List<bool> _selected = [];
 
-  final List<Map<String, dynamic>> _courses = List.generate(
-    5,
-    (index) => {'title': '코스 ${index + 1}', 'selected': false},
-  );
-
-  void toggleEditing() {
+  void toggleEditing(int count) {
     setState(() {
       isEditing = !isEditing;
-      if (!isEditing) {
-        for (var course in _courses) {
-          course['selected'] = false;
-        }
-      }
+      _selected = List<bool>.filled(count, false);
     });
   }
 
-  void deleteSelected() {
+  Future<void> deleteSelected(List<dynamic> trackingResult) async {
+    final docRef = _firestore
+        .collection('trackingResult')
+        .doc(_auth.currentUser?.uid);
+    final newList = <dynamic>[];
+
+    for (int i = 0; i < trackingResult.length; i++) {
+      if (!_selected[i]) newList.add(trackingResult[i]);
+    }
+
+    await docRef.update({'TrackingResult': newList});
     setState(() {
-      _courses.removeWhere((course) => course['selected']);
       isEditing = false;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        scrolledUnderElevation: 0,
-        centerTitle: true,
-        title: const Text(
-          '나의 코스',
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 20,
-            fontWeight: FontWeight.w700,
+    return StreamBuilder<DocumentSnapshot>(
+      stream:
+          _firestore
+              .collection('trackingResult')
+              .doc(_auth.currentUser?.uid)
+              .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) return const Center(child: Text('에러가 발생했습니다.'));
+        if (!snapshot.hasData || !snapshot.data!.exists)
+          return const Center(child: Text('저장된 기록이 없습니다.'));
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        final data = snapshot.data!.data() as Map<String, dynamic>;
+        final trackingResult = List<Map<String, dynamic>>.from(
+          data['TrackingResult'] ?? [],
+        );
+
+        trackingResult.sort(
+          (a, b) =>
+              DateTime.parse(b['종료시간']).compareTo(DateTime.parse(a['종료시간'])),
+        );
+
+        // 선택 리스트 초기화 (길이 바뀔 경우만)
+        if (_selected.length != trackingResult.length) {
+          _selected = List<bool>.filled(trackingResult.length, false);
+        }
+
+        return Scaffold(
+          backgroundColor: Colors.white,
+          appBar: AppBar(
+            backgroundColor: Colors.white,
+            scrolledUnderElevation: 0,
+            centerTitle: true,
+            title: const Text(
+              '나의 코스',
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            actions:
+                isEditing
+                    ? [
+                      TextButton(
+                        onPressed: () => deleteSelected(trackingResult),
+                        child: const Text(
+                          '삭제',
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          setState(() => isEditing = false);
+                        },
+                        child: const Text(
+                          '취소',
+                          style: TextStyle(color: Colors.black),
+                        ),
+                      ),
+                    ]
+                    : [
+                      TextButton(
+                        onPressed: () => toggleEditing(trackingResult.length),
+                        child: const Text(
+                          '편집',
+                          style: TextStyle(color: Colors.black),
+                        ),
+                      ),
+                    ],
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(1),
+              child: Divider(height: 1, thickness: 1, color: Colors.grey[300]),
+            ),
           ),
-        ),
-        actions:
-            isEditing
-                ? [
-                  TextButton(
-                    onPressed: deleteSelected,
-                    child: const Text(
-                      '삭제',
-                      style: TextStyle(color: Colors.red),
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: toggleEditing,
-                    child: const Text(
-                      '취소',
-                      style: TextStyle(color: Colors.black),
-                    ),
-                  ),
-                ]
-                : [
-                  TextButton(
-                    onPressed: toggleEditing,
-                    child: const Text(
-                      '편집',
-                      style: TextStyle(color: Colors.black),
-                    ),
-                  ),
-                ],
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(40),
-          child: Divider(height: 1, thickness: 1, color: Colors.grey[300]),
-        ),
-      ),
-      body: StreamBuilder<DocumentSnapshot>(
-        stream:
-            _firestore
-                .collection('trackingResult')
-                .doc(_auth.currentUser?.uid)
-                .snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return Center(child: Text('에러가 발생했습니다.'));
-          }
-
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          }
-
-          if (!snapshot.hasData || !snapshot.data!.exists) {
-            return Center(child: Text('저장된 기록이 없습니다.'));
-          }
-
-          // TrackingResult 배열 가져오기
-          final data = snapshot.data!.data() as Map<String, dynamic>;
-          final trackingResult = data['TrackingResult'] as List<dynamic>;
-
-          // 종료시간을 기준으로 최신순 정렬
-          trackingResult.sort((a, b) {
-            final aTime = DateTime.parse(a['종료시간']);
-            final bTime = DateTime.parse(b['종료시간']);
-            return bTime.compareTo(aTime); // 내림차순 정렬 (최신순)
-          });
-
-          return Padding(
-            padding: const EdgeInsets.only(top: 20, left: 20, right: 20),
+          body: Padding(
+            padding: const EdgeInsets.all(20),
             child: GridView.builder(
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
@@ -127,76 +132,90 @@ class _MycourseScreenState extends State<MycourseScreen> {
               ),
               itemCount: trackingResult.length,
               itemBuilder: (context, index) {
-                final result = trackingResult[index] as Map<String, dynamic>;
-                final imageUrl = result['이미지 Url']?.toString() ?? '';
-                return Card(
-                  color: Colors.white,
-                  child: Column(
-                    children: [
-                      imageUrl.isNotEmpty
-                          ? ClipRRect(
-                            borderRadius: BorderRadius.vertical(
-                              top: Radius.circular(12),
-                            ),
-                            child: Image.network(
-                              result['이미지 Url'],
-                              width: double.infinity,
-                              height: 98,
-                              fit: BoxFit.cover,
-                            ),
-                          )
-                          : SizedBox(
-                            width: double.infinity,
-                            height: 98,
-                            child: Icon(Icons.image_not_supported),
-                          ),
-                      SizedBox(height: 5),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 10.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '${result['코스이름']}',
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold,
+                final result = trackingResult[index];
+                final imageUrl = result['이미지 Url'] ?? '';
+
+                return Stack(
+                  children: [
+                    Card(
+                      child: Column(
+                        children: [
+                          imageUrl.isNotEmpty
+                              ? ClipRRect(
+                                borderRadius: const BorderRadius.vertical(
+                                  top: Radius.circular(12),
+                                ),
+                                child: Image.network(
+                                  imageUrl,
+                                  width: double.infinity,
+                                  height: 98,
+                                  fit: BoxFit.cover,
+                                ),
+                              )
+                              : const SizedBox(
+                                width: double.infinity,
+                                height: 98,
+                                child: Icon(Icons.image_not_supported),
                               ),
-                            ),
-                            SizedBox(height: 20),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.start,
+                          const SizedBox(height: 5),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 10.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  '${result['거리']} km',
-                                  style: TextStyle(
-                                    color: GRAYSCALE_LABEL_500,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w500,
+                                  '${result['코스이름'] ?? ''}',
+                                  style: const TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                                SizedBox(width: 10),
-                                Text(
-                                  '${result['소요시간']}',
-                                  style: TextStyle(
-                                    color: GRAYSCALE_LABEL_500,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w500,
-                                  ),
+                                const SizedBox(height: 20),
+                                Row(
+                                  children: [
+                                    Text(
+                                      '${result['거리']} km',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: GRAYSCALE_LABEL_500,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Text(
+                                      '${result['소요시간']}',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: GRAYSCALE_LABEL_500,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
-                          ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (isEditing)
+                      Positioned(
+                        top: 8,
+                        right: 8,
+                        child: Checkbox(
+                          value: _selected[index],
+                          onChanged: (val) {
+                            setState(() {
+                              _selected[index] = val!;
+                            });
+                          },
                         ),
                       ),
-                    ],
-                  ),
+                  ],
                 );
               },
             ),
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 }
