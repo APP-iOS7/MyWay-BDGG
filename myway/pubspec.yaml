@@ -51,6 +51,7 @@ dependencies:
   flutter_image_saver: ^1.0.1
   firebase_storage: ^12.4.5
   lottie: ^3.3.1
+  geolocator: ^14.0.0
 
 dev_dependencies:
   flutter_test:

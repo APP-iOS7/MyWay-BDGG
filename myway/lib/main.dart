@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:myway/firebase_options.dart';
+import 'package:myway/screen/recommended_course_screen.dart';
 import 'package:provider/provider.dart';
 
 import 'screen/notice_screen.dart';
@@ -56,6 +57,7 @@ class MyApp extends StatelessWidget {
       home: AuthWrapper(),
       initialRoute: 'home',
       routes: {
+        'recommendCourse': (context) => const RecommendedCourseScreen(),
         'signUp': (context) => const SignUpScreen(),
         'signIn': (context) => const SigninScreen(),
         'home': (context) => const HomeScreen(),
