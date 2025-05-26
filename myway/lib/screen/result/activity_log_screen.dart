@@ -1,10 +1,9 @@
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:myway/const/colors.dart';
 import 'package:myway/model/activity_period.dart';
 import 'package:myway/provider/activity_log_provider.dart';
 import 'package:provider/provider.dart';
-
-import '../../const/colors.dart';
 
 class ActivityLogScreen extends StatefulWidget {
   const ActivityLogScreen({super.key});
@@ -100,7 +99,7 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
                   children: [_buildStatItem(context, activityProvider)],
                 ),
                 SizedBox(height: 24),
-                // _buildSimpleBarChart(),
+                _buildBarChart(context, activityProvider),
                 SizedBox(height: 20),
               ],
             ),
@@ -225,55 +224,84 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
   ) {
     return Row(
       children: [
-        Text(
-          activityProvider.selectedPeriod == ActivityPeriod.weekly
-              ? activityProvider.currentDisplayDateWeekly
-              : activityProvider.currentDisplayDateMonthly,
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: GRAYSCALE_LABEL_950,
-          ),
-        ),
-        SizedBox(width: 5),
-        if (activityProvider.selectedPeriod == ActivityPeriod.weekly) ...[
-          DropdownButtonHideUnderline(
-            child: DropdownButton<String>(
-              value: activityProvider.selectedMonth,
-              items:
-                  activityProvider.availableMonths.map((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
-              onChanged: (String? newValue) {
-                if (newValue != null) {
-                  activityProvider.setSelectedMonth(newValue);
-                }
-              },
+        if (activityProvider.selectedPeriod == ActivityPeriod.weekly)
+          Row(
+            children: [
+              // 년도와 월 선택 드롭다운
+              DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  value: activityProvider.currentYearMonth,
+                  dropdownColor: Colors.white,
+                  items:
+                      activityProvider.availableYearMonthCombinations.map((
+                        String value,
+                      ) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(
+                            value,
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: GRAYSCALE_LABEL_950,
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                  onChanged: (String? newValue) {
+                    if (newValue != null) {
+                      final parts = newValue.split('년 ');
+                      final year = int.parse(parts[0]);
+                      final month = int.parse(parts[1].replaceAll('월', ''));
+                      activityProvider.updateYear(year);
+                      activityProvider.setSelectedMonth('$month월');
+                    }
+                  },
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: GRAYSCALE_LABEL_950,
+                  ),
+                  icon: Icon(
+                    Icons.keyboard_arrow_down_outlined,
+                    color: GRAYSCALE_LABEL_950,
+                  ),
+                ),
+              ),
+              SizedBox(width: 8),
+              // 주차 선택 드롭다운
+              DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  value: activityProvider.selectedWeek,
+                  dropdownColor: Colors.white,
+                  items: activityProvider.getWeekDropdownItems(),
+                  onChanged: (String? newValue) {
+                    if (newValue != null) {
+                      activityProvider.updateSelectedWeek(newValue);
+                    }
+                  },
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: GRAYSCALE_LABEL_950,
+                  ),
+                  icon: Icon(
+                    Icons.keyboard_arrow_down_outlined,
+                    color: GRAYSCALE_LABEL_950,
+                  ),
+                ),
+              ),
+            ],
+          )
+        else
+          Text(
+            activityProvider.currentDisplayDateMonthly,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: GRAYSCALE_LABEL_950,
             ),
           ),
-          SizedBox(width: 5),
-          // 주 선택 드롭다운
-          DropdownButtonHideUnderline(
-            child: DropdownButton<String>(
-              value: activityProvider.selectedWeek,
-              items:
-                  activityProvider.currentAvailableWeeks.map((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
-              onChanged: (String? newValue) {
-                if (newValue != null) {
-                  activityProvider.updateSelectedWeek(newValue);
-                }
-              },
-            ),
-          ),
-        ],
       ],
     );
   }
@@ -323,6 +351,177 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildBarChart(
+    BuildContext context,
+    ActivityLogProvider activityProvider,
+  ) {
+    return Container(
+      height: 300,
+      padding: EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(10),
+            blurRadius: 10,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '거리(km)',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: GRAYSCALE_LABEL_950,
+            ),
+          ),
+          SizedBox(height: 16),
+          Expanded(
+            child:
+                activityProvider.selectedPeriod == ActivityPeriod.weekly
+                    ? FutureBuilder<List<FlSpot>>(
+                      future: activityProvider.weeklyChartData,
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return Center(child: CircularProgressIndicator());
+                        }
+                        if (snapshot.hasError) {
+                          return Center(child: Text('데이터를 불러오는데 실패했습니다.'));
+                        }
+                        return BarChart(
+                          BarChartData(
+                            gridData: FlGridData(show: false),
+                            titlesData: FlTitlesData(
+                              leftTitles: AxisTitles(
+                                sideTitles: SideTitles(
+                                  showTitles: true,
+                                  reservedSize: 40,
+                                  getTitlesWidget: (value, meta) {
+                                    return Text(
+                                      '${value.toInt()}km',
+                                      style: TextStyle(
+                                        color: GRAYSCALE_LABEL_600,
+                                        fontSize: 12,
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                              bottomTitles: AxisTitles(
+                                sideTitles: SideTitles(
+                                  showTitles: true,
+                                  getTitlesWidget: (value, meta) {
+                                    const days = [
+                                      '월',
+                                      '화',
+                                      '수',
+                                      '목',
+                                      '금',
+                                      '토',
+                                      '일',
+                                    ];
+                                    return Text(
+                                      days[value.toInt()],
+                                      style: TextStyle(
+                                        color: GRAYSCALE_LABEL_600,
+                                        fontSize: 12,
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                              rightTitles: AxisTitles(
+                                sideTitles: SideTitles(showTitles: false),
+                              ),
+                              topTitles: AxisTitles(
+                                sideTitles: SideTitles(showTitles: false),
+                              ),
+                            ),
+                            borderData: FlBorderData(show: false),
+                            barGroups:
+                                snapshot.data?.asMap().entries.map((enrty) {
+                                  return BarChartGroupData(
+                                    x: enrty.key,
+                                    barRods: [
+                                      BarChartRodData(
+                                        toY: enrty.value.y,
+                                        color: YELLOW_INFO_BASE_30,
+                                        width: 16,
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                    ],
+                                  );
+                                }).toList() ??
+                                [],
+                          ),
+                        );
+                      },
+                    )
+                    : FutureBuilder<List<BarChartGroupData>>(
+                      future: activityProvider.monthlyChartData,
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return Center(child: Text('데이터를 불러오는데 실패했습니다.'));
+                        }
+                        return BarChart(
+                          BarChartData(
+                            gridData: FlGridData(show: false),
+                            titlesData: FlTitlesData(
+                              leftTitles: AxisTitles(
+                                sideTitles: SideTitles(
+                                  showTitles: true,
+                                  reservedSize: 40,
+                                  getTitlesWidget: (value, meta) {
+                                    return Text(
+                                      '${value.toInt()}km',
+                                      style: TextStyle(
+                                        color: GRAYSCALE_LABEL_600,
+                                        fontSize: 12,
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                              bottomTitles: AxisTitles(
+                                sideTitles: SideTitles(
+                                  showTitles: true,
+                                  getTitlesWidget: (value, meta) {
+                                    return Text(
+                                      '${value.toInt()}월',
+                                      style: TextStyle(
+                                        color: GRAYSCALE_LABEL_600,
+                                        fontSize: 12,
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                              rightTitles: AxisTitles(
+                                sideTitles: SideTitles(showTitles: false),
+                              ),
+                              topTitles: AxisTitles(
+                                sideTitles: SideTitles(showTitles: false),
+                              ),
+                            ),
+                            borderData: FlBorderData(show: false),
+                            barGroups: snapshot.data ?? [],
+                          ),
+                        );
+                      },
+                    ),
+          ),
+        ],
+      ),
     );
   }
 }
