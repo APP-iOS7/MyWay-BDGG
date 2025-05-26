@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:myway/theme/colors.dart';
+
+import '../const/colors.dart';
 
 enum ActivityPeriod { weekly, monthly }
 
@@ -12,15 +13,31 @@ class ActivityLogScreen extends StatefulWidget {
 
 class _ActivityLogScreenState extends State<ActivityLogScreen> {
   ActivityPeriod _selectedPeriod = ActivityPeriod.weekly;
-  String _currentDisplayDateWeekly = "2025년 5월 1주";
-  String _currentDisplayDateMonthly = "2025년";
+  final String _currentDisplayDateWeekly = "2025년 5월 1주";
+  final String _currentDisplayDateMonthly = "2025년";
 
   final Map<String, double> weeklyChartData = {
-    "월": 80.0, "화": 60.0, "수": 85.0, "목": 20.0, "금": 70.0, "토": 100.0, "일": 65.0,
+    "월": 80.0,
+    "화": 60.0,
+    "수": 85.0,
+    "목": 20.0,
+    "금": 70.0,
+    "토": 100.0,
+    "일": 65.0,
   };
   final Map<String, double> monthlyChartData = {
-    "1월": 10.0, "2월": 15.0, "3월": 70.0, "4월": 90.0, "5월": 100.0, "6월": 75.0,
-    "7월": 10.0, "8월": 20.0, "9월": 85.0, "10월": 30.0, "11월": 5.0, "12월": 12.0,
+    "1월": 10.0,
+    "2월": 15.0,
+    "3월": 70.0,
+    "4월": 90.0,
+    "5월": 100.0,
+    "6월": 75.0,
+    "7월": 10.0,
+    "8월": 20.0,
+    "9월": 85.0,
+    "10월": 30.0,
+    "11월": 5.0,
+    "12월": 12.0,
   };
 
   @override
@@ -41,28 +58,44 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
           Expanded(
             child: GestureDetector(
               onTap: () {
-                if (mounted) setState(() => _selectedPeriod = ActivityPeriod.weekly);
+                if (mounted)
+                  setState(() => _selectedPeriod = ActivityPeriod.weekly);
               },
               child: Container(
                 decoration: BoxDecoration(
-                  color: _selectedPeriod == ActivityPeriod.weekly ? BACKGROUND_COLOR : Colors.transparent,
+                  color:
+                      _selectedPeriod == ActivityPeriod.weekly
+                          ? BACKGROUND_COLOR
+                          : Colors.transparent,
                   borderRadius: BorderRadius.circular(8.0),
-                  border: _selectedPeriod == ActivityPeriod.weekly ? Border.all(color: GRAYSCALE_LABEL_300, width: 1.0) : null,
-                   boxShadow: _selectedPeriod == ActivityPeriod.weekly ? [
-                    BoxShadow(
-                      color: GRAYSCALE_LABEL_950.withOpacity(0.05),
-                      spreadRadius: 1,
-                      blurRadius: 2,
-                      offset: Offset(0, 1),
-                    )
-                  ] : [],
+                  border:
+                      _selectedPeriod == ActivityPeriod.weekly
+                          ? Border.all(color: GRAYSCALE_LABEL_300, width: 1.0)
+                          : null,
+                  boxShadow:
+                      _selectedPeriod == ActivityPeriod.weekly
+                          ? [
+                            BoxShadow(
+                              color: GRAYSCALE_LABEL_950.withOpacity(0.05),
+                              spreadRadius: 1,
+                              blurRadius: 2,
+                              offset: Offset(0, 1),
+                            ),
+                          ]
+                          : [],
                 ),
                 alignment: Alignment.center,
                 child: Text(
                   "주간 기록",
                   style: TextStyle(
-                    color: _selectedPeriod == ActivityPeriod.weekly ? GRAYSCALE_LABEL_950 : GRAYSCALE_LABEL_600,
-                    fontWeight: _selectedPeriod == ActivityPeriod.weekly ? FontWeight.bold : FontWeight.normal,
+                    color:
+                        _selectedPeriod == ActivityPeriod.weekly
+                            ? GRAYSCALE_LABEL_950
+                            : GRAYSCALE_LABEL_600,
+                    fontWeight:
+                        _selectedPeriod == ActivityPeriod.weekly
+                            ? FontWeight.bold
+                            : FontWeight.normal,
                     fontSize: 14,
                   ),
                 ),
@@ -72,28 +105,44 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
           Expanded(
             child: GestureDetector(
               onTap: () {
-                if (mounted) setState(() => _selectedPeriod = ActivityPeriod.monthly);
+                if (mounted)
+                  setState(() => _selectedPeriod = ActivityPeriod.monthly);
               },
               child: Container(
                 decoration: BoxDecoration(
-                  color: _selectedPeriod == ActivityPeriod.monthly ? BACKGROUND_COLOR : Colors.transparent,
+                  color:
+                      _selectedPeriod == ActivityPeriod.monthly
+                          ? BACKGROUND_COLOR
+                          : Colors.transparent,
                   borderRadius: BorderRadius.circular(8.0),
-                  border: _selectedPeriod == ActivityPeriod.monthly ? Border.all(color: GRAYSCALE_LABEL_300, width: 1.0) : null,
-                   boxShadow: _selectedPeriod == ActivityPeriod.monthly ? [
-                     BoxShadow(
-                      color: GRAYSCALE_LABEL_950.withOpacity(0.05),
-                      spreadRadius: 1,
-                      blurRadius: 2,
-                      offset: Offset(0, 1),
-                    )
-                  ] : [],
+                  border:
+                      _selectedPeriod == ActivityPeriod.monthly
+                          ? Border.all(color: GRAYSCALE_LABEL_300, width: 1.0)
+                          : null,
+                  boxShadow:
+                      _selectedPeriod == ActivityPeriod.monthly
+                          ? [
+                            BoxShadow(
+                              color: GRAYSCALE_LABEL_950.withOpacity(0.05),
+                              spreadRadius: 1,
+                              blurRadius: 2,
+                              offset: Offset(0, 1),
+                            ),
+                          ]
+                          : [],
                 ),
                 alignment: Alignment.center,
                 child: Text(
                   "월간 기록",
                   style: TextStyle(
-                    color: _selectedPeriod == ActivityPeriod.monthly ? GRAYSCALE_LABEL_950 : GRAYSCALE_LABEL_600,
-                    fontWeight: _selectedPeriod == ActivityPeriod.monthly ? FontWeight.bold : FontWeight.normal,
+                    color:
+                        _selectedPeriod == ActivityPeriod.monthly
+                            ? GRAYSCALE_LABEL_950
+                            : GRAYSCALE_LABEL_600,
+                    fontWeight:
+                        _selectedPeriod == ActivityPeriod.monthly
+                            ? FontWeight.bold
+                            : FontWeight.normal,
                     fontSize: 14,
                   ),
                 ),
@@ -109,8 +158,14 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
     return Row(
       children: [
         Text(
-          _selectedPeriod == ActivityPeriod.weekly ? _currentDisplayDateWeekly : _currentDisplayDateMonthly,
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: GRAYSCALE_LABEL_950),
+          _selectedPeriod == ActivityPeriod.weekly
+              ? _currentDisplayDateWeekly
+              : _currentDisplayDateMonthly,
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: GRAYSCALE_LABEL_950,
+          ),
         ),
         Icon(Icons.arrow_drop_down, color: GRAYSCALE_LABEL_700, size: 28),
       ],
@@ -124,13 +179,14 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
       children: [
         Text(
           value,
-          style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: GRAYSCALE_LABEL_950),
+          style: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.bold,
+            color: GRAYSCALE_LABEL_950,
+          ),
         ),
         SizedBox(height: 2),
-        Text(
-          label,
-          style: TextStyle(fontSize: 12, color: GRAYSCALE_LABEL_600),
-        ),
+        Text(label, style: TextStyle(fontSize: 12, color: GRAYSCALE_LABEL_600)),
       ],
     );
   }
@@ -151,11 +207,17 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
   }
 
   Widget _buildSimpleBarChart() {
-    final data = _selectedPeriod == ActivityPeriod.weekly ? weeklyChartData : monthlyChartData;
-    final maxValue = data.isNotEmpty ? data.values.reduce((curr, next) => curr > next ? curr : next) : 1.0;
+    final data =
+        _selectedPeriod == ActivityPeriod.weekly
+            ? weeklyChartData
+            : monthlyChartData;
+    final maxValue =
+        data.isNotEmpty
+            ? data.values.reduce((curr, next) => curr > next ? curr : next)
+            : 1.0;
 
     return Container(
-      padding: EdgeInsets.only(left: 10, right: 10, top: 20, bottom:10),
+      padding: EdgeInsets.only(left: 10, right: 10, top: 20, bottom: 10),
       height: 180,
       decoration: BoxDecoration(
         color: GRAYSCALE_LABEL_50,
@@ -172,27 +234,32 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         crossAxisAlignment: CrossAxisAlignment.end,
-        children: data.entries.map((entry) {
-          final barHeight = entry.value / (maxValue == 0 ? 1 : maxValue) * 100;
-          return Column(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Container(
-                width: _selectedPeriod == ActivityPeriod.weekly ? 22 : 12,
-                height: barHeight < 5 ? 5 : (barHeight > 100 ? 100: barHeight),
-                decoration: BoxDecoration(
-                  color: CHIP_YELLOW_700,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(4)),
-                ),
-              ),
-              SizedBox(height: 5),
-              Text(
-                entry.key,
-                style: TextStyle(fontSize: 11, color: GRAYSCALE_LABEL_600),
-              ),
-            ],
-          );
-        }).toList(),
+        children:
+            data.entries.map((entry) {
+              final barHeight =
+                  entry.value / (maxValue == 0 ? 1 : maxValue) * 100;
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Container(
+                    width: _selectedPeriod == ActivityPeriod.weekly ? 22 : 12,
+                    height:
+                        barHeight < 5 ? 5 : (barHeight > 100 ? 100 : barHeight),
+                    decoration: BoxDecoration(
+                      color: YELLOW_INFO_BASE_30,
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(4),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 5),
+                  Text(
+                    entry.key,
+                    style: TextStyle(fontSize: 11, color: GRAYSCALE_LABEL_600),
+                  ),
+                ],
+              );
+            }).toList(),
       ),
     );
   }
@@ -211,12 +278,19 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
         elevation: 0,
         title: Text(
           "나의 활동 기록",
-          style: TextStyle(color: GRAYSCALE_LABEL_950, fontSize: 18, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: GRAYSCALE_LABEL_950,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: horizontalPageMargin, vertical: 16),
+        padding: const EdgeInsets.symmetric(
+          horizontal: horizontalPageMargin,
+          vertical: 16,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
@@ -230,19 +304,28 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
               children: [
                 Text(
                   "20.4",
-                  style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: GRAYSCALE_LABEL_950, height: 1.1),
+                  style: TextStyle(
+                    fontSize: 36,
+                    fontWeight: FontWeight.bold,
+                    color: GRAYSCALE_LABEL_950,
+                    height: 1.1,
+                  ),
                 ),
                 SizedBox(width: 6),
                 Padding(
                   padding: const EdgeInsets.only(bottom: 4.0),
                   child: Text(
                     "km",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: GRAYSCALE_LABEL_950),
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: GRAYSCALE_LABEL_950,
+                    ),
                   ),
                 ),
               ],
             ),
-            SizedBox(height: labelToTextMargin -1),
+            SizedBox(height: labelToTextMargin - 1),
             Text(
               "거리",
               style: TextStyle(fontSize: 12, color: GRAYSCALE_LABEL_600),

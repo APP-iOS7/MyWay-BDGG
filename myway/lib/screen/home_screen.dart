@@ -10,7 +10,7 @@ import '/const/colors.dart';
 import '/screen/mycourse_screen.dart';
 import '/screen/weather_screen.dart';
 import '/provider/weather_provider.dart';
-import 'result/activity_log_screen.dart';
+import 'activity_log_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
