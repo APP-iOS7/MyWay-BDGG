@@ -180,6 +180,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       .collection('trackingResult')
                       .doc(_auth.currentUser?.uid)
                       .snapshots(),
+
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
                   return SizedBox(
@@ -213,6 +214,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   return bTime.compareTo(aTime); // 내림차순 정렬 (최신순)
                 });
 
+                // 필드내에서 5개로 제한
+                final limitedResults =
+                    trackingResult.length > 5
+                        ? trackingResult.sublist(0, 5)
+                        : trackingResult;
                 return SizedBox(
                   height: 480,
                   child: CarouselSlider(
@@ -232,7 +238,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       // },
                     ),
                     items:
-                        trackingResult.map((result) {
+                        limitedResults.map((result) {
                           return Builder(
                             builder: (BuildContext context) {
                               final imageUrl =

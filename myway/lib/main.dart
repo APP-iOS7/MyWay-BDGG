@@ -2,9 +2,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:myway/firebase_options.dart';
-import 'package:myway/temp/test_map.dart';
 import 'package:provider/provider.dart';
 
+import 'provider/activity_log_provider.dart';
 import 'screen/notice_screen.dart';
 import 'provider/map_provider.dart';
 import 'provider/step_provider.dart';
@@ -23,6 +23,7 @@ import 'screen/login/signIn_screen.dart';
 import 'screen/customer_center_screen.dart';
 import 'screen/setting_screen.dart';
 import 'temp/test_drawer.dart';
+import 'temp/test_map.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -37,6 +38,7 @@ Future<void> main() async {
         ),
         ChangeNotifierProvider(create: (context) => StepProvider()),
         ChangeNotifierProvider(create: (context) => MapProvider()),
+        ChangeNotifierProvider(create: (context) => ActivityLogProvider()),
       ],
       child: const MyApp(),
     ),
