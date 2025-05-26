@@ -14,7 +14,6 @@ class StepProvider extends ChangeNotifier {
 
   bool _isCourseNameValid = false;
   bool get isCourseNameValid => _isCourseNameValid;
-
   StepProvider() {
     courseName.addListener(_validateCourseName);
   }

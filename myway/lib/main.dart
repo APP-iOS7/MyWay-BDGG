@@ -2,6 +2,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:myway/firebase_options.dart';
+import 'package:myway/screen/notice_list_screen.dart';
+import 'package:myway/screen/notice_screen.dart';
 import 'package:myway/screen/recommended_course_screen.dart';
 import 'package:provider/provider.dart';
 
@@ -69,6 +71,8 @@ class MyApp extends StatelessWidget {
         'customerCenter': (context) => const CustomerCenterScreen(),
         'test': (context) => const TestMapScreen(),
         'testMap': (context) => const MapInputScreen(),
+        'noticeList': (context) => const NoticeListScreen(),
+        'notice': (context) => const NoticeScreen(),
       },
     );
   }

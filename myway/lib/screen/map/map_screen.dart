@@ -4,6 +4,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:provider/provider.dart';
 
+import '../../provider/step_provider.dart';
 import '/const/colors.dart';
 import '/screen/map/course_recommend_bottomsheet.dart';
 import '/model/course_model.dart';
@@ -139,6 +140,11 @@ class _MapScreenState extends State<MapScreen>
 
     // 위치 추적 시작
     location.onLocationChanged.listen((LocationData currentLocation) {
+      final trackingStatus =
+          Provider.of<StepProvider>(context, listen: false).status;
+
+      if (trackingStatus != TrackingStatus.running) return;
+
       if (_tracking) {
         setState(() {
           print("latitude : ${currentLocation.latitude!}");
@@ -212,6 +218,7 @@ class _MapScreenState extends State<MapScreen>
 
   @override
   Widget build(BuildContext context) {
+    final stepProvider = Provider.of<StepProvider>(context);
     final mapProvider = Provider.of<MapProvider>(context);
     if (mapProvider.isTracking && !_tracking) {
       startLocationTracking();
