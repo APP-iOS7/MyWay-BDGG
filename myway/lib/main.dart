@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:myway/firebase_options.dart';
+import 'package:myway/provider/activity_log_provider.dart';
 import 'package:provider/provider.dart';
 
 import 'provider/user_provider.dart';
@@ -32,6 +33,7 @@ Future<void> main() async {
         ),
         ChangeNotifierProvider(create: (context) => StepProvider()),
         ChangeNotifierProvider(create: (context) => MapProvider()),
+        ChangeNotifierProvider(create: (context) => ActivityLogProvider()),
       ],
       child: const MyApp(),
     ),
