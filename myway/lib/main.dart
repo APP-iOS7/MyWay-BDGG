@@ -16,7 +16,6 @@ import 'screen/map/map_screen.dart';
 import 'screen/nickname_change_screen.dart';
 import 'screen/home/weather_screen.dart';
 import 'provider/weather_provider.dart';
-import 'screen/announcemnet_screen.dart';
 import 'screen/change_password_screen.dart';
 import 'screen/login/signIn_screen.dart';
 import 'screen/customer_center_screen.dart';
