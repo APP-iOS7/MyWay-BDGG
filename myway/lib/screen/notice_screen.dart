@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:myway/const/colors.dart';
+
+import '../const/colors.dart';
 
 enum NoticeMode { view, edit }
 
@@ -369,7 +370,7 @@ class _NoticeScreenState extends State<NoticeScreen> {
                   child: ElevatedButton(
                     onPressed: _completeWriting,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: BLUE_SECONDARY_700,
+                      backgroundColor: YELLOW_INFO_BASE_30,
                       foregroundColor: GRAYSCALE_LABEL_950,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8.0),

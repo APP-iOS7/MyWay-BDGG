@@ -8,9 +8,9 @@ import 'package:provider/provider.dart';
 
 import '/const/colors.dart';
 import '/screen/mycourse_screen.dart';
-import '/screen/weather_screen.dart';
+import 'weather_screen.dart';
 import '/provider/weather_provider.dart';
-import 'result/activity_log_screen.dart';
+import '../result/activity_log_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -183,15 +183,24 @@ class _HomeScreenState extends State<HomeScreen> {
 
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
-                  return Center(child: Text('에러가 발생했습니다.'));
+                  return SizedBox(
+                    height: 430,
+                    child: Center(child: Text('에러가 발생했습니다.')),
+                  );
                 }
 
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
+                  return SizedBox(
+                    height: 430,
+                    child: Center(child: CircularProgressIndicator()),
+                  );
                 }
 
                 if (!snapshot.hasData || !snapshot.data!.exists) {
-                  return Center(child: Text('저장된 기록이 없습니다.'));
+                  return SizedBox(
+                    height: 430,
+                    child: Center(child: Text('저장된 기록이 없습니다.')),
+                  );
                 }
 
                 // TrackingResult 배열 가져오기
@@ -211,11 +220,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         ? trackingResult.sublist(0, 5)
                         : trackingResult;
                 return SizedBox(
-                  height: 490,
+                  height: 480,
                   child: CarouselSlider(
                     options: CarouselOptions(
                       scrollDirection: Axis.horizontal,
-                      height: 450,
+                      height: 460,
                       enableInfiniteScroll: true,
                       padEnds: true,
                       viewportFraction: 0.8, // 화면에 보이는 아이템의 비율
@@ -243,15 +252,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                     borderRadius: BorderRadius.circular(20),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: const Color.fromARGB(
-                                          255,
-                                          211,
-                                          209,
-                                          209,
-                                        ),
-                                        spreadRadius: 2,
+                                        color: GRAYSCALE_LABEL_300,
+                                        spreadRadius: 1,
                                         blurRadius: 8,
-                                        offset: Offset(0, 4),
+                                        offset: Offset(1, 1),
                                       ),
                                     ],
                                   ),
@@ -439,7 +443,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       GestureDetector(
-                        onTap: () {},
+                        onTap: () {
+                          Navigator.pushNamed(context, 'recommendCourse');
+                        },
                         child: Column(
                           children: [
                             Container(

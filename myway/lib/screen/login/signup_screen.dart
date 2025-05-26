@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:myway/const/colors.dart';
 import 'package:myway/provider/user_provider.dart';
-import 'package:myway/screen/home_screen.dart';
+import 'package:myway/screen/home/home_screen.dart';
 import 'package:provider/provider.dart';
 
 class SignUpScreen extends StatefulWidget {

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:myway/alert/countdown_diallog.dart';
+import 'package:myway/screen/alert/countdown_diallog.dart';
 import 'package:myway/provider/step_provider.dart';
 import 'package:myway/temp/course_data.dart';
 import 'package:provider/provider.dart';
@@ -25,9 +25,9 @@ class _CourseRecommendBottomsheetState
       builder: (context, mapProvider, stepProvider, child) {
         return DraggableScrollableSheet(
           initialChildSize: 0.5,
-          minChildSize: 0.3,
+          minChildSize: 0.4,
           maxChildSize: 0.8,
-          snapSizes: [0.3, 0.7],
+          snapSizes: [0.4, 0.7],
           snap: false,
           builder: (BuildContext context, scrollSheetController) {
             return Container(

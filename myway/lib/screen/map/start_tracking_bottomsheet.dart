@@ -36,22 +36,15 @@ class _StartTrackingBottomsheetState extends State<StartTrackingBottomsheet> {
             padding: const EdgeInsets.only(left: 20.0, right: 20.0),
             child: Column(
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      '산책중',
-                      style: TextStyle(
-                        color: GRAYSCALE_LABEL_900,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () {},
-                      icon: Icon(Icons.close_outlined),
-                    ),
-                  ],
+                SizedBox(height: 2),
+                Container(
+                  width: 80,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: GRAYSCALE_LABEL_300,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  margin: const EdgeInsets.only(top: 8, bottom: 8),
                 ),
                 Container(
                   padding: EdgeInsets.all(18),
@@ -70,7 +63,7 @@ class _StartTrackingBottomsheetState extends State<StartTrackingBottomsheet> {
                             '${stepProvider.steps}',
                             style: TextStyle(
                               color: Colors.black,
-                              fontSize: 30,
+                              fontSize: 25,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -78,7 +71,7 @@ class _StartTrackingBottomsheetState extends State<StartTrackingBottomsheet> {
                             '걸음',
                             style: TextStyle(
                               color: GRAYSCALE_LABEL_600,
-                              fontSize: 18,
+                              fontSize: 15,
                             ),
                           ),
                         ],
@@ -89,7 +82,7 @@ class _StartTrackingBottomsheetState extends State<StartTrackingBottomsheet> {
                             stepProvider.formattedElapsed,
                             style: TextStyle(
                               color: Colors.black,
-                              fontSize: 30,
+                              fontSize: 25,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -97,7 +90,7 @@ class _StartTrackingBottomsheetState extends State<StartTrackingBottomsheet> {
                             '시간',
                             style: TextStyle(
                               color: GRAYSCALE_LABEL_600,
-                              fontSize: 18,
+                              fontSize: 15,
                             ),
                           ),
                         ],
@@ -108,7 +101,7 @@ class _StartTrackingBottomsheetState extends State<StartTrackingBottomsheet> {
                             stepProvider.distanceKm,
                             style: TextStyle(
                               color: Colors.black,
-                              fontSize: 30,
+                              fontSize: 25,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -116,7 +109,7 @@ class _StartTrackingBottomsheetState extends State<StartTrackingBottomsheet> {
                             '거리 Km',
                             style: TextStyle(
                               color: GRAYSCALE_LABEL_600,
-                              fontSize: 18,
+                              fontSize: 15,
                             ),
                           ),
                         ],
@@ -125,20 +118,29 @@ class _StartTrackingBottomsheetState extends State<StartTrackingBottomsheet> {
                   ),
                 ),
                 SizedBox(height: 10),
-                Stack(
-                  children: [
-                    Image.asset('assets/images/park.png'),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 20.0),
-                      child: Align(
-                        alignment: Alignment.center,
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Stack(
+                    alignment: Alignment.bottomCenter,
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
                         child: Image.asset(
-                          'assets/images/turtle.gif',
+                          'assets/images/walking_background_2.png',
+                          height: 130,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      Positioned(
+                        bottom: -15,
+                        child: Image.asset(
+                          'assets/images/walking_turtle.gif',
                           height: 90,
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
                 SizedBox(height: 10),
                 Row(

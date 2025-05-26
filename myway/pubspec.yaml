@@ -48,8 +48,9 @@ dependencies:
   pedometer: ^4.1.1
   path_provider: ^2.1.5
   toastification: ^3.0.2
-  flutter_image_saver: ^1.0.1
   firebase_storage: ^12.4.5
+  gallery_saver_plus: ^3.2.4
+  geolocator: ^14.0.0
   carousel_slider: ^5.0.0
 
 dev_dependencies:
