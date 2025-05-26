@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:myway/const/colors.dart';
 import 'package:myway/model/activity_period.dart';
 import 'package:myway/provider/activity_log_provider.dart';
-import 'package:myway/theme/colors.dart';
 import 'package:provider/provider.dart';
 
 class ActivityLogScreen extends StatefulWidget {

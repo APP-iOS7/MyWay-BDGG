@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:myway/theme/colors.dart';
+import 'package:myway/const/colors.dart';
 
 enum NoticeMode { view, edit }
 
@@ -98,8 +98,17 @@ class _NoticeScreenState extends State<NoticeScreen> {
       builder: (BuildContext context) {
         return AlertDialog(
           backgroundColor: BACKGROUND_COLOR,
-          title: Text('삭제 확인', style: TextStyle(color: GRAYSCALE_LABEL_950, fontWeight: FontWeight.bold)),
-          content: Text('정말로 이 공지사항을 삭제하시겠습니까?', style: TextStyle(color: GRAYSCALE_LABEL_800)),
+          title: Text(
+            '삭제 확인',
+            style: TextStyle(
+              color: GRAYSCALE_LABEL_950,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: Text(
+            '정말로 이 공지사항을 삭제하시겠습니까?',
+            style: TextStyle(color: GRAYSCALE_LABEL_800),
+          ),
           actions: <Widget>[
             TextButton(
               child: Text('취소', style: TextStyle(color: GRAYSCALE_LABEL_700)),
@@ -108,7 +117,13 @@ class _NoticeScreenState extends State<NoticeScreen> {
               },
             ),
             TextButton(
-              child: Text('삭제', style: TextStyle(color: RED_DANGER_TEXT_50, fontWeight: FontWeight.bold)),
+              child: Text(
+                '삭제',
+                style: TextStyle(
+                  color: RED_DANGER_TEXT_50,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               onPressed: () {
                 Navigator.of(context).pop();
                 _deleteNotice();
@@ -127,7 +142,11 @@ class _NoticeScreenState extends State<NoticeScreen> {
         children: [
           Text(
             "제목",
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: GRAYSCALE_LABEL_900),
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: GRAYSCALE_LABEL_900,
+            ),
           ),
           SizedBox(height: 5),
           TextField(
@@ -143,15 +162,19 @@ class _NoticeScreenState extends State<NoticeScreen> {
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8.0),
-                borderSide: BorderSide(color: BLUE_DEEP_700, width: 1.5),
+                borderSide: BorderSide(color: BLUE_SECONDARY_700, width: 1.5),
               ),
-              contentPadding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 14.0,
+              ),
             ),
             style: TextStyle(fontSize: 14, color: GRAYSCALE_LABEL_950),
-          )
+          ),
         ],
       );
-    } else { // 보기 모드
+    } else {
+      // 보기 모드
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -163,7 +186,11 @@ class _NoticeScreenState extends State<NoticeScreen> {
               children: [
                 Text(
                   _savedTitle.isNotEmpty ? _savedTitle : "제목 없음",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: GRAYSCALE_LABEL_950),
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: GRAYSCALE_LABEL_950,
+                  ),
                 ),
                 SizedBox(height: 4),
                 Text(
@@ -186,7 +213,11 @@ class _NoticeScreenState extends State<NoticeScreen> {
         children: [
           Text(
             "내용",
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: GRAYSCALE_LABEL_900),
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: GRAYSCALE_LABEL_900,
+            ),
           ),
           SizedBox(height: 5),
           Expanded(
@@ -203,22 +234,29 @@ class _NoticeScreenState extends State<NoticeScreen> {
                 fillColor: BACKGROUND_COLOR,
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.0),
-                  borderSide: BorderSide(color: GRAYSCALE_LABEL_300, width: 1.0),
+                  borderSide: BorderSide(
+                    color: GRAYSCALE_LABEL_300,
+                    width: 1.0,
+                  ),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.0),
-                  borderSide: BorderSide(color: BLUE_DEEP_700, width: 1.5),
+                  borderSide: BorderSide(color: BLUE_SECONDARY_700, width: 1.5),
                 ),
                 contentPadding: EdgeInsets.all(16.0),
               ),
-              style: TextStyle(fontSize: 14, color: GRAYSCALE_LABEL_950, height: 1.5),
+              style: TextStyle(
+                fontSize: 14,
+                color: GRAYSCALE_LABEL_950,
+                height: 1.5,
+              ),
             ),
           ),
         ],
       );
     } else {
       return Expanded(
-        child: Container(
+        child: SizedBox(
           width: double.infinity,
           // 보기 모드에서는 내용에 대한 별도의 박스나 테두리 없이 바로 텍스트 표시
           // 패딩은 SingleChildScrollView 또는 부모 Column에서 관리
@@ -228,8 +266,11 @@ class _NoticeScreenState extends State<NoticeScreen> {
               _savedContent.isNotEmpty ? _savedContent : "작성된 내용이 없습니다.",
               style: TextStyle(
                 fontSize: 14,
-                color: _savedContent.isNotEmpty ? GRAYSCALE_LABEL_800 : GRAYSCALE_LABEL_500,
-                height: 1.6
+                color:
+                    _savedContent.isNotEmpty
+                        ? GRAYSCALE_LABEL_800
+                        : GRAYSCALE_LABEL_500,
+                height: 1.6,
               ),
             ),
           ),
@@ -237,7 +278,6 @@ class _NoticeScreenState extends State<NoticeScreen> {
       );
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -257,7 +297,11 @@ class _NoticeScreenState extends State<NoticeScreen> {
         ),
         title: Text(
           "공지사항",
-          style: TextStyle(color: GRAYSCALE_LABEL_950, fontSize: 18, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: GRAYSCALE_LABEL_950,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         centerTitle: false,
         titleSpacing: 0,
@@ -266,7 +310,9 @@ class _NoticeScreenState extends State<NoticeScreen> {
             PopupMenuButton<String>(
               icon: Icon(Icons.more_vert, color: GRAYSCALE_LABEL_950),
               color: BACKGROUND_COLOR,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8.0),
+              ),
               onSelected: (String result) {
                 if (result == 'edit') {
                   _switchToEditMode();
@@ -274,31 +320,47 @@ class _NoticeScreenState extends State<NoticeScreen> {
                   _showDeleteConfirmationDialog();
                 }
               },
-              itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                PopupMenuItem<String>(
-                  value: 'edit',
-                  child: Text('수정', style: TextStyle(color: GRAYSCALE_LABEL_800, fontSize: 14)),
-                ),
-                PopupMenuItem<String>(
-                  value: 'delete',
-                  child: Text('삭제', style: TextStyle(color: RED_DANGER_TEXT_50, fontSize: 14)),
-                ),
-              ],
+              itemBuilder:
+                  (BuildContext context) => <PopupMenuEntry<String>>[
+                    PopupMenuItem<String>(
+                      value: 'edit',
+                      child: Text(
+                        '수정',
+                        style: TextStyle(
+                          color: GRAYSCALE_LABEL_800,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                    PopupMenuItem<String>(
+                      value: 'delete',
+                      child: Text(
+                        '삭제',
+                        style: TextStyle(
+                          color: RED_DANGER_TEXT_50,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                  ],
             ),
         ],
       ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(horizontalPageMargin, 0, horizontalPageMargin, horizontalPageMargin), // 상단 패딩 제거
+          padding: const EdgeInsets.fromLTRB(
+            horizontalPageMargin,
+            0,
+            horizontalPageMargin,
+            horizontalPageMargin,
+          ), // 상단 패딩 제거
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(height: _isEditing ? 0 : 16), // 보기 모드일 때만 제목 위 구분선과의 간격
               _buildTitleSection(),
               SizedBox(height: _isEditing ? 20 : 12),
-              Expanded(
-                child: _buildContentSection(),
-              ),
+              Expanded(child: _buildContentSection()),
               if (_isEditing) SizedBox(height: 10), // 내용과 버튼 사이 간격 (편집 모드에서만)
               if (_isEditing)
                 SizedBox(
@@ -307,7 +369,7 @@ class _NoticeScreenState extends State<NoticeScreen> {
                   child: ElevatedButton(
                     onPressed: _completeWriting,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: CHIP_YELLOW_800,
+                      backgroundColor: BLUE_SECONDARY_700,
                       foregroundColor: GRAYSCALE_LABEL_950,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8.0),
