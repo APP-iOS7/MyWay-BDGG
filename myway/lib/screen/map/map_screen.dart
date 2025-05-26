@@ -1,15 +1,13 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
-import 'package:myway/const/colors.dart';
-import 'package:myway/screen/map/course_recommend_bottomsheet.dart';
-import 'package:myway/temp/test_latlng.dart';
 import 'package:provider/provider.dart';
 
-import '../../model/course_model.dart';
-import '../../provider/map_provider.dart';
+import '/const/colors.dart';
+import '/screen/map/course_recommend_bottomsheet.dart';
+import '/model/course_model.dart';
+import '/provider/map_provider.dart';
 import 'start_tracking_bottomsheet.dart';
 
 class MapScreen extends StatefulWidget {
@@ -23,20 +21,17 @@ class _MapScreenState extends State<MapScreen>
     with SingleTickerProviderStateMixin {
   GoogleMapController? mapController;
   Location location = Location();
-  List<LatLng> route = [];
+  List<LatLng> walkingRoute = [];
   Set<Polyline> polylines = {};
   int? selectedIndex;
-  LocationData? currentPosition;
-  bool _initialPositionSet = false;
+  LatLng? currentPosition;
+  bool _tracking = false; // 경로 추적 상태
   bool isLoading = true;
-  bool isTrackingStarted = false;
 
   @override
   void initState() {
     super.initState();
-    // route = TestLatlng().getTestLatlng();
-
-    route.clear();
+    walkingRoute.clear();
     polylines.clear();
     _checkLocationPermission();
   }
@@ -44,7 +39,8 @@ class _MapScreenState extends State<MapScreen>
   @override
   void dispose() {
     super.dispose();
-    isTrackingStarted = false;
+    _tracking = false;
+    location.onLocationChanged.drain();
   }
 
   Future<void> _checkLocationPermission() async {
@@ -65,7 +61,7 @@ class _MapScreenState extends State<MapScreen>
       print('위치 권한 허용');
       if (permissionStatus == PermissionStatus.granted) {
         location.changeSettings(
-          accuracy: LocationAccuracy.powerSave,
+          accuracy: LocationAccuracy.high,
           interval: 1000,
         );
         _getLocation();
@@ -74,6 +70,7 @@ class _MapScreenState extends State<MapScreen>
   }
 
   // 권한 거부 후 다이얼로그
+  // TODO: 권한 요청 후 확인 필요
   void _showPermissionDeniedDialog() {
     showDialog(
       context: context,
@@ -106,6 +103,7 @@ class _MapScreenState extends State<MapScreen>
   }
 
   // 영구적으로 거부된 경우 다이얼로그
+  // TODO: 설정 화면으로 이동하는 기능 추가
   void _showPermanentPermissionDeniedDialog() {
     showDialog(
       context: context,
@@ -117,7 +115,6 @@ class _MapScreenState extends State<MapScreen>
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
-                // 앱 설정 화면으로 이동
               },
               child: Text("설정으로 가기"),
             ),
@@ -133,118 +130,70 @@ class _MapScreenState extends State<MapScreen>
 
   // 위치 추적 시작
   void startLocationTracking() {
-    print('📍 startLocationTracking');
-    if (isTrackingStarted) return;
-    // location.changeSettings(accuracy: LocationAccuracy.high, distanceFilter: 5);
-    location.changeSettings(accuracy: LocationAccuracy.high, interval: 3000);
-
-    route.clear();
+    walkingRoute.clear(); // 이전 경로 초기화
     polylines.clear();
+    setState(() {
+      _tracking = true; // 추적 상태로 변경
+    });
+    location.changeSettings(accuracy: LocationAccuracy.high, distanceFilter: 5);
 
-    location.onLocationChanged.listen((LocationData locationData) {
-      if (context.read<MapProvider>().isTracking) {
-        // setState(() {
-        print(currentPosition);
-        print(currentPosition?.latitude);
-        print(currentPosition?.longitude);
-        //   LatLng position = LatLng(
-        //     (currentPosition?.latitude ?? 0.0) + 0.1,
-        //     (currentPosition?.longitude ?? 0.0) + 0.1,
-        //   );
-        //   route.add(position);
-        //   print('route $route');
-        //   polylines.add(
-        //     Polyline(
-        //       polylineId: PolylineId("route"),
-        //       points: route,
-        //       color: ORANGE_PRIMARY_500,
-        //       width: 5,s
-        //     ),
-        //   );
-        //   mapController?.animateCamera(CameraUpdate.newLatLng(position));
-        // });
+    // 위치 추적 시작
+    location.onLocationChanged.listen((LocationData currentLocation) {
+      if (_tracking) {
+        setState(() {
+          print("latitude : ${currentLocation.latitude!}");
+          print("longitude : ${currentLocation.longitude!}");
 
-        _updateLocation(locationData);
+          LatLng position = LatLng(
+            currentLocation.latitude!,
+            currentLocation.longitude!,
+          );
+          walkingRoute.add(position); // 좌표 추가
+
+          polylines.add(
+            Polyline(
+              polylineId: PolylineId("route"),
+              points: walkingRoute,
+              color: Colors.blue,
+              width: 5,
+            ),
+          );
+          mapController?.animateCamera(CameraUpdate.newLatLng(position));
+        });
       }
     });
-
-    isTrackingStarted = true;
   }
 
   // 위치 추적 중지
   void stopLocationTracking() {
     print('📍 stopLocationTracking');
     print('📍 위치 추적 일시정지됨');
-    isTrackingStarted = false;
+    _tracking = false;
   }
 
   Future<void> _getLocation() async {
     print('📍 getLocation');
 
-    try {
-      // 초기 로딩 시 고정밀도로 위치 정보 가져오기
-      currentPosition = await location.getLocation();
-      if (currentPosition != null && mounted) {
-        print('📍 currentPosition getLocation : $currentPosition');
-
-        setState(() {
+    final current = await location.getLocation();
+    if (mounted) {
+      setState(() {
+        currentPosition = LatLng(current.latitude!, current.longitude!);
+        if (currentPosition != null) {
           isLoading = false;
-          _updateLocation(currentPosition!);
-        });
-      }
-    } catch (e) {
-      print('위치 정보 가져오기 오류: $e');
-      setState(() {
-        isLoading = false;
-      });
-    }
-  }
-
-  void _updateLocation(LocationData locationData) {
-    if (!mounted) return;
-    setState(() {
-      currentPosition = locationData;
-      print('📍 currentPosition updateLocation : $currentPosition');
-    });
-
-    // 첫 위치 설정
-    if (!_initialPositionSet &&
-        currentPosition != null &&
-        mapController != null) {
-      mapController!.animateCamera(
-        CameraUpdate.newLatLngZoom(
-          LatLng(currentPosition!.latitude!, currentPosition!.longitude!),
-          17.0,
-        ),
-      );
-      _initialPositionSet = true;
-    }
-
-    // 추적 모드일 때만 경로에 위치 추가
-    if (context.read<MapProvider>().isTracking) {
-      print(
-        '📍 위치 업데이트됨: ${currentPosition?.latitude}, ${currentPosition?.longitude}',
-      );
-      route.add(
-        LatLng(currentPosition!.latitude!, currentPosition!.longitude!),
-      );
-      _updatePolylines();
-    }
-  }
-
-  void _updatePolylines() {
-    print('📍 _updatePolylines');
-    if (route.isNotEmpty) {
-      setState(() {
-        polylines.clear();
-        polylines.add(
-          Polyline(
-            polylineId: PolylineId('route'),
-            color: Colors.orange,
-            width: 5,
-            points: List.from(route),
-          ),
-        );
+          print('📍 currentPosition getLocation : $currentPosition');
+          // 첫 위치 설정
+          if (mapController != null) {
+            mapController!.animateCamera(
+              CameraUpdate.newLatLngZoom(
+                LatLng(
+                  currentPosition!.latitude,
+                  currentPosition!.longitude + 0.01,
+                ),
+                17.0,
+              ),
+            );
+          }
+        }
       });
     }
   }
@@ -264,9 +213,9 @@ class _MapScreenState extends State<MapScreen>
   @override
   Widget build(BuildContext context) {
     final mapProvider = Provider.of<MapProvider>(context);
-    if (mapProvider.isTracking && !isTrackingStarted) {
+    if (mapProvider.isTracking && !_tracking) {
       startLocationTracking();
-    } else if (!mapProvider.isTracking && isTrackingStarted) {
+    } else if (!mapProvider.isTracking && _tracking) {
       stopLocationTracking();
     }
 
@@ -306,27 +255,38 @@ class _MapScreenState extends State<MapScreen>
               if (mapProvider.selectedCourse == null) {
                 print("provider selectedCourse is null");
                 polylines.clear();
-                polylines.clear();
-                route.clear();
               }
               return LayoutBuilder(
                 builder: (BuildContext context, BoxConstraints constraints) {
-                  return isLoading
-                      ? const Center(child: CircularProgressIndicator())
-                      : GoogleMap(
-                        onMapCreated: (controller) {
-                          mapController = controller;
-                        },
-                        initialCameraPosition: CameraPosition(
-                          target: LatLng(
-                            currentPosition?.latitude ?? 35.1691,
-                            currentPosition?.longitude ?? 129.0874,
-                          ),
-                          zoom: 17.0,
-                        ),
-                        myLocationEnabled: true,
-                        polylines: polylines,
-                      );
+                  final mapHeight = constraints.maxHeight - 200;
+
+                  return Column(
+                    children: [
+                      SizedBox(
+                        height: mapHeight,
+                        child:
+                            isLoading
+                                ? const Center(
+                                  child: CircularProgressIndicator(),
+                                )
+                                : GoogleMap(
+                                  onMapCreated: (controller) {
+                                    mapController = controller;
+                                  },
+                                  initialCameraPosition: CameraPosition(
+                                    target: LatLng(
+                                      currentPosition?.latitude ?? 35.1691,
+                                      currentPosition?.longitude ?? 129.0874,
+                                    ),
+                                    zoom: 17.0,
+                                  ),
+                                  myLocationEnabled: true,
+                                  polylines: polylines,
+                                ),
+                      ),
+                      SizedBox(height: 200),
+                    ],
+                  );
                 },
               );
             },
@@ -340,3 +300,18 @@ class _MapScreenState extends State<MapScreen>
     );
   }
 }
+
+//37.39998686596509
+//126.93582435150346
+//37.39999776243921
+//126.93588830542465
+//37.40002693146225
+//126.93583290104469
+//37.40006888288775
+//126.93587254744669
+//37.400121607320585
+//126.93589715618252
+//37.40016808344529
+//126.9358958540428
+//37.40016658611629
+//126.93591771810729

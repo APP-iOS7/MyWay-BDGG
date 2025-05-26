@@ -1,143 +1,121 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:myway/const/colors.dart';
+import 'package:location/location.dart';
 
-List cars = [
-  {'id': 0, 'name': 'Select a Ride', 'price': 0.0},
-  {'id': 1, 'name': 'UberGo', 'price': 230.0},
-  {'id': 2, 'name': 'Go Sedan', 'price': 300.0},
-  {'id': 3, 'name': 'UberXL', 'price': 500.0},
-  {'id': 4, 'name': 'UberAuto', 'price': 140.0},
-];
+class MapInputScreen extends StatefulWidget {
+  const MapInputScreen({super.key});
 
-class TestDrawer extends StatefulWidget {
-  const TestDrawer({super.key});
   @override
-  _TestDrawerState createState() => _TestDrawerState();
+  State<MapInputScreen> createState() => _MapInputScreenState();
 }
 
-class _TestDrawerState extends State<TestDrawer> {
-  late CameraPosition _initialPosition;
-  GoogleMapController? mapController;
+class _MapInputScreenState extends State<MapInputScreen> {
+  GoogleMapController? _controller;
+  final Location _location = Location();
+  LatLng _currentPosition = const LatLng(37.5665, 126.9780); // 초기 위치 (서울시청)
 
-  Map<PolylineId, Polyline> polylines = {};
-  List<LatLng> polylineCoordinates = [];
-  final LatLng _center = const LatLng(35.1691, 129.0874);
-
-  int selectedCarId = 1;
-  bool backButtonVisible = true;
-
-  void _onMapCreated(GoogleMapController controller) {
-    mapController = controller;
-  }
-
-  // 시트 열고 닫는 메소드
-  void _toggleSheet() {
-    // 여기에 시트 열고 닫기 로직 추가
-    // 예를 들어, DraggableScrollableSheet의 상태를 변경하는 로직
-    setState(() {
-      backButtonVisible = !backButtonVisible; // 예시로 backButtonVisible을 변경
-    });
-  }
+  final List<LatLng> _route = []; // 경로 저장 리스트
+  Set<Polyline> _polylines = {}; // 지도에 표시할 Polyline
+  bool _tracking = false;
+  StreamSubscription<LocationData>? _locationSub;
 
   @override
   void initState() {
     super.initState();
+    _initializeLocation();
+  }
+
+  Future<void> _initializeLocation() async {
+    final serviceEnabled = await _location.serviceEnabled();
+    if (!serviceEnabled) {
+      final serviceRequested = await _location.requestService();
+      if (!serviceRequested) return;
+    }
+
+    final permissionGranted = await _location.hasPermission();
+    if (permissionGranted == PermissionStatus.denied) {
+      final permissionRequested = await _location.requestPermission();
+      if (permissionRequested != PermissionStatus.granted) return;
+    }
+
+    final current = await _location.getLocation();
+    if (mounted) {
+      setState(() {
+        _currentPosition = LatLng(current.latitude!, current.longitude!);
+        _controller?.animateCamera(CameraUpdate.newLatLng(_currentPosition));
+      });
+    }
+  }
+
+  void _startTracking() {
+    _route.clear();
+    _polylines.clear();
+    setState(() => _tracking = true);
+
+    _locationSub = _location.onLocationChanged.listen((loc) {
+      if (!_tracking ||
+          !mounted ||
+          loc.latitude == null ||
+          loc.longitude == null)
+        return;
+
+      final newPos = LatLng(loc.latitude!, loc.longitude!);
+      setState(() {
+        _currentPosition = newPos;
+        _route.add(newPos);
+        _polylines = {
+          Polyline(
+            polylineId: const PolylineId("route"),
+            points: List<LatLng>.from(_route),
+            color: Colors.blue,
+            width: 5,
+          ),
+        };
+      });
+      _controller?.animateCamera(CameraUpdate.newLatLng(newPos));
+    });
+  }
+
+  void _stopTracking() {
+    _locationSub?.cancel();
+    setState(() => _tracking = false);
+  }
+
+  @override
+  void dispose() {
+    _locationSub?.cancel();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading:
-            backButtonVisible
-                ? IconButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  icon: CircleAvatar(
-                    backgroundColor: Colors.white,
-                    child: const Icon(Icons.arrow_back, color: Colors.black),
-                  ),
-                )
-                : null,
-      ),
+      appBar: AppBar(title: const Text("실시간 경로 추적 지도")),
       body: Stack(
         children: [
-          LayoutBuilder(
-            builder: (BuildContext context, BoxConstraints constraints) {
-              return SizedBox(
-                height: constraints.maxHeight / 2,
-                child: Container(color: BLUE_SECONDARY_500),
-
-                //  GoogleMap(
-                //   polylines: Set<Polyline>.of(polylines.values),
-                //   initialCameraPosition: CameraPosition(
-                //     target: _center,
-                //     zoom: 17.0,
-                //   ),
-                //   onMapCreated: _onMapCreated,
-                // ),
-              );
-            },
+          GoogleMap(
+            initialCameraPosition: CameraPosition(
+              target: _currentPosition,
+              zoom: 16,
+            ),
+            onMapCreated: (controller) => _controller = controller,
+            polylines: _polylines,
+            myLocationEnabled: true,
+            myLocationButtonEnabled: false,
           ),
-          DraggableScrollableSheet(
-            initialChildSize: 0.4,
-            minChildSize: 0.1,
-            maxChildSize: 0.4,
-            snapSizes: [0.1, 0.4],
-            snap: true,
-            builder: (BuildContext context, scrollSheetController) {
-              return Container(
-                color: Colors.white,
-                child: ListView.builder(
-                  padding: EdgeInsets.zero,
-                  physics: ClampingScrollPhysics(),
-                  controller: scrollSheetController,
-                  itemCount: cars.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    final car = cars[index];
-                    if (index == 0) {
-                      return Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Column(
-                          children: [
-                            SizedBox(width: 50, child: Divider(thickness: 5)),
-                            Text('Choose a trip or swipe up for more'),
-                          ],
-                        ),
-                      );
-                    }
-                    return Card(
-                      margin: EdgeInsets.zero,
-                      elevation: 0,
-                      child: ListTile(
-                        contentPadding: EdgeInsets.all(10),
-                        onTap: () {
-                          setState(() {
-                            selectedCarId = car['id'];
-                          });
-                        },
-                        leading: Icon(Icons.car_rental),
-                        title: Text(car['name']),
-                        trailing: Text(car['price'].toString()),
-                        selected: selectedCarId == car['id'],
-                        selectedTileColor: Colors.grey[200],
-                      ),
-                    );
-                  },
-                ),
-              );
-            },
+          Positioned(
+            bottom: 40,
+            left: 20,
+            right: 20,
+            child: ElevatedButton(
+              onPressed: _tracking ? _stopTracking : _startTracking,
+              child: Text(_tracking ? '중지' : '시작'),
+            ),
           ),
         ],
       ),
     );
   }
-}
-
-main() {
-  runApp(MaterialApp(home: TestDrawer()));
 }

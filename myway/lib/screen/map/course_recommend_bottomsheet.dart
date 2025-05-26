@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:myway/screen/alert/countdown_diallog.dart';
+import 'package:myway/provider/step_provider.dart';
 import 'package:myway/temp/course_data.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
-
-import '../../const/colors.dart';
-import '../../provider/map_provider.dart';
+import '/const/colors.dart';
+import '/provider/map_provider.dart';
 
 class CourseRecommendBottomsheet extends StatefulWidget {
   const CourseRecommendBottomsheet({super.key});
@@ -20,13 +21,13 @@ class _CourseRecommendBottomsheetState
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<MapProvider>(
-      builder: (context, mapProvider, child) {
+    return Consumer2<MapProvider, StepProvider>(
+      builder: (context, mapProvider, stepProvider, child) {
         return DraggableScrollableSheet(
           initialChildSize: 0.5,
-          minChildSize: 0.3,
+          minChildSize: 0.4,
           maxChildSize: 0.8,
-          snapSizes: [0.3, 0.7],
+          snapSizes: [0.4, 0.7],
           snap: false,
           builder: (BuildContext context, scrollSheetController) {
             return Container(
@@ -82,6 +83,12 @@ class _CourseRecommendBottomsheetState
                           onPressed: () {
                             mapProvider.setTracking(true);
                             mapProvider.showStartTrackingBottomSheet();
+                            CountdownDiallog.show(
+                              context,
+                              onComplete: () {
+                                stepProvider.startTracking();
+                              },
+                            );
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: ORANGE_PRIMARY_500,

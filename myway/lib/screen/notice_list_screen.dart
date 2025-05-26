@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-class AnnouncemnetScreen extends StatefulWidget {
-  const AnnouncemnetScreen({super.key});
+class NoticeListScreen extends StatefulWidget {
+  const NoticeListScreen({super.key});
 
   @override
-  State<AnnouncemnetScreen> createState() => _AnnouncemnetScreenState();
+  State<NoticeListScreen> createState() => _NoticeListScreenState();
 }
 
-class _AnnouncemnetScreenState extends State<AnnouncemnetScreen> {
+class _NoticeListScreenState extends State<NoticeListScreen> {
   final List<Map<String, dynamic>> _announcements = [
     {
       'title': '공지사항 1',
@@ -52,6 +52,9 @@ class _AnnouncemnetScreenState extends State<AnnouncemnetScreen> {
                     leading: Text('[공지]'),
                     title: Text(item['title']),
                     subtitle: Text(_formatDateTime(item['timestamp'])),
+                    onTap: () {
+                      // 공지사항 클릭 시 상세 페이지로 이동
+                    },
                   );
                 },
               ),
