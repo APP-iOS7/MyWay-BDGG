@@ -26,6 +26,7 @@ import 'temp/test_drawer.dart';
 import 'temp/test_map.dart';
 
 Future<void> main() async {
+  print('initial commit for dev_2');
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(
