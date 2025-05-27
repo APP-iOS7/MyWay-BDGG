@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+
 import 'package:provider/provider.dart';
 
 import '/provider/weather_provider.dart';
@@ -16,7 +17,7 @@ class WeatherScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('서울특별시'),
+        title: Text(weatherProvider.cityName),
         centerTitle: true,
         backgroundColor: Colors.white,
       ),
@@ -69,19 +70,19 @@ class WeatherScreen extends StatelessWidget {
                               children: [
                                 Text(
                                   item['time'] ?? '',
-                                  style: TextStyle(fontSize: 14),
+                                  style: const TextStyle(fontSize: 14),
                                 ),
-                                SizedBox(height: 6),
+                                const SizedBox(height: 6),
                                 SvgPicture.asset(
                                   item['icon'] ??
                                       'assets/icons/weather_sun.svg',
                                   width: 28,
                                   height: 28,
                                 ),
-                                SizedBox(height: 6),
+                                const SizedBox(height: 6),
                                 Text(
                                   item['temp'] ?? '-',
-                                  style: TextStyle(fontSize: 16),
+                                  style: const TextStyle(fontSize: 16),
                                 ),
                               ],
                             ),
@@ -108,7 +109,7 @@ class WeatherScreen extends StatelessWidget {
                                       color: const Color(0xff93C5D8),
                                     ),
                                   ),
-                                  SizedBox(width: 10),
+                                  const SizedBox(width: 10),
                                   Expanded(
                                     child: _buildInfoCard(
                                       label: "강수확률",
@@ -123,7 +124,7 @@ class WeatherScreen extends StatelessWidget {
                                 ],
                               ),
                             ),
-                            SizedBox(height: 10),
+                            const SizedBox(height: 10),
                             Expanded(
                               child: Row(
                                 children: [
@@ -139,7 +140,7 @@ class WeatherScreen extends StatelessWidget {
                                       ),
                                     ),
                                   ),
-                                  SizedBox(width: 10),
+                                  const SizedBox(width: 10),
                                   Expanded(
                                     child: _buildInfoCard(
                                       label: "초미세먼지",
@@ -187,7 +188,7 @@ class WeatherScreen extends StatelessWidget {
               children: [Text(label, style: const TextStyle(fontSize: 20))],
             ),
           ),
-          SizedBox(height: 10),
+          const SizedBox(height: 10),
           Padding(
             padding: const EdgeInsets.only(right: 10),
             child: Row(
