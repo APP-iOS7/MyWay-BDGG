@@ -68,8 +68,8 @@ class _CourseNameScreenState extends State<CourseNameScreen> {
         title: Text(
           '산책 완료',
           style: TextStyle(
-            color: GRAYSCALE_LABEL_900,
-            fontSize: 16,
+            color: GRAYSCALE_LABEL_950,
+            fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
         ),

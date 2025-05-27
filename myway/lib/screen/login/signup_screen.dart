@@ -413,9 +413,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
         scrolledUnderElevation: 0,
         title: Text(
           '회원가입',
-          style: GoogleFonts.inter(
-            color: Colors.black,
-            fontSize: 20,
+          style: TextStyle(
+            color: GRAYSCALE_LABEL_950,
+            fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
         ),

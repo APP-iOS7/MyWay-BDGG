@@ -144,7 +144,7 @@ class _NicknameChangeScreenState extends State<NicknameChangeScreen> {
           style: TextStyle(
             color: GRAYSCALE_LABEL_950,
             fontSize: 18,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.bold,
           ),
         ),
         centerTitle: true,
