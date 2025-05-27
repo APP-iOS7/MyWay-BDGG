@@ -1,7 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:myway/provider/step_provider.dart';
-import 'package:myway/screen/result/course_name_screen.dart';
 import 'package:provider/provider.dart';
 
 import '../../const/colors.dart';

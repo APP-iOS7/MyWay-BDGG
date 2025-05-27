@@ -5,8 +5,6 @@ import 'package:myway/model/activity_period.dart';
 import 'package:myway/provider/activity_log_provider.dart';
 import 'package:provider/provider.dart';
 
-import '../../const/colors.dart';
-
 class ActivityLogScreen extends StatefulWidget {
   const ActivityLogScreen({super.key});
 
