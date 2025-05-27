@@ -52,7 +52,7 @@ dependencies:
   gallery_saver_plus: ^3.2.4
   geolocator: ^14.0.0
   carousel_slider: ^5.0.0
-  image_gallery_saver: ^2.0.3
+  fl_chart: ^1.0.0
 
 dev_dependencies:
   flutter_test:

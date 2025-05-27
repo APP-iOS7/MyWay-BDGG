@@ -148,11 +148,14 @@ class _MapScreenState extends State<MapScreen>
 
     // 위치 추적 시작
     location.onLocationChanged.listen((LocationData currentLocation) {
+<<<<<<< HEAD
       final trackingStatus =
           Provider.of<StepProvider>(context, listen: false).status;
 
       if (trackingStatus != TrackingStatus.running) return;
 
+=======
+>>>>>>> 575e7f05b59daaf353389b17b0b20e890a79f6b8
       if (_tracking) {
         setState(() {
           print("latitude : ${currentLocation.latitude!}");
@@ -183,6 +186,7 @@ class _MapScreenState extends State<MapScreen>
     print('📍 stopLocationTracking');
     print('📍 위치 추적 일시정지됨');
     _tracking = false;
+<<<<<<< HEAD
     final Uint8List? imageBytes = await mapController!.takeSnapshot();
 
     if (imageBytes != null && imageBytes.isNotEmpty) {
@@ -203,6 +207,8 @@ class _MapScreenState extends State<MapScreen>
         context,
       ).showSnackBar(const SnackBar(content: Text('지도 캡처에 실패했습니다')));
     }
+=======
+>>>>>>> 575e7f05b59daaf353389b17b0b20e890a79f6b8
   }
 
   Future<void> _getLocation() async {
@@ -232,6 +238,7 @@ class _MapScreenState extends State<MapScreen>
     }
   }
 
+<<<<<<< HEAD
   void drawRecommendPolylines(Course? selectedCourse) {
     if (selectedCourse == null || selectedCourse == _prevCourse) return;
     _prevCourse = selectedCourse;
@@ -242,6 +249,13 @@ class _MapScreenState extends State<MapScreen>
     // 추천 경로 다시 그리기
     final recommendCourse = Polyline(
       polylineId: const PolylineId('recommended'),
+=======
+  void drawRecommendPolylines(Course selectedCourse) {
+    print('📍 drawRecommendPolylines');
+    polylines.clear();
+    Polyline recommendCourse = Polyline(
+      polylineId: PolylineId(selectedCourse.title),
+>>>>>>> 575e7f05b59daaf353389b17b0b20e890a79f6b8
       color: BLUE_SECONDARY_600,
       width: 5,
       points: selectedCourse.route,
@@ -253,6 +267,7 @@ class _MapScreenState extends State<MapScreen>
   Widget build(BuildContext context) {
     final stepProvider = Provider.of<StepProvider>(context);
     final mapProvider = Provider.of<MapProvider>(context);
+<<<<<<< HEAD
     final status = stepProvider.status;
     final selectedCourse = Provider.of<MapProvider>(context).selectedCourse;
     drawRecommendPolylines(selectedCourse);
@@ -262,6 +277,11 @@ class _MapScreenState extends State<MapScreen>
     if (_prevStatus != TrackingStatus.stopped &&
         status == TrackingStatus.stopped) {
       _tracking = false;
+=======
+    if (mapProvider.isTracking && !_tracking) {
+      startLocationTracking();
+    } else if (!mapProvider.isTracking && _tracking) {
+>>>>>>> 575e7f05b59daaf353389b17b0b20e890a79f6b8
       stopLocationTracking();
     }
     _prevStatus = status;
@@ -293,6 +313,7 @@ class _MapScreenState extends State<MapScreen>
       ),
       body: Stack(
         children: [
+<<<<<<< HEAD
           LayoutBuilder(
             builder: (BuildContext context, BoxConstraints constraints) {
               final mapHeight = constraints.maxHeight - 200;
@@ -332,6 +353,50 @@ class _MapScreenState extends State<MapScreen>
                   ),
                   SizedBox(height: 200),
                 ],
+=======
+          Consumer<MapProvider>(
+            builder: (context, mapProvider, child) {
+              if (mapProvider.selectedCourse != null) {
+                print("provider selectedCourse is not null");
+                drawRecommendPolylines(mapProvider.selectedCourse!);
+              }
+              if (mapProvider.selectedCourse == null) {
+                print("provider selectedCourse is null");
+                polylines.clear();
+              }
+              return LayoutBuilder(
+                builder: (BuildContext context, BoxConstraints constraints) {
+                  final mapHeight = constraints.maxHeight - 200;
+
+                  return Column(
+                    children: [
+                      SizedBox(
+                        height: mapHeight,
+                        child:
+                            isLoading
+                                ? const Center(
+                                  child: CircularProgressIndicator(),
+                                )
+                                : GoogleMap(
+                                  onMapCreated: (controller) {
+                                    mapController = controller;
+                                  },
+                                  initialCameraPosition: CameraPosition(
+                                    target: LatLng(
+                                      currentPosition?.latitude ?? 35.1691,
+                                      currentPosition?.longitude ?? 129.0874,
+                                    ),
+                                    zoom: 17.0,
+                                  ),
+                                  myLocationEnabled: true,
+                                  polylines: polylines,
+                                ),
+                      ),
+                      SizedBox(height: 200),
+                    ],
+                  );
+                },
+>>>>>>> 575e7f05b59daaf353389b17b0b20e890a79f6b8
               );
             },
           ),
