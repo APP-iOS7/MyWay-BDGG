@@ -1,9 +1,15 @@
 import 'dart:async';
+import 'dart:io';
+import 'dart:typed_data';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
+import 'package:myway/screen/result/course_name_screen.dart';
 import 'package:provider/provider.dart';
 
+import '../../provider/step_provider.dart';
 import '/const/colors.dart';
 import '/screen/map/course_recommend_bottomsheet.dart';
 import '/model/course_model.dart';
@@ -28,6 +34,9 @@ class _MapScreenState extends State<MapScreen>
   bool _tracking = false; // 경로 추적 상태
   bool isLoading = true;
 
+  final GlobalKey _mapCaptureKey = GlobalKey();
+  TrackingStatus? _prevStatus;
+  Course? _prevCourse;
   @override
   void initState() {
     super.initState();
@@ -139,6 +148,14 @@ class _MapScreenState extends State<MapScreen>
 
     // 위치 추적 시작
     location.onLocationChanged.listen((LocationData currentLocation) {
+<<<<<<< HEAD
+      final trackingStatus =
+          Provider.of<StepProvider>(context, listen: false).status;
+
+      if (trackingStatus != TrackingStatus.running) return;
+
+=======
+>>>>>>> 575e7f05b59daaf353389b17b0b20e890a79f6b8
       if (_tracking) {
         setState(() {
           print("latitude : ${currentLocation.latitude!}");
@@ -165,10 +182,33 @@ class _MapScreenState extends State<MapScreen>
   }
 
   // 위치 추적 중지
-  void stopLocationTracking() {
+  void stopLocationTracking() async {
     print('📍 stopLocationTracking');
     print('📍 위치 추적 일시정지됨');
     _tracking = false;
+<<<<<<< HEAD
+    final Uint8List? imageBytes = await mapController!.takeSnapshot();
+
+    if (imageBytes != null && imageBytes.isNotEmpty) {
+      debugPrint('📍 이미지 캡처 성공, 길이: ${imageBytes.length}');
+      debugPrint('PNG signature: ${imageBytes.sublist(0, 8)}');
+
+      if (!context.mounted) return;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => CourseNameScreen(courseImage: imageBytes),
+          ),
+        );
+      });
+    } else {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('지도 캡처에 실패했습니다')));
+    }
+=======
+>>>>>>> 575e7f05b59daaf353389b17b0b20e890a79f6b8
   }
 
   Future<void> _getLocation() async {
@@ -198,11 +238,24 @@ class _MapScreenState extends State<MapScreen>
     }
   }
 
+<<<<<<< HEAD
+  void drawRecommendPolylines(Course? selectedCourse) {
+    if (selectedCourse == null || selectedCourse == _prevCourse) return;
+    _prevCourse = selectedCourse;
+
+    // 기존 추천 경로만 제거
+    polylines.removeWhere((p) => p.polylineId.value == 'recommended');
+
+    // 추천 경로 다시 그리기
+    final recommendCourse = Polyline(
+      polylineId: const PolylineId('recommended'),
+=======
   void drawRecommendPolylines(Course selectedCourse) {
     print('📍 drawRecommendPolylines');
     polylines.clear();
     Polyline recommendCourse = Polyline(
       polylineId: PolylineId(selectedCourse.title),
+>>>>>>> 575e7f05b59daaf353389b17b0b20e890a79f6b8
       color: BLUE_SECONDARY_600,
       width: 5,
       points: selectedCourse.route,
@@ -212,12 +265,26 @@ class _MapScreenState extends State<MapScreen>
 
   @override
   Widget build(BuildContext context) {
+    final stepProvider = Provider.of<StepProvider>(context);
     final mapProvider = Provider.of<MapProvider>(context);
+<<<<<<< HEAD
+    final status = stepProvider.status;
+    final selectedCourse = Provider.of<MapProvider>(context).selectedCourse;
+    drawRecommendPolylines(selectedCourse);
+    if (mapProvider.isTracking && !_tracking) {
+      startLocationTracking();
+    }
+    if (_prevStatus != TrackingStatus.stopped &&
+        status == TrackingStatus.stopped) {
+      _tracking = false;
+=======
     if (mapProvider.isTracking && !_tracking) {
       startLocationTracking();
     } else if (!mapProvider.isTracking && _tracking) {
+>>>>>>> 575e7f05b59daaf353389b17b0b20e890a79f6b8
       stopLocationTracking();
     }
+    _prevStatus = status;
 
     return Scaffold(
       appBar: AppBar(
@@ -246,6 +313,47 @@ class _MapScreenState extends State<MapScreen>
       ),
       body: Stack(
         children: [
+<<<<<<< HEAD
+          LayoutBuilder(
+            builder: (BuildContext context, BoxConstraints constraints) {
+              final mapHeight = constraints.maxHeight - 200;
+
+              // if (mapProvider.selectedCourse != null) {
+              //   print("provider selectedCourse is not null");
+              //   drawRecommendPolylines(mapProvider.selectedCourse!);
+              // }
+              // if (mapProvider.selectedCourse == null) {
+              //   print("provider selectedCourse is null");
+              //   polylines.clear();
+              // }
+              return Column(
+                children: [
+                  SizedBox(
+                    height: mapHeight,
+                    child:
+                        isLoading
+                            ? const Center(child: CircularProgressIndicator())
+                            : RepaintBoundary(
+                              key: _mapCaptureKey,
+                              child: GoogleMap(
+                                onMapCreated: (controller) {
+                                  mapController = controller;
+                                },
+                                initialCameraPosition: CameraPosition(
+                                  target: LatLng(
+                                    currentPosition?.latitude ?? 35.1691,
+                                    currentPosition?.longitude ?? 129.0874,
+                                  ),
+                                  zoom: 17.0,
+                                ),
+                                myLocationEnabled: true,
+                                polylines: polylines,
+                              ),
+                            ),
+                  ),
+                  SizedBox(height: 200),
+                ],
+=======
           Consumer<MapProvider>(
             builder: (context, mapProvider, child) {
               if (mapProvider.selectedCourse != null) {
@@ -288,6 +396,7 @@ class _MapScreenState extends State<MapScreen>
                     ],
                   );
                 },
+>>>>>>> 575e7f05b59daaf353389b17b0b20e890a79f6b8
               );
             },
           ),
@@ -300,18 +409,3 @@ class _MapScreenState extends State<MapScreen>
     );
   }
 }
-
-//37.39998686596509
-//126.93582435150346
-//37.39999776243921
-//126.93588830542465
-//37.40002693146225
-//126.93583290104469
-//37.40006888288775
-//126.93587254744669
-//37.400121607320585
-//126.93589715618252
-//37.40016808344529
-//126.9358958540428
-//37.40016658611629
-//126.93591771810729

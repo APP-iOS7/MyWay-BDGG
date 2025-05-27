@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -10,8 +11,11 @@ import 'package:myway/provider/step_provider.dart';
 import 'package:myway/screen/result/tracking_result_screen.dart';
 import 'package:provider/provider.dart';
 
+import '../../provider/map_provider.dart';
+
 class CourseNameScreen extends StatefulWidget {
-  const CourseNameScreen({super.key});
+  final Uint8List courseImage;
+  const CourseNameScreen({super.key, required this.courseImage});
 
   @override
   State<CourseNameScreen> createState() => _CourseNameScreenState();
@@ -22,6 +26,12 @@ class _CourseNameScreenState extends State<CourseNameScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final repaintBoundary = GlobalKey();
+  late Uint8List imageBytes;
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   Future<String?> imageUpload() async {
     try {
@@ -72,7 +82,12 @@ class _CourseNameScreenState extends State<CourseNameScreen> {
             children: [
               RepaintBoundary(
                 key: repaintBoundary,
-                child: Image.asset('assets/images/map.png'),
+                child: Image.memory(
+                  widget.courseImage,
+                  gaplessPlayback: true,
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) => const Text('이미지를 불러올 수 없습니다'),
+                ),
               ),
               SizedBox(height: 20),
               Row(
