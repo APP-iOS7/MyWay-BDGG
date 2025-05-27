@@ -16,7 +16,11 @@ class SettingScreen extends StatelessWidget {
         backgroundColor: WHITE,
         title: Text(
           '설정',
-          style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
+          style: TextStyle(
+            color: GRAYSCALE_LABEL_950,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         centerTitle: true,
       ),

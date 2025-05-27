@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:myway/const/colors.dart';
 import 'package:provider/provider.dart';
 
 import '/provider/weather_provider.dart';
@@ -16,7 +17,14 @@ class WeatherScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('서울특별시'),
+        title: const Text(
+          '서울특별시',
+          style: TextStyle(
+            color: GRAYSCALE_LABEL_900,
+            fontWeight: FontWeight.w700,
+            fontSize: 18,
+          ),
+        ),
         centerTitle: true,
         backgroundColor: Colors.white,
       ),
@@ -89,15 +97,14 @@ class WeatherScreen extends StatelessWidget {
                         },
                       ),
                     ),
-                    SizedBox(height: screenHeight * 0.02),
+                    SizedBox(height: 20),
                     Expanded(
                       child: Padding(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: screenWidth * 0.05,
-                        ),
+                        padding: EdgeInsets.symmetric(horizontal: 20),
                         child: Column(
                           children: [
-                            Expanded(
+                            Flexible(
+                              flex: 1,
                               child: Row(
                                 children: [
                                   Expanded(
@@ -105,26 +112,27 @@ class WeatherScreen extends StatelessWidget {
                                       label: "습도",
                                       icon: Icons.water_drop_rounded,
                                       value: '${weatherProvider.humidity}%',
-                                      color: const Color(0xff93C5D8),
+                                      color: BLUE_SECONDARY_500,
                                     ),
                                   ),
                                   SizedBox(width: 10),
                                   Expanded(
                                     child: _buildInfoCard(
                                       label: "강수확률",
-                                      icon: Icons.water_drop,
+                                      icon: Icons.umbrella_outlined,
                                       value:
                                           weatherProvider.rainProb.contains('비')
                                               ? weatherProvider.rainProb
                                               : '${weatherProvider.rainProb}%',
-                                      color: const Color(0xff164F6D),
+                                      color: BLUE_SECONDARY_800,
                                     ),
                                   ),
                                 ],
                               ),
                             ),
                             SizedBox(height: 10),
-                            Expanded(
+                            Flexible(
+                              flex: 1,
                               child: Row(
                                 children: [
                                   Expanded(
@@ -159,6 +167,7 @@ class WeatherScreen extends StatelessWidget {
                         ),
                       ),
                     ),
+                    SizedBox(height: 20),
                   ],
                 ),
               ),
@@ -172,39 +181,41 @@ class WeatherScreen extends StatelessWidget {
     required Color color,
   }) {
     return Container(
+      padding: EdgeInsets.all(10),
       width: double.infinity,
       decoration: BoxDecoration(
-        color: const Color(0xFFF9FAFC),
+        color: GRAYSCALE_LABEL_50,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 10),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [Text(label, style: const TextStyle(fontSize: 20))],
-            ),
-          ),
-          SizedBox(height: 10),
-          Padding(
-            padding: const EdgeInsets.only(right: 10),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Icon(icon, size: 40, color: color),
-                const SizedBox(width: 10),
-                Text(
-                  value,
-                  style: TextStyle(
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold,
-                    color: color,
-                  ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w500,
                 ),
-              ],
-            ),
+              ),
+            ],
+          ),
+          Spacer(),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Icon(icon, size: 40, color: color),
+              const SizedBox(width: 5),
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 30,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -229,7 +240,7 @@ class WeatherScreen extends StatelessWidget {
   Color _getQualityColor(String grade) {
     switch (grade) {
       case '좋음':
-        return const Color(0xff006E18);
+        return GREEN_SUCCESS_TEXT_50;
       case '보통':
         return const Color(0xff1A78EC);
       case '나쁨':

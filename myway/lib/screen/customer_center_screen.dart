@@ -6,7 +6,17 @@ class CustomerCenterScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('고객센터'), centerTitle: true),
+      appBar: AppBar(
+        title: Text(
+          '고객센터',
+          style: TextStyle(
+            color: GRAYSCALE_LABEL_950,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        centerTitle: true,
+      ),
       body: Padding(
         padding: const EdgeInsets.only(top: 30, left: 20, right: 20),
         child: Column(
