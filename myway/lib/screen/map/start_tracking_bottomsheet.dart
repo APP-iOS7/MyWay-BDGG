@@ -206,17 +206,7 @@ class _StartTrackingBottomsheetState extends State<StartTrackingBottomsheet> {
                                       ),
                                       TextButton(
                                         onPressed: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder:
-                                                  (context) =>
-                                                      CourseNameScreen(),
-                                            ),
-                                          ).then((_) {
-                                            // 화면 이동 후 상태 초기화
-                                            stepProvider.resetTracking();
-                                          });
+                                          stepProvider.stopTracking();
                                         },
                                         child: Text(
                                           '종료',

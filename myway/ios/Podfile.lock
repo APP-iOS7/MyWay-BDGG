@@ -1400,6 +1400,8 @@ PODS:
   - GTMSessionFetcher/Core (4.5.0)
   - health (12.2.0):
     - Flutter
+  - image_gallery_saver (2.0.2):
+    - Flutter
   - leveldb-library (1.22.6)
   - location (0.0.1):
     - Flutter
@@ -1428,6 +1430,7 @@ DEPENDENCIES:
   - geolocator_apple (from `.symlinks/plugins/geolocator_apple/darwin`)
   - google_maps_flutter_ios (from `.symlinks/plugins/google_maps_flutter_ios/ios`)
   - health (from `.symlinks/plugins/health/ios`)
+  - image_gallery_saver (from `.symlinks/plugins/image_gallery_saver/ios`)
   - location (from `.symlinks/plugins/location/ios`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
   - pedometer (from `.symlinks/plugins/pedometer/ios`)
@@ -1479,6 +1482,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/google_maps_flutter_ios/ios"
   health:
     :path: ".symlinks/plugins/health/ios"
+  image_gallery_saver:
+    :path: ".symlinks/plugins/image_gallery_saver/ios"
   location:
     :path: ".symlinks/plugins/location/ios"
   path_provider_foundation:
@@ -1518,6 +1523,7 @@ SPEC CHECKSUMS:
   gRPC-Core: 860978b7db482de8b4f5e10677216309b5ff6330
   GTMSessionFetcher: fc75fc972958dceedee61cb662ae1da7a83a91cf
   health: e739f88e8030f47660f93bf7af2ae775b01766dd
+  image_gallery_saver: cb43cc43141711190510e92c460eb1655cd343cb
   leveldb-library: cc8b8f8e013647a295ad3f8cd2ddf49a6f19be19
   location: d5cf8598915965547c3f36761ae9cc4f4e87d22e
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
