@@ -181,7 +181,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   .doc(_auth.currentUser?.uid)
                   .snapshots()
                   .distinct()
-                  .debounceTime(Duration(milliseconds: 300)),
+                  .debounceTime(
+                    Duration(milliseconds: 300),
+                  ), // 깜빡임 현상 줄이기 위해 사용
 
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
