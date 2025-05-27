@@ -181,7 +181,7 @@ class _StartTrackingBottomsheetState extends State<StartTrackingBottomsheet> {
                             builder: (BuildContext context) {
                               return AlertDialog(
                                 backgroundColor: WHITE,
-                                elevation: 0, // ✅ 그림자 제거
+                                elevation: 0,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(8),
                                 ),
@@ -219,6 +219,8 @@ class _StartTrackingBottomsheetState extends State<StartTrackingBottomsheet> {
                                               borderRadius:
                                                   BorderRadius.circular(8),
                                             ),
+                                            shadowColor: Colors.transparent,
+                                            overlayColor: GRAYSCALE_LABEL_800,
                                           ),
                                           onPressed: () {
                                             Navigator.pop(context);
@@ -241,6 +243,8 @@ class _StartTrackingBottomsheetState extends State<StartTrackingBottomsheet> {
                                               borderRadius:
                                                   BorderRadius.circular(8),
                                             ),
+                                            overlayColor: ORANGE_PRIMARY_800,
+                                            shadowColor: Colors.transparent,
                                           ),
                                           onPressed: () {
                                             stepProvider.stopTracking();
