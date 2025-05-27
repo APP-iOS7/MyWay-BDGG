@@ -231,11 +231,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       enlargeCenterPage: true, // 가운데 아이템 확대
                       enlargeFactor: 0.1,
                       autoPlay: false,
-                      // onPageChanged: (index, reason) {
-                      //   setState(() {
-                      //     _currentIndex = index;
-                      //   });
-                      // },
                     ),
                     items:
                         limitedResults.map((result) {
