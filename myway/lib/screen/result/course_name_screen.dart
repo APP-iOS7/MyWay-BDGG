@@ -11,8 +11,6 @@ import 'package:myway/provider/step_provider.dart';
 import 'package:myway/screen/result/tracking_result_screen.dart';
 import 'package:provider/provider.dart';
 
-import '../../provider/map_provider.dart';
-
 class CourseNameScreen extends StatefulWidget {
   final Uint8List courseImage;
   const CourseNameScreen({super.key, required this.courseImage});
@@ -35,19 +33,12 @@ class _CourseNameScreenState extends State<CourseNameScreen> {
 
   Future<String?> imageUpload() async {
     try {
-      final boundary =
-          repaintBoundary.currentContext!.findRenderObject()!
-              as RenderRepaintBoundary;
-      final image = await boundary.toImage(pixelRatio: 2.0);
-      final byteData = await image.toByteData(format: ImageByteFormat.png);
-      final pngBytes = byteData!.buffer.asUint8List();
-
       // Storage업로드
       final fileName =
           'walk_result_map${DateTime.now().millisecondsSinceEpoch}.png';
       final ref = FirebaseStorage.instance.ref().child('walk_result/$fileName');
 
-      final uploadTask = await ref.putData(pngBytes);
+      final uploadTask = await ref.putData(widget.courseImage);
 
       // 업로드 완료 후 URL 얻기
       final downloadUrl = await uploadTask.ref.getDownloadURL();
@@ -65,11 +56,19 @@ class _CourseNameScreenState extends State<CourseNameScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
+        elevation: 0,
+        scrolledUnderElevation: 0,
         backgroundColor: Colors.white,
+        leading: IconButton(
+          icon: Icon(Icons.close_outlined, color: GRAYSCALE_LABEL_900),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
         title: Text(
           '산책 완료',
           style: TextStyle(
-            color: Colors.black,
+            color: GRAYSCALE_LABEL_900,
             fontSize: 16,
             fontWeight: FontWeight.bold,
           ),
@@ -80,14 +79,11 @@ class _CourseNameScreenState extends State<CourseNameScreen> {
           padding: const EdgeInsets.only(left: 20.0, right: 20.0),
           child: Column(
             children: [
-              RepaintBoundary(
-                key: repaintBoundary,
-                child: Image.memory(
-                  widget.courseImage,
-                  gaplessPlayback: true,
-                  fit: BoxFit.contain,
-                  errorBuilder: (_, __, ___) => const Text('이미지를 불러올 수 없습니다'),
-                ),
+              Image.memory(
+                widget.courseImage,
+                gaplessPlayback: true,
+                fit: BoxFit.contain,
+                errorBuilder: (_, __, ___) => const Text('이미지를 불러올 수 없습니다'),
               ),
               SizedBox(height: 20),
               Row(
