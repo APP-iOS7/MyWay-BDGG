@@ -13,7 +13,6 @@ class ActivityLogScreen extends StatefulWidget {
 }
 
 class _ActivityLogScreenState extends State<ActivityLogScreen> {
-  // Widget _buildSimpleBarChart() {
   @override
   void initState() {
     super.initState();
@@ -62,7 +61,7 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
                   textBaseline: TextBaseline.alphabetic,
                   children: [
                     Text(
-                      activityProvider.totalDistance.toString(),
+                      activityProvider.totalDistance.toStringAsFixed(1),
                       style: TextStyle(
                         fontSize: 36,
                         fontWeight: FontWeight.bold,
@@ -311,7 +310,7 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
     ActivityLogProvider activityProvider,
   ) {
     return Row(
-      spacing: 20,
+      spacing: 50,
       children: [
         _buildValueText(
           value: activityProvider.formattedTotalDuration,
@@ -375,14 +374,14 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            '거리(km)',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: GRAYSCALE_LABEL_950,
-            ),
-          ),
+          // Text(
+          //   '거리(km)',
+          //   style: TextStyle(
+          //     fontSize: 16,
+          //     fontWeight: FontWeight.bold,
+          //     color: GRAYSCALE_LABEL_950,
+          //   ),
+          // ),
           SizedBox(height: 16),
           Expanded(
             child:
@@ -407,7 +406,7 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
                                   reservedSize: 40,
                                   getTitlesWidget: (value, meta) {
                                     return Text(
-                                      '${value.toInt()}km',
+                                      '${value.toStringAsFixed(1)}km',
                                       style: TextStyle(
                                         color: GRAYSCALE_LABEL_600,
                                         fontSize: 12,
@@ -483,7 +482,7 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
                                   reservedSize: 40,
                                   getTitlesWidget: (value, meta) {
                                     return Text(
-                                      '${value.toInt()}km',
+                                      '${value.toStringAsFixed(1)}km',
                                       style: TextStyle(
                                         color: GRAYSCALE_LABEL_600,
                                         fontSize: 12,
