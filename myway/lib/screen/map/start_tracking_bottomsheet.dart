@@ -179,41 +179,77 @@ class _StartTrackingBottomsheetState extends State<StartTrackingBottomsheet> {
                           showDialog(
                             context: context,
                             builder: (BuildContext context) {
-                              return CupertinoAlertDialog(
+                              return AlertDialog(
+                                backgroundColor: WHITE,
+                                elevation: 0, // ✅ 그림자 제거
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                title: Text(
+                                  '산책 종료',
+                                  style: TextStyle(
+                                    color: GRAYSCALE_LABEL_900,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
                                 content: Text(
                                   '산책을 종료 하시겠습니까?',
                                   style: TextStyle(
-                                    color: BLUE_SECONDARY_800,
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: GRAYSCALE_LABEL_700,
+                                    fontWeight: FontWeight.w500,
                                   ),
+                                ),
+                                actionsPadding: const EdgeInsets.only(
+                                  bottom: 12,
+                                  left: 12,
+                                  right: 12,
                                 ),
                                 actions: [
                                   Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      TextButton(
-                                        onPressed: () {
-                                          Navigator.pop(context);
-                                        },
-                                        child: Text(
-                                          '취소',
-                                          style: TextStyle(
-                                            color: Colors.black,
-                                            fontSize: 15,
+                                      Expanded(
+                                        child: ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                            elevation: 0,
+                                            backgroundColor:
+                                                GRAYSCALE_LABEL_100,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                            ),
+                                          ),
+                                          onPressed: () {
+                                            Navigator.pop(context);
+                                          },
+                                          child: Text(
+                                            '아니요',
+                                            style: TextStyle(
+                                              color: GRAYSCALE_LABEL_900,
+                                            ),
                                           ),
                                         ),
                                       ),
-                                      TextButton(
-                                        onPressed: () {
-                                          stepProvider.stopTracking();
-                                        },
-                                        child: Text(
-                                          '종료',
-                                          style: TextStyle(
-                                            color: Colors.red,
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.bold,
+                                      SizedBox(width: 12),
+                                      Expanded(
+                                        child: ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                            elevation: 0,
+                                            backgroundColor: ORANGE_PRIMARY_500,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                            ),
+                                          ),
+                                          onPressed: () {
+                                            stepProvider.stopTracking();
+                                          },
+                                          child: Text(
+                                            '네',
+                                            style: TextStyle(
+                                              color: GRAYSCALE_LABEL_900,
+                                            ),
                                           ),
                                         ),
                                       ),

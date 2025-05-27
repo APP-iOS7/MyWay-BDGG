@@ -98,17 +98,78 @@ class SettingScreen extends StatelessWidget {
                         context: context,
                         builder:
                             (context) => AlertDialog(
-                              title: Text('로그아웃'),
-                              content: Text('정말 로그아웃 하시겠습니까?'),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.pop(context, true),
-                                  child: Text('로그아웃'),
+                              backgroundColor: WHITE,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              title: Text(
+                                '로그아웃',
+                                style: TextStyle(
+                                  color: GRAYSCALE_LABEL_900,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
                                 ),
-                                TextButton(
-                                  onPressed:
-                                      () => Navigator.pop(context, false),
-                                  child: Text('취소'),
+                              ),
+                              content: Text(
+                                '로그아웃 하시겠습니까?',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: GRAYSCALE_LABEL_700,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              actionsPadding: EdgeInsets.only(
+                                bottom: 12,
+                                left: 12,
+                                right: 12,
+                              ),
+                              actions: [
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          elevation: 0,
+                                          backgroundColor: GRAYSCALE_LABEL_100,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
+                                          ),
+                                        ),
+                                        onPressed:
+                                            () => Navigator.pop(context, false),
+                                        child: Text(
+                                          '취소',
+                                          style: TextStyle(
+                                            color: GRAYSCALE_LABEL_900,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    SizedBox(width: 10),
+                                    Expanded(
+                                      child: ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          elevation: 0,
+                                          backgroundColor: ORANGE_PRIMARY_500,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
+                                          ),
+                                        ),
+                                        onPressed:
+                                            () => Navigator.pop(context, true),
+                                        child: Text(
+                                          '확인',
+                                          style: TextStyle(
+                                            color: GRAYSCALE_LABEL_900,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
