@@ -53,6 +53,7 @@ dependencies:
   geolocator: ^14.0.0
   carousel_slider: ^5.0.0
   rxdart: ^0.28.0
+  fl_chart: ^1.0.0
 
 dev_dependencies:
   flutter_test:
