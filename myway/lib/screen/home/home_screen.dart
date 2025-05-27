@@ -178,11 +178,14 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               StreamBuilder<DocumentSnapshot>(
-                stream:
-                    _firestore
-                        .collection('trackingResult')
-                        .doc(_auth.currentUser?.uid)
-                        .snapshots(),
+                stream: _firestore
+                    .collection('trackingResult')
+                    .doc(_auth.currentUser?.uid)
+                    .snapshots()
+                    .distinct()
+                    .debounceTime(
+                      Duration(milliseconds: 300),
+                    ), // 너무 잦은 업데이트로 인해 깜박임 발생 방지
 
                 builder: (context, snapshot) {
                   if (snapshot.hasError) {
@@ -229,7 +232,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       options: CarouselOptions(
                         scrollDirection: Axis.horizontal,
                         height: 460,
-                        enableInfiniteScroll: true,
+                        enableInfiniteScroll: trackingResult.length == 3,
                         padEnds: true,
                         viewportFraction: 0.8, // 화면에 보이는 아이템의 비율
                         enlargeCenterPage: true, // 가운데 아이템 확대
