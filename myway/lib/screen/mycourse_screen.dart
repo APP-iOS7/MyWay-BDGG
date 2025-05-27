@@ -49,11 +49,91 @@ class _MycourseScreenState extends State<MycourseScreen> {
               .doc(_auth.currentUser?.uid)
               .snapshots(),
       builder: (context, snapshot) {
-        if (snapshot.hasError) return const Center(child: Text('에러가 발생했습니다.'));
-        if (!snapshot.hasData || !snapshot.data!.exists)
-          return const Center(child: Text('저장된 기록이 없습니다.'));
+        if (snapshot.hasError) {
+          return Scaffold(
+            backgroundColor: WHITE,
+
+            appBar: AppBar(
+              backgroundColor: Colors.white,
+              scrolledUnderElevation: 0,
+              centerTitle: true,
+              title: const Text(
+                '나의 코스',
+                style: TextStyle(
+                  color: GRAYSCALE_LABEL_950,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            body: const Center(child: Text('에러가 발생했습니다.')),
+          );
+        }
+        if (!snapshot.hasData || !snapshot.data!.exists) {
+          return Scaffold(
+            backgroundColor: WHITE,
+
+            appBar: AppBar(
+              backgroundColor: Colors.white,
+              scrolledUnderElevation: 0,
+              centerTitle: true,
+              title: const Text(
+                '나의 코스',
+                style: TextStyle(
+                  color: GRAYSCALE_LABEL_950,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            body: Padding(
+              padding: const EdgeInsets.only(top: 200.0),
+              child: Column(
+                children: [
+                  Icon(Icons.directions_walk),
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    width: double.infinity,
+                    child: Text(
+                      '저장된 기록이 없습니다.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: GRAYSCALE_LABEL_800,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                      ),
+                    ),
+                  ),
+                  Text(
+                    '산책을 시작해서 나만의 코스를 만들어보세요!',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: GRAYSCALE_LABEL_600,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(
+          return Scaffold(
+            backgroundColor: WHITE,
+            appBar: AppBar(
+              backgroundColor: Colors.white,
+              scrolledUnderElevation: 0,
+              centerTitle: true,
+              title: Text(
+                '나의 코스',
+                style: TextStyle(
+                  color: GRAYSCALE_LABEL_950,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
             body: Center(child: CircularProgressIndicator()),
           );
         }
@@ -82,9 +162,9 @@ class _MycourseScreenState extends State<MycourseScreen> {
             title: const Text(
               '나의 코스',
               style: TextStyle(
-                color: Colors.black,
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
+                color: GRAYSCALE_LABEL_950,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
               ),
             ),
             actions:
@@ -116,10 +196,10 @@ class _MycourseScreenState extends State<MycourseScreen> {
                         ),
                       ),
                     ],
-            bottom: PreferredSize(
-              preferredSize: const Size.fromHeight(1),
-              child: Divider(height: 1, thickness: 1, color: Colors.grey[300]),
-            ),
+            // bottom: PreferredSize(
+            //   preferredSize: const Size.fromHeight(1),
+            //   child: Divider(height: 1, thickness: 1, color: Colors.grey[300]),
+            // ),
           ),
           body: Padding(
             padding: const EdgeInsets.all(20),
