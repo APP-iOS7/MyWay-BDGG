@@ -101,12 +101,7 @@ class _TrackingResultScreenState extends State<TrackingResultScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        leading: IconButton(
-          onPressed: () {
-            Navigator.popUntil(context, (route) => route.isFirst);
-          },
-          icon: Icon(Icons.arrow_back_ios, color: Colors.black),
-        ),
+        automaticallyImplyLeading: false,
         backgroundColor: Colors.white,
         title: Text(
           '산책완료',
@@ -124,14 +119,17 @@ class _TrackingResultScreenState extends State<TrackingResultScreen> {
           children: [
             Container(
               width: double.infinity,
+              margin: EdgeInsets.only(top: 8),
               padding: EdgeInsets.only(bottom: 22),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color.fromARGB(69, 148, 147, 147),
-                    offset: Offset(2, 2),
+                    color: GRAYSCALE_LABEL_300,
+                    spreadRadius: 1,
+                    blurRadius: 8,
+                    offset: Offset(1, 1),
                   ),
                 ],
               ),
@@ -139,7 +137,12 @@ class _TrackingResultScreenState extends State<TrackingResultScreen> {
                 children: [
                   RepaintBoundary(
                     key: repaintBoundary,
-                    child: Image.asset('assets/images/map.png'),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(12),
+                      ),
+                      child: Image.asset('assets/images/map.png'),
+                    ),
                   ),
                   SizedBox(height: 20),
                   Padding(
@@ -149,7 +152,11 @@ class _TrackingResultScreenState extends State<TrackingResultScreen> {
                       children: [
                         Text(
                           widget.courseName,
-                          style: TextStyle(color: Colors.black, fontSize: 18),
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                         Text(
                           stepProvider.formattedStopTime,
@@ -170,7 +177,7 @@ class _TrackingResultScreenState extends State<TrackingResultScreen> {
                       ],
                     ),
                   ),
-                  SizedBox(height: 40),
+                  SizedBox(height: 20),
                   Padding(
                     padding: const EdgeInsets.only(left: 20.0),
                     child: Row(
@@ -268,7 +275,8 @@ class _TrackingResultScreenState extends State<TrackingResultScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Expanded(
+                Flexible(
+                  flex: 2,
                   child: GestureDetector(
                     onTap: () {
                       saveCardAsImage();
@@ -310,38 +318,32 @@ class _TrackingResultScreenState extends State<TrackingResultScreen> {
                   ),
                 ),
                 SizedBox(width: 10),
-                Expanded(
+                Flexible(
+                  flex: 1,
                   child: GestureDetector(
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.popUntil(context, (route) => route.isFirst);
+                      stepProvider.resetTracking();
+                    },
                     child: Container(
                       alignment: Alignment.center,
-                      padding: EdgeInsets.all(5),
+                      padding: EdgeInsets.all(20),
                       decoration: BoxDecoration(
                         color: YELLOW_INFO_BASE_30,
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: Padding(
-                        padding: const EdgeInsets.only(left: 30.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              '내 코스 공유',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            '홈 으로',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
                             ),
-                            IconButton(
-                              onPressed: () {},
-                              icon: Icon(
-                                Icons.share_outlined,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
