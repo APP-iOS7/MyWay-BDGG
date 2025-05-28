@@ -36,7 +36,6 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (context) => UserProvider()),
         ChangeNotifierProvider(
           create: (context) => WeatherProvider()..loadWeather(),
-          child: WeatherScreen(),
         ),
         ChangeNotifierProvider(create: (context) => StepProvider()),
         ChangeNotifierProvider(create: (context) => MapProvider()),
