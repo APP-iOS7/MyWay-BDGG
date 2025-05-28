@@ -1,10 +1,8 @@
-// provider/weather_provider.dart (최종 수정: 모든 import 및 위치 기반 날씨 처리)
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:location/location.dart' as loc;
-
+import 'package:location/location.dart';
 import '../services/airquality_api_service.dart';
 import '../services/weather_api_service.dart';
 
@@ -34,6 +32,15 @@ class WeatherProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
+      final hasPermission = await _checkLocationPermission();
+      if (!hasPermission) {
+        print('위치 권한 거부됨');
+        cityName = '위치 권한 필요';
+        isLoading = false;
+        notifyListeners();
+        return;
+      }
+
       final current = await location.getLocation();
       final grid = convertToGrid(current.latitude!, current.longitude!);
       cityName = await _getAddressFromCoordinates(
@@ -58,10 +65,48 @@ class WeatherProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<bool> _checkLocationPermission() async {
+    PermissionStatus permission = await location.hasPermission();
+    if (permission == PermissionStatus.denied) {
+      permission = await location.requestPermission();
+      if (permission != PermissionStatus.granted) {
+        return false;
+      }
+    }
+
+    final serviceEnabled = await location.serviceEnabled();
+    if (!serviceEnabled) {
+      final enabled = await location.requestService();
+      if (!enabled) return false;
+    }
+
+    return true;
+  }
+
   Future<String> _getAddressFromCoordinates(double lat, double lon) async {
     try {
       final placemarks = await placemarkFromCoordinates(lat, lon);
-      return placemarks.first.locality ?? '현재 위치';
+      final adminArea = placemarks.first.administrativeArea ?? '서울특별시';
+
+      if (adminArea.contains('서울')) return '서울';
+      if (adminArea.contains('부산')) return '부산';
+      if (adminArea.contains('대구')) return '대구';
+      if (adminArea.contains('인천')) return '인천';
+      if (adminArea.contains('광주')) return '광주';
+      if (adminArea.contains('대전')) return '대전';
+      if (adminArea.contains('울산')) return '울산';
+      if (adminArea.contains('세종')) return '세종';
+      if (adminArea.contains('경기')) return '경기';
+      if (adminArea.contains('강원')) return '강원';
+      if (adminArea.contains('충북')) return '충북';
+      if (adminArea.contains('충남')) return '충남';
+      if (adminArea.contains('전북')) return '전북';
+      if (adminArea.contains('전남')) return '전남';
+      if (adminArea.contains('경북')) return '경북';
+      if (adminArea.contains('경남')) return '경남';
+      if (adminArea.contains('제주')) return '제주';
+
+      return '서울'; // fallback (혹시라도 실패할 경우)
     } catch (e) {
       print('역지오코딩 실패: $e');
       return '위치 불명';
@@ -212,7 +257,7 @@ class WeatherProvider extends ChangeNotifier {
             final iconPath = _getWeatherIconPath(status, false);
             return {
               'time': timeLabel,
-              'temp': '${e.value['temp']}°',
+              'temp': '${e.value['temp']}\u00b0',
               'icon': iconPath,
             };
           }).toList();
