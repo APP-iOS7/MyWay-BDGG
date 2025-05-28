@@ -29,6 +29,12 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
 
     return Consumer<ActivityLogProvider>(
       builder: (context, activityProvider, child) {
+        // 모든 데이터가 0인지 확인
+        bool hasNoData =
+            activityProvider.totalDistance == 0 &&
+            activityProvider.totalCount == 0 &&
+            activityProvider.totalSteps == 0;
+
         return Scaffold(
           backgroundColor: BACKGROUND_COLOR,
           appBar: AppBar(
@@ -44,65 +50,96 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
             ),
             centerTitle: true,
           ),
-          body: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(
-              horizontal: horizontalPageMargin,
-              vertical: 16,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                _buildPeriodSelector(context, activityProvider),
-                SizedBox(height: 24),
-                _buildDateSelector(context, activityProvider),
-                SizedBox(height: labelToTextMargin + 10),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.baseline,
-                  textBaseline: TextBaseline.alphabetic,
-                  children: [
-                    Text(
-                      activityProvider.totalDistance.toStringAsFixed(1),
-                      style: TextStyle(
-                        fontSize: 36,
-                        fontWeight: FontWeight.bold,
-                        color: GRAYSCALE_LABEL_950,
-                        height: 1.1,
-                      ),
-                    ),
-                    SizedBox(width: 6),
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 4.0),
-                      child: Text(
-                        "km",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: GRAYSCALE_LABEL_950,
+          body:
+              hasNoData
+                  ? Padding(
+                    padding: const EdgeInsets.only(top: 200),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text(
+                              '저장된 활동이 없습니다',
+                              style: TextStyle(
+                                fontSize: 20,
+                                color: GRAYSCALE_LABEL_800,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              '산책을 시작해서 나만의 활동을 기록 해보세요!',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: GRAYSCALE_LABEL_600,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
+                      ],
                     ),
-                  ],
-                ),
-                SizedBox(height: labelToTextMargin - 1),
-                Text(
-                  "거리",
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: GRAYSCALE_LABEL_800,
-                    fontWeight: FontWeight.w500,
+                  )
+                  : SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: horizontalPageMargin,
+                      vertical: 16,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        _buildPeriodSelector(context, activityProvider),
+                        SizedBox(height: 24),
+                        _buildDateSelector(context, activityProvider),
+                        SizedBox(height: labelToTextMargin + 10),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.baseline,
+                          textBaseline: TextBaseline.alphabetic,
+                          children: [
+                            Text(
+                              activityProvider.totalDistance.toStringAsFixed(1),
+                              style: TextStyle(
+                                fontSize: 36,
+                                fontWeight: FontWeight.bold,
+                                color: GRAYSCALE_LABEL_950,
+                                height: 1.1,
+                              ),
+                            ),
+                            SizedBox(width: 6),
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 4.0),
+                              child: Text(
+                                "km",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: GRAYSCALE_LABEL_950,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: labelToTextMargin - 1),
+                        Text(
+                          "거리",
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: GRAYSCALE_LABEL_800,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        SizedBox(height: 20),
+                        Row(
+                          spacing: 20,
+                          children: [_buildStatItem(context, activityProvider)],
+                        ),
+                        SizedBox(height: 24),
+                        _buildBarChart(context, activityProvider),
+                        SizedBox(height: 20),
+                      ],
+                    ),
                   ),
-                ),
-                SizedBox(height: 20),
-                Row(
-                  spacing: 20,
-                  children: [_buildStatItem(context, activityProvider)],
-                ),
-                SizedBox(height: 24),
-                _buildBarChart(context, activityProvider),
-                SizedBox(height: 20),
-              ],
-            ),
-          ),
         );
       },
     );
