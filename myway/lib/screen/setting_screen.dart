@@ -1,11 +1,14 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:myway/const/colors.dart';
+import 'package:myway/screen/alert/dialog.dart';
 
 import 'notice_list_screen.dart';
 
 class SettingScreen extends StatelessWidget {
   const SettingScreen({super.key});
+
+  Future<void> onConfirm() async {}
 
   @override
   Widget build(BuildContext context) {
@@ -96,97 +99,26 @@ class SettingScreen extends StatelessWidget {
                   _buildSettingItem(
                     showArrow: false,
                     text: '로그아웃',
-                    textColor: Colors.red,
+                    textColor: RED_DANGER_TEXT_50,
                     onTap: () async {
-                      final confirm = await showDialog<bool>(
+                      await showDialog(
                         context: context,
                         builder:
-                            (context) => AlertDialog(
-                              backgroundColor: WHITE,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              title: Text(
-                                '로그아웃',
-                                style: TextStyle(
-                                  color: GRAYSCALE_LABEL_900,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              content: Text(
-                                '로그아웃 하시겠습니까?',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: GRAYSCALE_LABEL_700,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              actionsPadding: EdgeInsets.only(
-                                bottom: 12,
-                                left: 12,
-                                right: 12,
-                              ),
-                              actions: [
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: ElevatedButton(
-                                        style: ElevatedButton.styleFrom(
-                                          elevation: 0,
-                                          backgroundColor: GRAYSCALE_LABEL_100,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(
-                                              8,
-                                            ),
-                                          ),
-                                        ),
-                                        onPressed:
-                                            () => Navigator.pop(context, false),
-                                        child: Text(
-                                          '취소',
-                                          style: TextStyle(
-                                            color: GRAYSCALE_LABEL_900,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    SizedBox(width: 10),
-                                    Expanded(
-                                      child: ElevatedButton(
-                                        style: ElevatedButton.styleFrom(
-                                          elevation: 0,
-                                          backgroundColor: ORANGE_PRIMARY_500,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(
-                                              8,
-                                            ),
-                                          ),
-                                        ),
-                                        onPressed:
-                                            () => Navigator.pop(context, true),
-                                        child: Text(
-                                          '확인',
-                                          style: TextStyle(
-                                            color: GRAYSCALE_LABEL_900,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
+                            (context) => ConfirmationDialog(
+                              title: '로그아웃',
+                              content: '로그아웃 하시겠습니까?',
+                              onConfirm: () async {
+                                // 로그아웃 처리
+                                await FirebaseAuth.instance.signOut();
+                                // 로그인 화면으로 이동
+                                Navigator.pushNamedAndRemoveUntil(
+                                  context,
+                                  'signIn',
+                                  (route) => false,
+                                );
+                              },
                             ),
                       );
-
-                      if (confirm == true) {
-                        await FirebaseAuth.instance.signOut();
-                        Navigator.pushNamedAndRemoveUntil(
-                          context,
-                          'signIn',
-                          (route) => false,
-                        );
-                      }
                     },
                   ),
                 ],

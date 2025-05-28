@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:myway/screen/alert/dialog.dart';
 
 import '../const/colors.dart';
 
@@ -97,40 +98,15 @@ class _NoticeScreenState extends State<NoticeScreen> {
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: BACKGROUND_COLOR,
-          title: Text(
-            '삭제 확인',
-            style: TextStyle(
-              color: GRAYSCALE_LABEL_950,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          content: Text(
-            '정말로 이 공지사항을 삭제하시겠습니까?',
-            style: TextStyle(color: GRAYSCALE_LABEL_800),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: Text('취소', style: TextStyle(color: GRAYSCALE_LABEL_700)),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            TextButton(
-              child: Text(
-                '삭제',
-                style: TextStyle(
-                  color: RED_DANGER_TEXT_50,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              onPressed: () {
-                Navigator.of(context).pop();
-                _deleteNotice();
-              },
-            ),
-          ],
+        return ConfirmationDialog(
+          title: '공지사항 삭제',
+          content: '공지사항을 삭제합니다.',
+          confirmText: '삭제',
+          cancelText: '취소',
+          onConfirm: () {
+            Navigator.of(context).pop();
+            _deleteNotice();
+          },
         );
       },
     );

@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:myway/provider/step_provider.dart';
+import 'package:myway/screen/alert/dialog.dart';
 import 'package:provider/provider.dart';
 
 import '../../const/colors.dart';
@@ -178,87 +179,13 @@ class _StartTrackingBottomsheetState extends State<StartTrackingBottomsheet> {
                           showDialog(
                             context: context,
                             builder: (BuildContext context) {
-                              return AlertDialog(
-                                backgroundColor: WHITE,
-                                elevation: 0,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                title: Text(
-                                  '산책 종료',
-                                  style: TextStyle(
-                                    color: GRAYSCALE_LABEL_900,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                content: Text(
-                                  '산책을 종료 하시겠습니까?',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: GRAYSCALE_LABEL_700,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                actionsPadding: const EdgeInsets.only(
-                                  bottom: 12,
-                                  left: 12,
-                                  right: 12,
-                                ),
-                                actions: [
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: ElevatedButton(
-                                          style: ElevatedButton.styleFrom(
-                                            elevation: 0,
-                                            backgroundColor:
-                                                GRAYSCALE_LABEL_100,
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                            ),
-                                            shadowColor: Colors.transparent,
-                                            overlayColor: GRAYSCALE_LABEL_800,
-                                          ),
-                                          onPressed: () {
-                                            Navigator.pop(context);
-                                          },
-                                          child: Text(
-                                            '아니요',
-                                            style: TextStyle(
-                                              color: GRAYSCALE_LABEL_900,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      SizedBox(width: 12),
-                                      Expanded(
-                                        child: ElevatedButton(
-                                          style: ElevatedButton.styleFrom(
-                                            elevation: 0,
-                                            backgroundColor: ORANGE_PRIMARY_500,
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                            ),
-                                            overlayColor: ORANGE_PRIMARY_800,
-                                            shadowColor: Colors.transparent,
-                                          ),
-                                          onPressed: () {
-                                            stepProvider.stopTracking();
-                                          },
-                                          child: Text(
-                                            '네',
-                                            style: TextStyle(
-                                              color: GRAYSCALE_LABEL_900,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
+                              return ConfirmationDialog(
+                                title: '산책 종료',
+                                content:
+                                    '산책을 종료합니다.\n 화면에 보이는 지도를 이미지로 변환합니다. 지도를 조정해주세요.',
+                                onConfirm: () {
+                                  stepProvider.stopTracking();
+                                },
                               );
                             },
                           );
