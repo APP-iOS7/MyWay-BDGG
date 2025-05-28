@@ -1,7 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:myway/screen/alert/dialog.dart';
+import 'package:provider/provider.dart';
 
+import '../provider/user_provider.dart';
 import '/const/colors.dart';
 
 class NicknameChangeScreen extends StatefulWidget {
@@ -15,16 +18,22 @@ class _NicknameChangeScreenState extends State<NicknameChangeScreen> {
   final TextEditingController _nicknameController = TextEditingController();
   String _enteredNickname = "";
   bool _isNicknameChangeConfirmed = false;
-  String _currentNicknameHint = "현재 닉네임: 대장보현(칼바람)";
+  String _currentNicknameHint = "현재 닉네임: ";
   String? _currentNickname;
-  String initialNickname = '대장보현(칼바람)';
+  String initialNickname = '';
   String validationLabelString = '';
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _loadCurrentNickname();
+  }
 
   @override
   void dispose() {
     _nicknameController.dispose();
     super.dispose();
-    _loadCurrentNickname();
   }
 
   void _onNicknameChanged(String value) {
@@ -37,12 +46,6 @@ class _NicknameChangeScreenState extends State<NicknameChangeScreen> {
 
   Future<void> _showConfirmationDialog() async {
     if (_nicknameController.text.isEmpty) {
-      // ScaffoldMessenger.of(context).showSnackBar(
-      //   SnackBar(
-      //     content: Text("변경할 닉네임을 입력해주세요."),
-      //     backgroundColor: RED_DANGER_TEXT_50,
-      //   ),
-      // );
       return;
     }
     if (_nicknameController.text ==
@@ -50,12 +53,6 @@ class _NicknameChangeScreenState extends State<NicknameChangeScreen> {
               _currentNicknameHint.indexOf(':') + 2,
             ) &&
         _currentNicknameHint.startsWith("현재 닉네임:")) {
-      // ScaffoldMessenger.of(context).showSnackBar(
-      //   SnackBar(
-      //     content: Text("현재 닉네임과 동일합니다."),
-      //     backgroundColor: YELLOW_INFO_BASE_30,
-      //   ),
-      // );
       return;
     }
 
@@ -63,45 +60,43 @@ class _NicknameChangeScreenState extends State<NicknameChangeScreen> {
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: BACKGROUND_COLOR,
-          title: Text('닉네임 변경', style: TextStyle(color: GRAYSCALE_LABEL_950)),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Text(
-                  "'${_nicknameController.text}' (으)로 변경하시겠습니까?",
-                  style: TextStyle(color: GRAYSCALE_LABEL_800),
-                ),
-              ],
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: Text('취소', style: TextStyle(color: GRAYSCALE_LABEL_700)),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            TextButton(
-              child: Text('확인', style: TextStyle(color: BLUE_SECONDARY_500)),
-              onPressed: () {
-                if (mounted) {
-                  setState(() {
-                    _isNicknameChangeConfirmed = true;
-                    _currentNicknameHint =
-                        "현재 닉네임: ${_nicknameController.text}";
-                    _enteredNickname = "";
-                  });
-                }
-                print("새 닉네임 확정: ${_nicknameController.text}");
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
+        return ConfirmationDialog(
+          title: '닉네임 변경',
+          content: "'${_nicknameController.text}' (으)로 변경하시겠습니까?",
+          onConfirm: nicknameChange,
         );
       },
     );
+  }
+
+  void nicknameChange() async {
+    try {
+      final newNickname = _nicknameController.text.trim();
+      await context.read<UserProvider>().updateNickname(newNickname);
+      if (!mounted) return;
+
+      if (mounted) {
+        setState(() {
+          _isNicknameChangeConfirmed = true;
+          _currentNicknameHint = "현재 닉네임: $_currentNickname";
+          _enteredNickname = "";
+        });
+      }
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("닉네임이 변경되었습니다."),
+          duration: Duration(seconds: 1),
+        ),
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("닉네임 변경 실패: ${e.toString()}")));
+      }
+      print("닉네임 변경 실패: $e");
+    }
   }
 
   Future<void> _loadCurrentNickname() async {
@@ -110,7 +105,7 @@ class _NicknameChangeScreenState extends State<NicknameChangeScreen> {
 
     final doc =
         await FirebaseFirestore.instance.collection('users').doc(uid).get();
-    final nickname = doc.data()?['nickname'] ?? '닉네임 없음';
+    final nickname = doc.data()?['username'] ?? '닉네임 없음';
 
     if (mounted) {
       setState(() {
@@ -118,6 +113,8 @@ class _NicknameChangeScreenState extends State<NicknameChangeScreen> {
         _currentNicknameHint = "현재 닉네임: $nickname";
       });
     }
+    print(nickname);
+    initialNickname = nickname;
   }
 
   @override
@@ -173,6 +170,7 @@ class _NicknameChangeScreenState extends State<NicknameChangeScreen> {
                     child: TextField(
                       controller: _nicknameController,
                       onChanged: _onNicknameChanged,
+                      cursorColor: ORANGE_PRIMARY_500,
                       decoration: InputDecoration(
                         hintText: _currentNicknameHint,
                         hintStyle: TextStyle(
@@ -234,7 +232,7 @@ class _NicknameChangeScreenState extends State<NicknameChangeScreen> {
                         backgroundColor:
                             (_enteredNickname.isEmpty ||
                                     _nicknameController.text == initialNickname)
-                                ? GRAYSCALE_LABEL_200
+                                ? GRAYSCALE_LABEL_300
                                 : ORANGE_PRIMARY_600,
                         foregroundColor: WHITE,
                         shape: RoundedRectangleBorder(
@@ -272,21 +270,6 @@ class _NicknameChangeScreenState extends State<NicknameChangeScreen> {
                   style: TextStyle(fontSize: 14, color: GRAYSCALE_LABEL_700),
                 ),
               ),
-            if (_isNicknameChangeConfirmed &&
-                _nicknameController.text.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 10.0),
-                child: Text(
-                  "닉네임이 '${_currentNicknameHint.substring(_currentNicknameHint.indexOf(':') + 2)}' (으)로 변경되었습니다.",
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: GREEN_SUCCESS_TEXT_50,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-
-            SizedBox(height: _isNicknameChangeConfirmed ? 60 : 0),
           ],
         ),
       ),

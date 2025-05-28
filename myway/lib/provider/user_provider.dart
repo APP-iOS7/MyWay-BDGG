@@ -11,12 +11,14 @@ class UserProvider extends ChangeNotifier {
   String? _errorMessage;
   bool _isSignUpSuccess = false;
   User? _currentUser;
+  String? _nickname;
 
   // 게터
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   bool get isSignUpSuccess => _isSignUpSuccess;
   User? get currentUser => _currentUser;
+  String? get nickname => _nickname;
 
   // 로딩 상태 설정
   void setLoading(bool loading) {
@@ -33,6 +35,27 @@ class UserProvider extends ChangeNotifier {
   void setSignUpSuccess(bool success) {
     _isSignUpSuccess = success;
     notifyListeners();
+  }
+
+  Future<void> loadNickname() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+
+    final doc =
+        await FirebaseFirestore.instance.collection('users').doc(uid).get();
+    _nickname = doc.data()?['username'];
+    notifyListeners();
+  }
+
+  Future<void> updateNickname(String newNickname) async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+
+    await FirebaseFirestore.instance.collection('users').doc(uid).update({
+      'username': newNickname,
+    });
+    _nickname = newNickname;
+    notifyListeners(); // 갱신 알림
   }
 
   // 회원가입 함수
