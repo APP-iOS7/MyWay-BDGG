@@ -165,6 +165,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
           // 로그아웃
           await FirebaseAuth.instance.signOut();
+          Navigator.pop(context, true);
         }
       } catch (e) {
         if (e is FirebaseAuthException) {
@@ -192,7 +193,6 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
-    const double horizontalPageMargin = 20.0;
     const double fieldHeight = 52.0;
     const double borderRadiusValue = 8.0;
 
@@ -219,94 +219,102 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         ),
         centerTitle: true,
       ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: horizontalPageMargin),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              _buildPasswordTextField(
-                controller: _currentPasswordController,
-                labelText: "현재 비밀번호",
-                hintText: "현재 비밀번호 입력",
-                isObscured: _isCurrentPasswordObscured,
-                onToggleObscure: () {
-                  setState(() {
-                    _isCurrentPasswordObscured = !_isCurrentPasswordObscured;
-                  });
-                },
-                topMarginLabel: 40.0,
-                bottomMarginLabelToField: 5.0,
-              ),
-              _buildPasswordTextField(
-                controller: _newPasswordController,
-                labelText: "새 비밀번호",
-                hintText: "영문, 숫자, 특수문자 포함 8자 이상",
-                isObscured: _isNewPasswordObscured,
-                onToggleObscure: () {
-                  setState(() {
-                    _isNewPasswordObscured = !_isNewPasswordObscured;
-                  });
-                },
-                topMarginLabel: 20.0,
-                bottomMarginLabelToField: 5.0,
-              ),
-              _buildPasswordTextField(
-                controller: _confirmNewPasswordController,
-                labelText: "새 비밀번호 확인",
-                hintText: "영문, 숫자, 특수문자 포함 8자 이상",
-                isObscured: _isConfirmNewPasswordObscured,
-                onToggleObscure: () {
-                  setState(() {
-                    _isConfirmNewPasswordObscured =
-                        !_isConfirmNewPasswordObscured;
-                  });
-                },
-                topMarginLabel: 20.0,
-                bottomMarginLabelToField: 5.0,
-              ),
-              const Spacer(),
-              Align(
-                alignment: Alignment.center,
-                child: Text(
-                  validationLabelString,
-                  style: TextStyle(fontSize: 15, color: RED_DANGER_TEXT_50),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20.0),
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    _buildPasswordTextField(
+                      controller: _currentPasswordController,
+                      labelText: "현재 비밀번호",
+                      hintText: "현재 비밀번호 입력",
+                      isObscured: _isCurrentPasswordObscured,
+                      onToggleObscure: () {
+                        setState(() {
+                          _isCurrentPasswordObscured =
+                              !_isCurrentPasswordObscured;
+                        });
+                      },
+                      topMarginLabel: 40.0,
+                      bottomMarginLabelToField: 5.0,
+                    ),
+                    _buildPasswordTextField(
+                      controller: _newPasswordController,
+                      labelText: "새 비밀번호",
+                      hintText: "영문, 숫자, 특수문자 포함 8자 이상",
+                      isObscured: _isNewPasswordObscured,
+                      onToggleObscure: () {
+                        setState(() {
+                          _isNewPasswordObscured = !_isNewPasswordObscured;
+                        });
+                      },
+                      topMarginLabel: 20.0,
+                      bottomMarginLabelToField: 5.0,
+                    ),
+                    _buildPasswordTextField(
+                      controller: _confirmNewPasswordController,
+                      labelText: "새 비밀번호 확인",
+                      hintText: "영문, 숫자, 특수문자 포함 8자 이상",
+                      isObscured: _isConfirmNewPasswordObscured,
+                      onToggleObscure: () {
+                        setState(() {
+                          _isConfirmNewPasswordObscured =
+                              !_isConfirmNewPasswordObscured;
+                        });
+                      },
+                      topMarginLabel: 20.0,
+                      bottomMarginLabelToField: 5.0,
+                    ),
+                    Align(
+                      alignment: Alignment.center,
+                      child: Text(
+                        validationLabelString,
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: RED_DANGER_TEXT_50,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              SizedBox(height: 10),
-              SizedBox(
-                width: double.infinity,
-                height: fieldHeight,
-                child: ElevatedButton(
-                  onPressed: () {
-                    if (_isButtonEnabled) {
-                      print('enable');
-                      _onPasswordChanged();
-                    } else {
-                      print('no');
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor:
-                        _isButtonEnabled
-                            ? ORANGE_PRIMARY_500
-                            : GRAYSCALE_LABEL_200,
-                    foregroundColor: WHITE,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(borderRadiusValue),
-                    ),
-                    elevation: 0,
-                    textStyle: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+            ),
+            SizedBox(
+              width: double.infinity,
+              height: fieldHeight,
+              child: ElevatedButton(
+                onPressed: () {
+                  if (_isButtonEnabled) {
+                    print('enable');
+                    _onPasswordChanged();
+                  } else {
+                    print('no');
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor:
+                      _isButtonEnabled
+                          ? ORANGE_PRIMARY_500
+                          : GRAYSCALE_LABEL_300,
+                  foregroundColor: WHITE,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(borderRadiusValue),
                   ),
-                  child: Text("변경하기"),
+                  elevation: 0,
+                  textStyle: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
+                child: Text("변경하기"),
               ),
-              SizedBox(height: 20),
-            ],
-          ),
+            ),
+            SizedBox(height: 20),
+          ],
         ),
       ),
     );
