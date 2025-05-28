@@ -138,7 +138,7 @@ class CustomerCenterScreen extends StatelessWidget {
   void sendInquiryEmail(String title, String body) async {
     final Uri emailUri = Uri(
       scheme: 'mailto',
-      path: 'bhyn9785@gmail.com',
+      path: 'bhyn9785@naver.com',
       query: Uri.encodeFull('subject=$title&body=$body'),
     );
 

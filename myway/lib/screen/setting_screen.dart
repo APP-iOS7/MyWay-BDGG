@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:myway/const/colors.dart';
 import 'package:myway/screen/alert/dialog.dart';
 
-import 'notice_list_screen.dart';
+import 'notice/notice_list_screen.dart';
 
 class SettingScreen extends StatelessWidget {
   const SettingScreen({super.key});
