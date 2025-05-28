@@ -13,19 +13,22 @@ class FindPasswordScreen extends StatefulWidget {
 class _FindPasswordScreenState extends State<FindPasswordScreen> {
   final TextEditingController _emailController = TextEditingController();
   bool isValid = false;
+  String label = '';
 
   Future<void> _sendPasswordResetEmail() async {
     final email = _emailController.text.trim();
 
-    if (email.isEmpty) {
-      setState(() {
-        isValid = false;
-      });
+    RegExp emailRegex = RegExp(
+      r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+    );
+    if (email.isEmpty || !emailRegex.hasMatch(email)) {
+      if (mounted) {
+        setState(() {
+          label = "유효하지 않은 이메일 형식입니다.";
+        });
+      }
       return;
     }
-    setState(() {
-      isValid = true;
-    });
     try {
       await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
       if (mounted) {
@@ -100,6 +103,12 @@ class _FindPasswordScreenState extends State<FindPasswordScreen> {
                   cursorColor: ORANGE_PRIMARY_500,
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
+                  onChanged: (value) {
+                    setState(() {
+                      isValid = value.trim().isNotEmpty;
+                      label = '';
+                    });
+                  },
                   decoration: InputDecoration(
                     hintText: "비밀번호 재설정 링크를 받을 이메일을 입력하세요",
                     hintStyle: TextStyle(
@@ -134,13 +143,17 @@ class _FindPasswordScreenState extends State<FindPasswordScreen> {
                   style: TextStyle(fontSize: 14, color: GRAYSCALE_LABEL_950),
                 ),
               ),
+              Text(
+                label,
+                style: TextStyle(color: GRAYSCALE_LABEL_800, fontSize: 14),
+              ),
               const Spacer(),
               SizedBox(
                 width: double.infinity,
                 height: fieldHeight,
                 child: ElevatedButton(
                   onPressed: () {
-                    _sendPasswordResetEmail();
+                    isValid ? _sendPasswordResetEmail() : null;
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor:
