@@ -182,6 +182,9 @@ class _MapScreenState extends State<MapScreen>
     print('📍 위치 추적 일시정지됨');
     _tracking = false;
     final Uint8List? imageBytes = await mapController!.takeSnapshot();
+    final stepProvider = Provider.of<StepProvider>(context, listen: false);
+
+    stepProvider.stopTracking();
 
     if (imageBytes != null && imageBytes.isNotEmpty) {
       debugPrint('📍 이미지 캡처 성공, 길이: ${imageBytes.length}');
@@ -192,7 +195,11 @@ class _MapScreenState extends State<MapScreen>
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => CourseNameScreen(courseImage: imageBytes),
+            builder:
+                (context) => CourseNameScreen(
+                  courseImage: imageBytes,
+                  stepModel: stepProvider.currentStepModel!,
+                ),
           ),
         );
       });
