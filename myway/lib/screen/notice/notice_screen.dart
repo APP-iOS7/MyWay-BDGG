@@ -8,11 +8,14 @@ class NoticeScreen extends StatefulWidget {
   final String? initialTitle;
   final String? initialContent;
   final String? noticeId;
+  final bool isAdmin;
+
   const NoticeScreen({
     super.key,
     this.initialTitle,
     this.initialContent,
     this.noticeId,
+    this.isAdmin = false,
   });
 
   @override
@@ -156,14 +159,15 @@ class _NoticeScreenState extends State<NoticeScreen> {
               ? NoticeEditScreen(
                 initialTitle: _savedTitle,
                 initialContent: _savedContent,
-                // onComplete: _switchToViewMode,
+                noticeId: widget.noticeId,
+                isAdmin: widget.isAdmin,
               )
               : NoticeViewScreen(
                 title: _savedTitle,
                 content: _savedContent,
                 date: _noticeDate,
-                onEdit: _switchToEditMode,
-                onDelete: _showDeleteConfirmationDialog,
+                onEdit: widget.isAdmin ? _switchToEditMode : null,
+                onDelete: widget.isAdmin ? _showDeleteConfirmationDialog : null,
               ),
     );
   }

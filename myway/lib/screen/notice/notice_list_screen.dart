@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:myway/screen/notice/notice_screen.dart';
@@ -14,10 +15,22 @@ class NoticeListScreen extends StatefulWidget {
 }
 
 class _NoticeListScreenState extends State<NoticeListScreen> {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   String _formatDateTime(DateTime datetime) {
     return DateFormat('yyyy-MM-dd').format(datetime);
+  }
+
+  // 관리자 여부 확인 메서드
+  bool _isAdmin() {
+    final user = _auth.currentUser;
+    if (user == null) return false;
+
+    // 관리자 이메일 목록
+    final adminEmails = ['bhyn9785@naver.com'];
+
+    return adminEmails.contains(user.email);
   }
 
   @override
@@ -40,24 +53,25 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
         foregroundColor: Colors.black,
 
         actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () async {
-              final result = await Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const NoticeScreen()),
-              );
+          if (_isAdmin())
+            IconButton(
+              icon: const Icon(Icons.add),
+              onPressed: () async {
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const NoticeScreen()),
+                );
 
-              if (result != null) {
-                // 공지사항 작성으로 이동 > 작성완료 후 돌아오면 Firestroe에 데이터 저장
-                await _firestore.collection('notices').add({
-                  'title': result['title'],
-                  'content': result['content'],
-                  'createdAt': FieldValue.serverTimestamp(),
-                });
-              }
-            },
-          ),
+                if (result != null) {
+                  // 공지사항 작성으로 이동 > 작성완료 후 돌아오면 Firestroe에 데이터 저장
+                  await _firestore.collection('notices').add({
+                    'title': result['title'],
+                    'content': result['content'],
+                    'createdAt': FieldValue.serverTimestamp(),
+                  });
+                }
+              },
+            ),
         ],
       ),
       body: StreamBuilder<QuerySnapshot>(
@@ -116,6 +130,7 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
                             initialTitle: data['title'],
                             initialContent: data['content'],
                             noticeId: doc.id,
+                            isAdmin: _isAdmin(),
                           ),
                     ),
                   );

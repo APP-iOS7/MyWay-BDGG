@@ -5,16 +5,16 @@ class NoticeViewScreen extends StatelessWidget {
   final String title;
   final String content;
   final String date;
-  final VoidCallback onEdit;
-  final VoidCallback onDelete;
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
 
   const NoticeViewScreen({
     super.key,
     required this.title,
     required this.content,
     required this.date,
-    required this.onEdit,
-    required this.onDelete,
+    this.onEdit,
+    this.onDelete,
   });
 
   @override
@@ -41,40 +41,48 @@ class NoticeViewScreen extends StatelessWidget {
                           color: GRAYSCALE_LABEL_950,
                         ),
                       ),
-                      PopupMenuButton<String>(
-                        icon: Icon(Icons.more_vert, color: GRAYSCALE_LABEL_950),
-                        color: BACKGROUND_COLOR,
-                        onSelected: (String result) {
-                          if (result == 'edit') {
-                            onEdit();
-                          } else if (result == 'delete') {
-                            onDelete();
-                          }
-                        },
-                        itemBuilder:
-                            (BuildContext context) => <PopupMenuEntry<String>>[
-                              PopupMenuItem<String>(
-                                value: 'edit',
-                                child: Text(
-                                  '수정',
-                                  style: TextStyle(
-                                    color: GRAYSCALE_LABEL_800,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ),
-                              PopupMenuItem<String>(
-                                value: 'delete',
-                                child: Text(
-                                  '삭제',
-                                  style: TextStyle(
-                                    color: RED_DANGER_TEXT_50,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ),
-                            ],
-                      ),
+                      // 관리자만 메뉴 버튼 표시
+                      if (onEdit != null || onDelete != null)
+                        PopupMenuButton<String>(
+                          icon: Icon(
+                            Icons.more_vert,
+                            color: GRAYSCALE_LABEL_950,
+                          ),
+                          color: BACKGROUND_COLOR,
+                          onSelected: (String result) {
+                            if (result == 'edit' && onEdit != null) {
+                              onEdit!();
+                            } else if (result == 'delete' && onDelete != null) {
+                              onDelete!();
+                            }
+                          },
+                          itemBuilder:
+                              (BuildContext context) =>
+                                  <PopupMenuEntry<String>>[
+                                    if (onEdit != null)
+                                      PopupMenuItem<String>(
+                                        value: 'edit',
+                                        child: Text(
+                                          '수정',
+                                          style: TextStyle(
+                                            color: GRAYSCALE_LABEL_800,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                      ),
+                                    if (onDelete != null)
+                                      PopupMenuItem<String>(
+                                        value: 'delete',
+                                        child: Text(
+                                          '삭제',
+                                          style: TextStyle(
+                                            color: RED_DANGER_TEXT_50,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                        ),
                     ],
                   ),
 

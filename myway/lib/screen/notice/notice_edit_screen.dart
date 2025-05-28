@@ -5,12 +5,14 @@ class NoticeEditScreen extends StatefulWidget {
   final String? initialTitle;
   final String? initialContent;
   final String? noticeId;
+  final bool isAdmin;
 
   const NoticeEditScreen({
     super.key,
     this.initialTitle,
     this.initialContent,
     this.noticeId,
+    this.isAdmin = false,
   });
 
   @override
