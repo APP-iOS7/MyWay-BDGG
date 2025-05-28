@@ -1,3 +1,7 @@
+import 'dart:typed_data';
+import 'dart:ui' as ui;
+
+import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
 import '/model/course_model.dart';
@@ -7,6 +11,7 @@ class MapProvider with ChangeNotifier {
   bool _isStartTrackingBottomSheetVisible = false;
   bool _isTracking = false;
   Course? _selectedCourse;
+  Uint8List? _courseImage;
 
   bool get isCourseRecommendBottomSheetVisible =>
       _isCourseRecommendBottomSheetVisible;
@@ -14,6 +19,7 @@ class MapProvider with ChangeNotifier {
       _isStartTrackingBottomSheetVisible;
   bool get isTracking => _isTracking;
   Course? get selectedCourse => _selectedCourse;
+  Uint8List? get courseImage => _courseImage;
 
   void showCourseRecommendBottomSheet() {
     _isCourseRecommendBottomSheetVisible = true;
@@ -46,5 +52,35 @@ class MapProvider with ChangeNotifier {
     print('course in pro: $course');
 
     notifyListeners();
+  }
+
+  void saveImage(Uint8List img) {
+    _courseImage = img;
+    notifyListeners();
+  }
+
+  void courseClear() {
+    _courseImage = null;
+    notifyListeners();
+  }
+
+  Future<Uint8List?> captureMap(GlobalKey boundaryKey) async {
+    try {
+      final boundary =
+          boundaryKey.currentContext?.findRenderObject()
+              as RenderRepaintBoundary?;
+      if (boundary == null) return null;
+
+      final image = await boundary.toImage(pixelRatio: 3.0);
+      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+      final pngBytes = byteData?.buffer.asUint8List();
+
+      debugPrint("📍 캡처 성공, 이미지 크기: ${pngBytes?.length} bytes");
+
+      return pngBytes;
+    } catch (e) {
+      debugPrint("📍 캡처 실패: $e");
+      return null;
+    }
   }
 }
