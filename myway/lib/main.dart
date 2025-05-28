@@ -6,6 +6,7 @@ import 'package:myway/screen/notice/notice_list_screen.dart';
 import 'package:myway/screen/notice/notice_screen.dart';
 import 'package:myway/screen/recommended_course_screen.dart';
 import 'package:provider/provider.dart';
+import 'package:toastification/toastification.dart';
 
 import 'provider/activity_log_provider.dart';
 import 'provider/map_provider.dart';
@@ -52,29 +53,31 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Flutter Demo',
-      theme: ThemeData(fontFamily: 'Freesentation'),
-      // home: const AuthWrapper(),
-      home: AuthWrapper(),
-      // initialRoute: 'home',
-      routes: {
-        'recommendCourse': (context) => const RecommendedCourseScreen(),
-        'signUp': (context) => const SignUpScreen(),
-        'signIn': (context) => const SigninScreen(),
-        'home': (context) => const HomeScreen(),
-        'map': (context) => const MapScreen(),
-        'findPassword': (context) => const FindPasswordScreen(),
-        'setting': (context) => const SettingScreen(),
-        'changeNickname': (context) => const NicknameChangeScreen(),
-        'changePassword': (context) => const ChangePasswordScreen(),
-        'customerCenter': (context) => const CustomerCenterScreen(),
-        'test': (context) => const TestMapScreen(),
-        'testMap': (context) => const MapInputScreen(),
-        'noticeList': (context) => const NoticeListScreen(),
-        'notice': (context) => const NoticeScreen(),
-      },
+    return ToastificationWrapper(
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'Flutter Demo',
+        theme: ThemeData(fontFamily: 'Freesentation'),
+        // home: const AuthWrapper(),
+        home: AuthWrapper(),
+        // initialRoute: 'home',
+        routes: {
+          'recommendCourse': (context) => const RecommendedCourseScreen(),
+          'signUp': (context) => const SignUpScreen(),
+          'signIn': (context) => const SigninScreen(),
+          'home': (context) => const HomeScreen(),
+          'map': (context) => const MapScreen(),
+          'findPassword': (context) => const FindPasswordScreen(),
+          'setting': (context) => const SettingScreen(),
+          'changeNickname': (context) => const NicknameChangeScreen(),
+          'changePassword': (context) => const ChangePasswordScreen(),
+          'customerCenter': (context) => const CustomerCenterScreen(),
+          'test': (context) => const TestMapScreen(),
+          'testMap': (context) => const MapInputScreen(),
+          'noticeList': (context) => const NoticeListScreen(),
+          'notice': (context) => const NoticeScreen(),
+        },
+      ),
     );
   }
 }

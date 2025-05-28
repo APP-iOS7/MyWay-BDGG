@@ -2,9 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:myway/const/colors.dart';
 
 class NoticeEditScreen extends StatefulWidget {
-  final Function(String, String) onComplete;
+  final String? initialTitle;
+  final String? initialContent;
+  final String? noticeId;
 
-  const NoticeEditScreen({super.key, required this.onComplete});
+  const NoticeEditScreen({
+    super.key,
+    this.initialTitle,
+    this.initialContent,
+    this.noticeId,
+  });
 
   @override
   State<NoticeEditScreen> createState() => _NoticeEditScreenState();
@@ -13,6 +20,13 @@ class NoticeEditScreen extends StatefulWidget {
 class _NoticeEditScreenState extends State<NoticeEditScreen> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _contentController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _titleController.text = widget.initialTitle ?? '';
+    _contentController.text = widget.initialContent ?? '';
+  }
 
   @override
   void dispose() {
@@ -35,7 +49,8 @@ class _NoticeEditScreenState extends State<NoticeEditScreen> {
     Navigator.pop(context, {
       'title': _titleController.text,
       'content': _contentController.text,
-      'createdAt': DateTime.now(),
+      'noticeId': widget.noticeId,
+      'updatedAt': DateTime.now(),
     });
   }
 

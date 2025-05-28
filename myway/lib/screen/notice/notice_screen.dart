@@ -32,26 +32,101 @@ class _NoticeScreenState extends State<NoticeScreen> {
 
     if (widget.initialTitle != null) {
       _savedTitle = widget.initialTitle!;
-    }
-
-    if (widget.initialContent != null) {
       _savedContent = widget.initialContent!;
+      _isEditing = false; // 초기값이 있으면 보기 모드로 시작
     }
-  }
-
-  void _switchToViewMode(String title, String content) {
-    setState(() {
-      _savedTitle = title;
-      _savedContent = content;
-      _noticeDate = DateFormat('yyyy.MM.dd').format(DateTime.now());
-      _isEditing = false;
-    });
   }
 
   void _switchToEditMode() {
     setState(() {
       _isEditing = true;
     });
+  }
+
+  Future<void> _showDeleteConfirmationDialog() async {
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: BACKGROUND_COLOR,
+          elevation: 0,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          title: Text(
+            '공지사항 삭제',
+            style: TextStyle(
+              color: GRAYSCALE_LABEL_900,
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          content: Text(
+            '공지사항을 삭제 하시겠습니까?',
+            style: TextStyle(
+              fontSize: 16,
+              color: GRAYSCALE_LABEL_700,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          actionsPadding: const EdgeInsets.only(
+            bottom: 12,
+            left: 12,
+            right: 12,
+          ),
+          actions: [
+            Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.pop(context);
+                    },
+                    child: Container(
+                      alignment: Alignment.center,
+                      padding: EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: GRAYSCALE_LABEL_100,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        '취소',
+                        style: TextStyle(
+                          color: GRAYSCALE_LABEL_900,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 10),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      Navigator.pop(context, {'delete': true});
+                    },
+                    child: Container(
+                      alignment: Alignment.center,
+                      padding: EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: ORANGE_PRIMARY_500,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        '삭제',
+                        style: TextStyle(
+                          color: BACKGROUND_COLOR,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -78,12 +153,17 @@ class _NoticeScreenState extends State<NoticeScreen> {
       ),
       body:
           _isEditing
-              ? NoticeEditScreen(onComplete: _switchToViewMode)
+              ? NoticeEditScreen(
+                initialTitle: _savedTitle,
+                initialContent: _savedContent,
+                // onComplete: _switchToViewMode,
+              )
               : NoticeViewScreen(
                 title: _savedTitle,
                 content: _savedContent,
                 date: _noticeDate,
                 onEdit: _switchToEditMode,
+                onDelete: _showDeleteConfirmationDialog,
               ),
     );
   }

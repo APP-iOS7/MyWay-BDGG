@@ -6,6 +6,7 @@ class NoticeViewScreen extends StatelessWidget {
   final String content;
   final String date;
   final VoidCallback onEdit;
+  final VoidCallback onDelete;
 
   const NoticeViewScreen({
     super.key,
@@ -13,6 +14,7 @@ class NoticeViewScreen extends StatelessWidget {
     required this.content,
     required this.date,
     required this.onEdit,
+    required this.onDelete,
   });
 
   @override
@@ -23,21 +25,59 @@ class NoticeViewScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(height: 16),
-            Divider(color: GRAYSCALE_LABEL_200, height: 1, thickness: 1),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 12.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    title.isNotEmpty ? title : "제목 없음",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: GRAYSCALE_LABEL_950,
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        title.isNotEmpty ? title : "제목 없음",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: GRAYSCALE_LABEL_950,
+                        ),
+                      ),
+                      PopupMenuButton<String>(
+                        icon: Icon(Icons.more_vert, color: GRAYSCALE_LABEL_950),
+                        color: BACKGROUND_COLOR,
+                        onSelected: (String result) {
+                          if (result == 'edit') {
+                            onEdit();
+                          } else if (result == 'delete') {
+                            onDelete();
+                          }
+                        },
+                        itemBuilder:
+                            (BuildContext context) => <PopupMenuEntry<String>>[
+                              PopupMenuItem<String>(
+                                value: 'edit',
+                                child: Text(
+                                  '수정',
+                                  style: TextStyle(
+                                    color: GRAYSCALE_LABEL_800,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ),
+                              PopupMenuItem<String>(
+                                value: 'delete',
+                                child: Text(
+                                  '삭제',
+                                  style: TextStyle(
+                                    color: RED_DANGER_TEXT_50,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ),
+                            ],
+                      ),
+                    ],
                   ),
+
                   SizedBox(height: 4),
                   Text(
                     date,

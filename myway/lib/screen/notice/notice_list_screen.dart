@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:myway/screen/notice/notice_screen.dart';
+import 'package:toastification/toastification.dart';
 
 import '../../const/colors.dart';
 
@@ -14,8 +15,6 @@ class NoticeListScreen extends StatefulWidget {
 
 class _NoticeListScreenState extends State<NoticeListScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final CollectionReference _noticesCollection = FirebaseFirestore.instance
-      .collection('notices');
 
   String _formatDateTime(DateTime datetime) {
     return DateFormat('yyyy-MM-dd').format(datetime);
@@ -51,7 +50,7 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
 
               if (result != null) {
                 // 공지사항 작성으로 이동 > 작성완료 후 돌아오면 Firestroe에 데이터 저장
-                await _noticesCollection.add({
+                await _firestore.collection('notices').add({
                   'title': result['title'],
                   'content': result['content'],
                   'createdAt': FieldValue.serverTimestamp(),
@@ -63,7 +62,8 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream:
-            _noticesCollection
+            _firestore
+                .collection('notices')
                 .orderBy('createdAt', descending: true)
                 .snapshots(),
         builder: (context, snapshot) {
@@ -82,6 +82,7 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
             );
           }
 
+          // 데이터가 없거나 빈 경우
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
             return Center(
               child: Text(
@@ -118,13 +119,72 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
                           ),
                     ),
                   );
+
                   if (result != null) {
-                    // Firestore에 공지사항 수정 반영
-                    await _noticesCollection.doc(doc.id).update({
-                      'title': result['title'],
-                      'content': result['content'],
-                      'updatedAt': FieldValue.serverTimestamp(),
-                    });
+                    if (result['delete'] == true) {
+                      // 삭제 처리
+                      try {
+                        await _firestore
+                            .collection('notices')
+                            .doc(doc.id)
+                            .delete();
+                        if (mounted) {
+                          toastification.show(
+                            context: context,
+                            style: ToastificationStyle.flat,
+                            type: ToastificationType.success,
+                            autoCloseDuration: Duration(seconds: 3),
+                            alignment: Alignment.bottomCenter,
+                            title: Text('공지사항이 삭제되었습니다.'),
+                          );
+                        }
+                      } catch (e) {
+                        if (mounted) {
+                          toastification.show(
+                            context: context,
+                            style: ToastificationStyle.flat,
+                            type: ToastificationType.error,
+                            autoCloseDuration: Duration(seconds: 3),
+                            alignment: Alignment.bottomCenter,
+                            title: Text('공지사항 삭제에 실패했습니다.'),
+                          );
+                        }
+                      }
+                    } else {
+                      // 수정 처리
+                      try {
+                        await _firestore
+                            .collection('notices')
+                            .doc(doc.id)
+                            .update({
+                              'title': result['title'],
+                              'content': result['content'],
+                              'updatedAt': FieldValue.serverTimestamp(),
+                            });
+
+                        if (mounted) {
+                          toastification.show(
+                            context: context,
+                            style: ToastificationStyle.flat,
+                            type: ToastificationType.success,
+                            autoCloseDuration: Duration(seconds: 3),
+                            alignment: Alignment.bottomCenter,
+                            title: Text('공지사항이 수정되었습니다.'),
+                          );
+                        }
+                      } catch (e) {
+                        if (mounted) {
+                          toastification.show(
+                            context: context,
+                            style: ToastificationStyle.flat,
+                            type: ToastificationType.error,
+                            autoCloseDuration: Duration(seconds: 3),
+                            alignment: Alignment.bottomCenter,
+                            title: Text('공지사항 수정에 실패했습니다.'),
+                          );
+                        }
+                      }
+                    }
                   }
                 },
                 child: Padding(
