@@ -12,6 +12,7 @@ class MapProvider with ChangeNotifier {
   bool _isTracking = false;
   Course? _selectedCourse;
   Uint8List? _courseImage;
+  bool _isMapLoading = true;
 
   bool get isCourseRecommendBottomSheetVisible =>
       _isCourseRecommendBottomSheetVisible;
@@ -20,6 +21,7 @@ class MapProvider with ChangeNotifier {
   bool get isTracking => _isTracking;
   Course? get selectedCourse => _selectedCourse;
   Uint8List? get courseImage => _courseImage;
+  bool get isMapLoading => _isMapLoading;
 
   void showCourseRecommendBottomSheet() {
     _isCourseRecommendBottomSheetVisible = true;
@@ -37,6 +39,11 @@ class MapProvider with ChangeNotifier {
 
   void setTracking(bool value) {
     _isTracking = value;
+    notifyListeners();
+  }
+
+  void setMapLoading(bool value) {
+    _isMapLoading = value;
     notifyListeners();
   }
 

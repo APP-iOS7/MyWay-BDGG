@@ -270,7 +270,7 @@ class _MapScreenState extends State<MapScreen>
       stopLocationTracking();
     }
     _prevStatus = status;
-
+    mapProvider.setMapLoading(isLoading);
     return Scaffold(
       appBar: AppBar(
         backgroundColor: WHITE,
