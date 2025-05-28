@@ -12,20 +12,20 @@ class FindPasswordScreen extends StatefulWidget {
 
 class _FindPasswordScreenState extends State<FindPasswordScreen> {
   final TextEditingController _emailController = TextEditingController();
+  bool isValid = false;
 
   Future<void> _sendPasswordResetEmail() async {
     final email = _emailController.text.trim();
 
     if (email.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("이메일을 입력해주세요."),
-          backgroundColor: RED_DANGER_TEXT_50,
-        ),
-      );
+      setState(() {
+        isValid = false;
+      });
       return;
     }
-
+    setState(() {
+      isValid = true;
+    });
     try {
       await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
       if (mounted) {
@@ -55,10 +55,11 @@ class _FindPasswordScreenState extends State<FindPasswordScreen> {
     const double borderRadiusValue = 8.0;
 
     return Scaffold(
-      backgroundColor: BACKGROUND_COLOR,
+      backgroundColor: WHITE,
       appBar: AppBar(
-        backgroundColor: BACKGROUND_COLOR,
+        backgroundColor: WHITE,
         elevation: 0,
+        scrolledUnderElevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios, color: GRAYSCALE_LABEL_950),
           onPressed: () {
@@ -96,16 +97,17 @@ class _FindPasswordScreenState extends State<FindPasswordScreen> {
               SizedBox(
                 height: fieldHeight,
                 child: TextField(
+                  cursorColor: ORANGE_PRIMARY_500,
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
                   decoration: InputDecoration(
-                    hintText: "비밀번호를 변경 할 메일을 받을 이메일을 입력",
+                    hintText: "비밀번호 재설정 링크를 받을 이메일을 입력하세요",
                     hintStyle: TextStyle(
                       color: GRAYSCALE_LABEL_500,
                       fontSize: 14,
                     ),
                     filled: true,
-                    fillColor: GRAYSCALE_LABEL_100,
+                    fillColor: WHITE,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(borderRadiusValue),
                       borderSide: BorderSide.none,
@@ -113,18 +115,21 @@ class _FindPasswordScreenState extends State<FindPasswordScreen> {
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(borderRadiusValue),
                       borderSide: BorderSide(
-                        color: GRAYSCALE_LABEL_300,
+                        color: GRAYSCALE_LABEL_400,
                         width: 1.0,
                       ),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(borderRadiusValue),
                       borderSide: BorderSide(
-                        color: BLUE_SECONDARY_500,
-                        width: 1.5,
+                        color: GRAYSCALE_LABEL_700,
+                        width: 1.0,
                       ),
                     ),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 16.0),
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 16.0,
+                      vertical: (fieldHeight - 20) / 2,
+                    ),
                   ),
                   style: TextStyle(fontSize: 14, color: GRAYSCALE_LABEL_950),
                 ),
@@ -138,7 +143,8 @@ class _FindPasswordScreenState extends State<FindPasswordScreen> {
                     _sendPasswordResetEmail();
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: ORANGE_PRIMARY_400,
+                    backgroundColor:
+                        isValid ? ORANGE_PRIMARY_500 : GRAYSCALE_LABEL_300,
                     foregroundColor: GRAYSCALE_LABEL_950,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(borderRadiusValue),
