@@ -333,7 +333,7 @@ class _CourseNameScreenState extends State<CourseNameScreen> {
                     color:
                         stepProvider.isCourseNameValid
                             ? ORANGE_PRIMARY_500
-                            : GRAYSCALE_LABEL_200,
+                            : GRAYSCALE_LABEL_300,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(

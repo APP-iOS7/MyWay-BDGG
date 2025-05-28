@@ -72,10 +72,10 @@ class _MycourseScreenState extends State<MycourseScreen> {
         if (!snapshot.hasData || !snapshot.data!.exists) {
           return Scaffold(
             backgroundColor: WHITE,
-
             appBar: AppBar(
               backgroundColor: Colors.white,
               scrolledUnderElevation: 0,
+              elevation: 0,
               centerTitle: true,
               title: const Text(
                 '나의 코스',
@@ -157,6 +157,7 @@ class _MycourseScreenState extends State<MycourseScreen> {
           backgroundColor: Colors.white,
           appBar: AppBar(
             backgroundColor: Colors.white,
+            elevation: 0,
             scrolledUnderElevation: 0,
             centerTitle: true,
             title: const Text(
@@ -218,6 +219,7 @@ class _MycourseScreenState extends State<MycourseScreen> {
                 return Stack(
                   children: [
                     Card(
+                      color: WHITE,
                       child: Column(
                         children: [
                           imageUrl.isNotEmpty

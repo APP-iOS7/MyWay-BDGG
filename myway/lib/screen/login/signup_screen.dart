@@ -232,7 +232,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   // 포커스된 필드로 스크롤
   void _scrollToField(int fieldIndex) {
     // 키보드가 표시되는 시간을 고려하여 약간 지연 후 스크롤
-    Future.delayed(const Duration(milliseconds: 300), () {
+    Future.delayed(const Duration(milliseconds: 200), () {
       if (!_scrollController.hasClients) return;
 
       // 각 필드의 대략적인 위치 계산

@@ -49,7 +49,7 @@ class CountdownDiallog {
                               '3',
                               style: TextStyle(
                                 color: ORANGE_PRIMARY_500,
-                                fontSize: 100,
+                                fontSize: 80,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -94,7 +94,7 @@ class CountdownDiallog {
                               '2',
                               style: GoogleFonts.instrumentSans(
                                 color: ORANGE_PRIMARY_500,
-                                fontSize: 100,
+                                fontSize: 80,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -139,7 +139,7 @@ class CountdownDiallog {
                               '1',
                               style: GoogleFonts.interTight(
                                 color: ORANGE_PRIMARY_500,
-                                fontSize: 100,
+                                fontSize: 80,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
