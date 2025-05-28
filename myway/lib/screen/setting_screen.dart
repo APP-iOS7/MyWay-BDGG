@@ -8,8 +8,6 @@ import 'notice/notice_list_screen.dart';
 class SettingScreen extends StatelessWidget {
   const SettingScreen({super.key});
 
-  Future<void> onConfirm() async {}
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
