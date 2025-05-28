@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:myway/const/colors.dart';
 
-import 'notice_list_screen.dart';
+import 'notice/notice_list_screen.dart';
 
 class SettingScreen extends StatelessWidget {
   const SettingScreen({super.key});
