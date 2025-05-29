@@ -52,6 +52,7 @@ dependencies:
   gallery_saver_plus: ^3.2.4
   geolocator: ^14.0.0
   carousel_slider: ^5.0.0
+  equatable: ^2.0.5
 
 dev_dependencies:
   flutter_test:

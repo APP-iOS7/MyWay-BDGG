@@ -1,9 +1,12 @@
+// home_screen.dart
+
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:myway/screen/park_list_screen.dart'; // 경로 확인 및 수정
 import 'package:provider/provider.dart';
 
 import '/const/colors.dart';
@@ -33,17 +36,25 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> fetchImages() async {
-    final ref = FirebaseStorage.instance.ref().child('walk_result');
-    final result = await ref.listAll();
-
-    final urls = await Future.wait(
-      result.items.map((item) => item.getDownloadURL()),
-    );
-
-    setState(() {
-      imageUrls = urls;
-      isLoading = false;
-    });
+    try {
+      final ref = FirebaseStorage.instance.ref().child('walk_result');
+      final result = await ref.listAll();
+      final urls = await Future.wait(
+        result.items.map((item) => item.getDownloadURL()),
+      );
+      if (mounted) {
+        setState(() {
+          imageUrls = urls;
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }
   }
 
   @override
@@ -61,7 +72,7 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
+                  const Text(
                     '마이웨이',
                     style: TextStyle(
                       color: Colors.black,
@@ -69,31 +80,29 @@ class _HomeScreenState extends State<HomeScreen> {
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  SizedBox(width: 20),
+                  const SizedBox(width: 20),
                   GestureDetector(
                     onTap: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) {
-                            return WeatherScreen();
-                          },
+                          builder: (context) => WeatherScreen(),
                         ),
                       );
                     },
                     child: Row(
-                      spacing: 5,
                       children: [
                         SvgPicture.asset(
                           weatherProvider.weatherIconPath,
                           height: 30,
                         ),
+                        const SizedBox(width: 5),
                         Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
                               weatherProvider.weatherStatus,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w500,
                                 color: GREEN_SUCCESS_TEXT_50,
@@ -101,7 +110,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             Text(
                               '${weatherProvider.temperature}°',
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w500,
                                 color: BLACK,
@@ -112,12 +121,12 @@ class _HomeScreenState extends State<HomeScreen> {
                       ],
                     ),
                   ),
-                  Spacer(),
+                  const Spacer(),
                   IconButton(
                     onPressed: () {
                       Navigator.pushNamed(context, 'setting');
                     },
-                    icon: Icon(
+                    icon: const Icon(
                       Icons.settings_outlined,
                       color: GRAYSCALE_LABEL_600,
                     ),
@@ -125,7 +134,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
             ),
-            // username님의 코스
             Padding(
               padding: const EdgeInsets.only(top: 0.0, left: 20, right: 20),
               child: Row(
@@ -133,13 +141,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   Text.rich(
                     TextSpan(
-                      text: user?.displayName,
-                      style: TextStyle(
+                      text: user?.displayName ?? "사용자",
+                      style: const TextStyle(
                         color: BLUE_SECONDARY_600,
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
-                      children: <TextSpan>[
+                      children: const <TextSpan>[
                         TextSpan(
                           text: ' 님의 코스',
                           style: TextStyle(
@@ -156,13 +164,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) {
-                            return const MycourseScreen();
-                          },
+                          builder: (context) => const MycourseScreen(),
                         ),
                       );
                     },
-                    child: Text(
+                    child: const Text(
                       '더보기 +',
                       style: TextStyle(
                         color: GRAYSCALE_LABEL_900,
@@ -180,41 +186,52 @@ class _HomeScreenState extends State<HomeScreen> {
                       .collection('trackingResult')
                       .doc(_auth.currentUser?.uid)
                       .snapshots(),
-
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
-                  return SizedBox(
+                  return const SizedBox(
                     height: 430,
                     child: Center(child: Text('에러가 발생했습니다.')),
                   );
                 }
-
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return SizedBox(
+                  return const SizedBox(
                     height: 430,
                     child: Center(child: CircularProgressIndicator()),
                   );
                 }
-
-                if (!snapshot.hasData || !snapshot.data!.exists) {
-                  return SizedBox(
+                if (!snapshot.hasData ||
+                    snapshot.data == null ||
+                    !snapshot.data!.exists) {
+                  return const SizedBox(
                     height: 430,
                     child: Center(child: Text('저장된 기록이 없습니다.')),
                   );
                 }
-
-                // TrackingResult 배열 가져오기
-                final data = snapshot.data!.data() as Map<String, dynamic>;
+                final data = snapshot.data!.data() as Map<String, dynamic>?;
+                if (data == null ||
+                    data['TrackingResult'] == null ||
+                    data['TrackingResult'] is! List) {
+                  return const SizedBox(
+                    height: 430,
+                    child: Center(child: Text('기록 데이터 형식이 올바르지 않습니다.')),
+                  );
+                }
                 final trackingResult = data['TrackingResult'] as List<dynamic>;
-
-                // 종료시간을 기준으로 최신순 정렬
+                if (trackingResult.isEmpty) {
+                  return const SizedBox(
+                    height: 430,
+                    child: Center(child: Text('저장된 기록이 없습니다.')),
+                  );
+                }
                 trackingResult.sort((a, b) {
-                  final aTime = DateTime.parse(a['종료시간']);
-                  final bTime = DateTime.parse(b['종료시간']);
-                  return bTime.compareTo(aTime); // 내림차순 정렬 (최신순)
+                  try {
+                    final aTime = DateTime.parse(a['종료시간']);
+                    final bTime = DateTime.parse(b['종료시간']);
+                    return bTime.compareTo(aTime);
+                  } catch (e) {
+                    return 0;
+                  }
                 });
-
-                // 필드내에서 5개로 제한
                 final limitedResults =
                     trackingResult.length > 5
                         ? trackingResult.sublist(0, 5)
@@ -225,32 +242,31 @@ class _HomeScreenState extends State<HomeScreen> {
                     options: CarouselOptions(
                       scrollDirection: Axis.horizontal,
                       height: 460,
-                      enableInfiniteScroll: true,
+                      enableInfiniteScroll: limitedResults.length > 1,
                       padEnds: true,
-                      viewportFraction: 0.8, // 화면에 보이는 아이템의 비율
-                      enlargeCenterPage: true, // 가운데 아이템 확대
+                      viewportFraction: 0.8,
+                      enlargeCenterPage: true,
                       enlargeFactor: 0.1,
                       autoPlay: false,
-                      // onPageChanged: (index, reason) {
-                      //   setState(() {
-                      //     _currentIndex = index;
-                      //   });
-                      // },
                     ),
                     items:
                         limitedResults.map((result) {
+                          if (result is! Map<String, dynamic>) {
+                            return const SizedBox.shrink();
+                          }
+                          final imageUrl = result['이미지 Url']?.toString() ?? '';
                           return Builder(
                             builder: (BuildContext context) {
-                              final imageUrl =
-                                  result['이미지 Url']?.toString() ?? '';
                               return Container(
                                 width: MediaQuery.of(context).size.width * 0.8,
-                                margin: EdgeInsets.symmetric(horizontal: 10),
+                                margin: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                ),
                                 child: Container(
                                   decoration: BoxDecoration(
                                     color: Colors.white,
                                     borderRadius: BorderRadius.circular(20),
-                                    boxShadow: [
+                                    boxShadow: const [
                                       BoxShadow(
                                         color: GRAYSCALE_LABEL_300,
                                         spreadRadius: 1,
@@ -268,37 +284,49 @@ class _HomeScreenState extends State<HomeScreen> {
                                       children: [
                                         imageUrl.isNotEmpty
                                             ? Image.network(
-                                              result['이미지 Url'],
+                                              imageUrl,
                                               width: double.infinity,
                                               height: 262,
                                               fit: BoxFit.cover,
+                                              errorBuilder:
+                                                  (
+                                                    context,
+                                                    error,
+                                                    stackTrace,
+                                                  ) => Container(
+                                                    width: double.infinity,
+                                                    height: 262,
+                                                    color: Colors.grey[200],
+                                                    child: const Icon(
+                                                      Icons.broken_image,
+                                                    ),
+                                                  ),
                                             )
                                             : Container(
                                               width: double.infinity,
-                                              height: 282,
+                                              height: 262,
                                               color: Colors.grey[200],
-                                              child: Icon(
+                                              child: const Icon(
                                                 Icons.image_not_supported,
                                               ),
                                             ),
-                                        SizedBox(
-                                          width: double.infinity,
-                                          child: Padding(
+                                        Expanded(
+                                          child: SingleChildScrollView(
                                             padding: const EdgeInsets.all(10),
                                             child: Column(
                                               crossAxisAlignment:
                                                   CrossAxisAlignment.start,
                                               children: [
                                                 Text(
-                                                  '${result['종료시간']}',
-                                                  style: TextStyle(
+                                                  '${result['종료시간'] ?? '시간 정보 없음'}',
+                                                  style: const TextStyle(
                                                     fontSize: 13,
                                                     fontWeight: FontWeight.w600,
                                                   ),
                                                 ),
                                                 Text(
-                                                  '${result['코스이름']}',
-                                                  style: TextStyle(
+                                                  '${result['코스이름'] ?? '코스 이름 없음'}',
+                                                  style: const TextStyle(
                                                     fontSize: 12,
                                                     fontWeight: FontWeight.w600,
                                                   ),
@@ -306,12 +334,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 Row(
                                                   children: [
                                                     Text(
-                                                      '${result['거리']}',
-                                                      style: TextStyle(
+                                                      '${result['거리'] ?? '0.0'}',
+                                                      style: const TextStyle(
                                                         fontSize: 26,
                                                       ),
                                                     ),
-                                                    Text(
+                                                    const Text(
                                                       'km',
                                                       style: TextStyle(
                                                         color: Colors.black,
@@ -322,7 +350,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                     ),
                                                   ],
                                                 ),
-                                                Text(
+                                                const Text(
                                                   '거리',
                                                   style: TextStyle(
                                                     color: GRAYSCALE_LABEL_500,
@@ -330,7 +358,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                     fontWeight: FontWeight.w500,
                                                   ),
                                                 ),
-                                                SizedBox(height: 10),
+                                                const SizedBox(height: 10),
                                                 Row(
                                                   children: [
                                                     Column(
@@ -339,14 +367,16 @@ class _HomeScreenState extends State<HomeScreen> {
                                                               .start,
                                                       children: [
                                                         Text(
-                                                          '${result['소요시간']}',
-                                                          style: TextStyle(
-                                                            fontSize: 14,
-                                                            fontWeight:
-                                                                FontWeight.w500,
-                                                          ),
+                                                          '${result['소요시간'] ?? '00:00'}',
+                                                          style:
+                                                              const TextStyle(
+                                                                fontSize: 14,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w500,
+                                                              ),
                                                         ),
-                                                        Text(
+                                                        const Text(
                                                           '시간',
                                                           style: TextStyle(
                                                             color:
@@ -358,21 +388,23 @@ class _HomeScreenState extends State<HomeScreen> {
                                                         ),
                                                       ],
                                                     ),
-                                                    SizedBox(width: 20),
+                                                    const SizedBox(width: 20),
                                                     Column(
                                                       crossAxisAlignment:
                                                           CrossAxisAlignment
                                                               .start,
                                                       children: [
                                                         Text(
-                                                          '${result['걸음수']}',
-                                                          style: TextStyle(
-                                                            fontSize: 14,
-                                                            fontWeight:
-                                                                FontWeight.w500,
-                                                          ),
+                                                          '${result['걸음수'] ?? '0'}',
+                                                          style:
+                                                              const TextStyle(
+                                                                fontSize: 14,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w500,
+                                                              ),
                                                         ),
-                                                        Text(
+                                                        const Text(
                                                           '걸음수',
                                                           style: TextStyle(
                                                             color:
@@ -420,7 +452,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         shadowColor: Colors.transparent,
                         backgroundColor: ORANGE_PRIMARY_600,
                         foregroundColor: WHITE,
-
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -436,7 +467,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                 ),
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
                   child: Row(
@@ -444,7 +475,14 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       GestureDetector(
                         onTap: () {
-                          Navigator.pushNamed(context, 'recommendCourse');
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder:
+                                  (context) =>
+                                      const ParkListScreen(initialTabIndex: 1),
+                            ),
+                          );
                         },
                         child: Column(
                           children: [
@@ -454,14 +492,9 @@ class _HomeScreenState extends State<HomeScreen> {
                               decoration: BoxDecoration(
                                 color: GRAYSCALE_LABEL_50,
                                 borderRadius: BorderRadius.circular(8),
-                                boxShadow: [
+                                boxShadow: const [
                                   BoxShadow(
-                                    color: const Color.fromARGB(
-                                      255,
-                                      205,
-                                      203,
-                                      203,
-                                    ),
+                                    color: Color.fromARGB(255, 205, 203, 203),
                                     offset: Offset(2, 2),
                                   ),
                                 ],
@@ -474,8 +507,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ),
                             ),
-                            SizedBox(height: 10),
-                            Text(
+                            const SizedBox(height: 10),
+                            const Text(
                               '추천 경로',
                               style: TextStyle(
                                 color: Colors.black,
@@ -486,7 +519,16 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                       GestureDetector(
-                        onTap: () {},
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder:
+                                  (context) =>
+                                      const ParkListScreen(initialTabIndex: 0),
+                            ),
+                          );
+                        },
                         child: Column(
                           children: [
                             Container(
@@ -495,14 +537,9 @@ class _HomeScreenState extends State<HomeScreen> {
                               decoration: BoxDecoration(
                                 color: GRAYSCALE_LABEL_50,
                                 borderRadius: BorderRadius.circular(8),
-                                boxShadow: [
+                                boxShadow: const [
                                   BoxShadow(
-                                    color: const Color.fromARGB(
-                                      255,
-                                      205,
-                                      203,
-                                      203,
-                                    ),
+                                    color: Color.fromARGB(255, 205, 203, 203),
                                     offset: Offset(2, 2),
                                   ),
                                 ],
@@ -514,8 +551,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ),
                             ),
-                            SizedBox(height: 10),
-                            Text(
+                            const SizedBox(height: 10),
+                            const Text(
                               '공원 찾기',
                               style: TextStyle(
                                 color: Colors.black,
@@ -542,14 +579,9 @@ class _HomeScreenState extends State<HomeScreen> {
                               decoration: BoxDecoration(
                                 color: GRAYSCALE_LABEL_50,
                                 borderRadius: BorderRadius.circular(8),
-                                boxShadow: [
+                                boxShadow: const [
                                   BoxShadow(
-                                    color: const Color.fromARGB(
-                                      255,
-                                      205,
-                                      203,
-                                      203,
-                                    ),
+                                    color: Color.fromARGB(255, 205, 203, 203),
                                     offset: Offset(2, 2),
                                   ),
                                 ],
@@ -561,8 +593,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ),
                             ),
-                            SizedBox(height: 10),
-                            Text(
+                            const SizedBox(height: 10),
+                            const Text(
                               '나의 기록',
                               style: TextStyle(
                                 color: Colors.black,
@@ -577,8 +609,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ],
             ),
-
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
           ],
         ),
       ),

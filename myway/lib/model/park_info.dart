@@ -1,15 +1,29 @@
-// myway/model/park_info.dart
+import 'package:geolocator/geolocator.dart';
 
 class ParkInfo {
   final String id;
   final String name;
   final String type;
   final String address;
-  final String? latitude;    
-  final String? longitude;   
-  bool isSelected;
-  bool isExpanded; 
+  final String? latitude;
+  final String? longitude;
+  final String mainEquip;
+  final String mainPlant;
+  final String guidance;
+  final String visitRoad;
+  final String useRefer;
+  final String parkImage;
+  final String updatedDate;
+  final double regionArea;
+  final String admZone;
+  final String wifi;
+  final bool hasToilet;
+  final bool hasParking;
+  final String templateUrl;
+
   double distanceKm;
+  bool isSelected;
+  bool isExpanded;
 
   ParkInfo({
     required this.id,
@@ -18,26 +32,71 @@ class ParkInfo {
     required this.address,
     this.latitude,
     this.longitude,
+    this.mainEquip = "",
+    this.mainPlant = "",
+    this.guidance = "",
+    this.visitRoad = "",
+    this.useRefer = "",
+    this.parkImage = "",
+    this.updatedDate = "",
+    this.regionArea = 0.0,
+    this.admZone = "",
+    this.wifi = "N",
+    this.hasToilet = false,
+    this.hasParking = false,
+    this.templateUrl = "",
+    this.distanceKm = 99999.0,
     this.isSelected = false,
     this.isExpanded = false,
-    this.distanceKm = 99999.0, 
   });
 
   factory ParkInfo.fromJson(Map<String, dynamic> json) {
-    String tempId = (json['parkNm']?.toString() ?? 'unknown_name') + "_" + (json['rdnmadr']?.toString() ?? json['lnmadr']?.toString() ?? 'unknown_address');
-    
+    double parseDouble(dynamic value) {
+      if (value is double) return value;
+      if (value is int) return value.toDouble();
+      if (value is String) return double.tryParse(value) ?? 0.0;
+      return 0.0;
+    }
+
     return ParkInfo(
-      id: json['manageNo']?.toString() ?? json['관리번호']?.toString() ?? tempId, 
-      name: json['parkNm']?.toString() ?? '정보 없음',
-      type: json['parkSe']?.toString() ?? '정보 없음',
-      address: json['rdnmadr']?.toString() ?? json['lnmadr']?.toString() ?? '주소 정보 없음',
-      latitude: json['latitude']?.toString() ?? json['prkplceLat']?.toString() ?? json['위도']?.toString(),
-      longitude: json['longitude']?.toString() ?? json['prkplceLot']?.toString() ?? json['경도']?.toString(),
+      id: json['manageNo']?.toString() ?? DateTime.now().millisecondsSinceEpoch.toString(),
+      name: json['parkNm'] ?? '이름 없음',
+      type: json['parkSe'] ?? '정보 없음',
+      address: json['lnmadr'] ?? json['rdnmadr'] ?? '주소 정보 없음',
+      latitude: json['latitude']?.toString(),
+      longitude: json['longitude']?.toString(),
+      mainEquip: json['mvmFclty'] ?? '',
+      mainPlant: json['amsmtFclty'] ?? '',
+      guidance: json['cnvnncFclty'] ?? '',
+      visitRoad: json['cltrFclty'] ?? '',
+      useRefer: json['etcFclty'] ?? '',
+      parkImage: json['P_IMG'] ?? '',
+      updatedDate: json['referenceDate'] ?? json['appnNtfcDate'] ?? '',
+      regionArea: parseDouble(json['parkAr']),
+      admZone: json['insttNm'] ?? '',
+      wifi: json['WIFI_SERVICE'] ?? 'N',
+      hasToilet: (json['cnvnncFclty']?.toString().contains('화장실') ?? false),
+      hasParking: (json['cnvnncFclty']?.toString().contains('주차장') ?? false),
+      templateUrl: json['TEMPLATE_URL'] ?? '',
     );
   }
 
-  @override
-  String toString() {
-    return 'ParkInfo(id: $id, name: $name, address: $address, lat: $latitude, lon: $longitude, distance: ${distanceKm.toStringAsFixed(1)} km)';
+  Future<void> calculateDistance(Position currentPosition) async {
+    if (latitude != null && longitude != null && latitude!.isNotEmpty && longitude!.isNotEmpty) {
+      try {
+        double parkLat = double.parse(latitude!);
+        double parkLon = double.parse(longitude!);
+        distanceKm = Geolocator.distanceBetween(
+              currentPosition.latitude,
+              currentPosition.longitude,
+              parkLat,
+              parkLon,
+            ) / 1000;
+      } catch (e) {
+        distanceKm = 99999.0;
+      }
+    } else {
+      distanceKm = 99999.0;
+    }
   }
 }
