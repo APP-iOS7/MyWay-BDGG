@@ -4,8 +4,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:myway/provider/user_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:rxdart/rxdart.dart';
 
 import '/const/colors.dart';
 import '/screen/mycourse_screen.dart';
@@ -31,9 +31,6 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     fetchImages();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<UserProvider>().loadNickname();
-    });
   }
 
   Future<void> fetchImages() async {
@@ -53,8 +50,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    User? user = FirebaseAuth.instance.currentUser;
     final weatherProvider = Provider.of<WeatherProvider>(context);
-    final nickname = context.watch<UserProvider>().nickname;
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -138,7 +136,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     Text.rich(
                       TextSpan(
-                        text: nickname,
+                        text: user?.displayName,
                         style: TextStyle(
                           color: BLUE_SECONDARY_600,
                           fontSize: 20,
@@ -180,11 +178,14 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               StreamBuilder<DocumentSnapshot>(
-                stream:
-                    _firestore
-                        .collection('trackingResult')
-                        .doc(_auth.currentUser?.uid)
-                        .snapshots(),
+                stream: _firestore
+                    .collection('trackingResult')
+                    .doc(_auth.currentUser?.uid)
+                    .snapshots()
+                    .distinct()
+                    .debounceTime(
+                      Duration(milliseconds: 300),
+                    ), // 너무 잦은 업데이트로 인해 깜박임 발생 방지
 
                 builder: (context, snapshot) {
                   if (snapshot.hasError) {
@@ -231,7 +232,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       options: CarouselOptions(
                         scrollDirection: Axis.horizontal,
                         height: 460,
-                        enableInfiniteScroll: true,
+                        enableInfiniteScroll: trackingResult.length == 3,
                         padEnds: true,
                         viewportFraction: 0.8, // 화면에 보이는 아이템의 비율
                         enlargeCenterPage: true, // 가운데 아이템 확대
@@ -460,11 +461,17 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: _buildBottomItem(
                             label: '추천 경로',
                             iconPath: 'assets/images/location.svg',
-                            onTap:
-                                () => Navigator.pushNamed(
-                                  context,
-                                  'recommendCourse',
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder:
+                                      (context) => const ParkListScreen(
+                                        initialTabIndex: 1,
+                                      ),
                                 ),
+                              );
+                            },
                           ),
                         ),
                         const SizedBox(width: 10),
@@ -472,7 +479,17 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: _buildBottomItem(
                             label: '공원 찾기',
                             iconPath: 'assets/images/mdi_tree.svg',
-                            onTap: () {},
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder:
+                                      (context) => const ParkListScreen(
+                                        initialTabIndex: 1,
+                                      ),
+                                ),
+                              );
+                            },
                           ),
                         ),
                         const SizedBox(width: 10),
