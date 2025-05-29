@@ -4,8 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:myway/firebase_options.dart';
 import 'package:myway/screen/notice/notice_list_screen.dart';
 import 'package:myway/screen/notice/notice_screen.dart';
-import 'package:myway/screen/recommended_course_screen.dart';
-import 'package:myway/screen/park_list_screen.dart';
+import 'package:myway/screen/home/park_list_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:toastification/toastification.dart';
 
@@ -16,16 +15,15 @@ import 'provider/user_provider.dart';
 import 'provider/weather_provider.dart';
 import 'provider/park_data_provider.dart'; // ParkDataProvider 임포트
 
-import 'screen/find_password_screen.dart';
+import 'screen/setting/find_password_screen.dart';
 import 'screen/home/home_screen.dart';
 import 'screen/login/signup_screen.dart';
 import 'screen/map/map_screen.dart';
-import 'screen/nickname_change_screen.dart';
-import 'screen/home/weather_screen.dart';
-import 'screen/change_password_screen.dart';
+import 'screen/setting/nickname_change_screen.dart';
+import 'screen/setting/change_password_screen.dart';
 import 'screen/login/signIn_screen.dart';
-import 'screen/customer_center_screen.dart';
-import 'screen/setting_screen.dart';
+import 'screen/setting/customer_center_screen.dart';
+import 'screen/setting/setting_screen.dart';
 import 'temp/test_drawer.dart';
 import 'temp/test_map.dart';
 
@@ -66,7 +64,6 @@ class MyApp extends StatelessWidget {
         home: AuthWrapper(),
         // initialRoute: 'home',
         routes: {
-          'recommendCourse': (context) => const RecommendedCourseScreen(),
           'signUp': (context) => const SignUpScreen(),
           'signIn': (context) => const SigninScreen(),
           'home': (context) => const HomeScreen(),

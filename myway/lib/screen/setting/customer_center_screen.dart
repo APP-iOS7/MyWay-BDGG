@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:myway/screen/alert/dialog.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../const/colors.dart';
+import '../../const/colors.dart';
 
 class CustomerCenterScreen extends StatelessWidget {
   const CustomerCenterScreen({super.key});

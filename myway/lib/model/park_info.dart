@@ -59,7 +59,9 @@ class ParkInfo {
     }
 
     return ParkInfo(
-      id: json['manageNo']?.toString() ?? DateTime.now().millisecondsSinceEpoch.toString(),
+      id:
+          json['manageNo']?.toString() ??
+          DateTime.now().millisecondsSinceEpoch.toString(),
       name: json['parkNm'] ?? '이름 없음',
       type: json['parkSe'] ?? '정보 없음',
       address: json['lnmadr'] ?? json['rdnmadr'] ?? '주소 정보 없음',
@@ -82,16 +84,21 @@ class ParkInfo {
   }
 
   Future<void> calculateDistance(Position currentPosition) async {
-    if (latitude != null && longitude != null && latitude!.isNotEmpty && longitude!.isNotEmpty) {
+    if (latitude != null &&
+        longitude != null &&
+        latitude!.isNotEmpty &&
+        longitude!.isNotEmpty) {
       try {
         double parkLat = double.parse(latitude!);
         double parkLon = double.parse(longitude!);
-        distanceKm = Geolocator.distanceBetween(
+        distanceKm =
+            Geolocator.distanceBetween(
               currentPosition.latitude,
               currentPosition.longitude,
               parkLat,
               parkLon,
-            ) / 1000;
+            ) /
+            1000;
       } catch (e) {
         distanceKm = 99999.0;
       }

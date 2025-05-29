@@ -8,7 +8,8 @@ import 'package:provider/provider.dart';
 import 'package:rxdart/rxdart.dart';
 
 import '/const/colors.dart';
-import '/screen/mycourse_screen.dart';
+import 'mycourse_screen.dart';
+import 'park_list_screen.dart';
 import 'weather_screen.dart';
 import '/provider/weather_provider.dart';
 import '../result/activity_log_screen.dart';
@@ -485,7 +486,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 MaterialPageRoute(
                                   builder:
                                       (context) => const ParkListScreen(
-                                        initialTabIndex: 1,
+                                        initialTabIndex: 0,
                                       ),
                                 ),
                               );

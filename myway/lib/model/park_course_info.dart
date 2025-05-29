@@ -10,7 +10,8 @@ class ParkCourseInfo extends Equatable {
   final bool isSelected;
   bool isFavorite; // isFavorite는 Provider가 관리하는 상태를 반영 (non-final)
 
-  ParkCourseInfo({ // isFavorite가 non-final이므로 생성자는 const가 아님
+  ParkCourseInfo({
+    // isFavorite가 non-final이므로 생성자는 const가 아님
     required this.id,
     required this.parkId,
     this.parkName,
@@ -22,7 +23,16 @@ class ParkCourseInfo extends Equatable {
   });
 
   @override
-  List<Object?> get props => [id, parkId, parkName, title, details, imagePath, isSelected, isFavorite];
+  List<Object?> get props => [
+    id,
+    parkId,
+    parkName,
+    title,
+    details,
+    imagePath,
+    isSelected,
+    isFavorite,
+  ];
 
   ParkCourseInfo copyWith({
     String? id,

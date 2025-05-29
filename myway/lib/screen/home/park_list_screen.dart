@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:myway/model/park_info.dart';
 import 'package:myway/model/park_course_info.dart';
 import 'package:provider/provider.dart';
-import '../provider/park_data_provider.dart';
-import '../const/colors.dart';
+import '../../provider/park_data_provider.dart';
+import '../../const/colors.dart';
 import 'park_detail.dart';
 
 enum ParkFilterType { all, nearby, favorites }
@@ -155,7 +155,8 @@ class _ParkListScreenState extends State<ParkListScreen>
     }
   }
 
-  void _applyParkFilterAndSearchAndPagination(ParkDataProvider provider) { // 반경 5키로 지정 메소드
+  void _applyParkFilterAndSearchAndPagination(ParkDataProvider provider) {
+    // 반경 5키로 지정 메소드
     if (!provider.isLoadingParks) {
       List<ParkInfo> tempFilteredList = List.from(provider.allFetchedParks);
       if (_currentParkFilter == ParkFilterType.favorites) {
