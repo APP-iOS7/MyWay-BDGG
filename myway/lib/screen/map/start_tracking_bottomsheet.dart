@@ -1,10 +1,10 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:myway/provider/step_provider.dart';
 import 'package:myway/screen/alert/dialog.dart';
 import 'package:provider/provider.dart';
 
 import '../../const/colors.dart';
+import '../../provider/map_provider.dart';
 
 class StartTrackingBottomsheet extends StatefulWidget {
   const StartTrackingBottomsheet({super.key});
@@ -20,6 +20,9 @@ class _StartTrackingBottomsheetState extends State<StartTrackingBottomsheet> {
   @override
   Widget build(BuildContext context) {
     final stepProvider = Provider.of<StepProvider>(context);
+    final mapProvider = Provider.of<MapProvider>(context);
+    print('StartTrackingBottomsheet build called');
+    print('stepProvider status: ${stepProvider.status}');
     return DraggableScrollableSheet(
       initialChildSize: 0.5,
       minChildSize: 0.3,
@@ -184,6 +187,7 @@ class _StartTrackingBottomsheetState extends State<StartTrackingBottomsheet> {
                                 content:
                                     '산책을 종료합니다.\n 화면에 보이는 지도를 이미지로 변환합니다. 지도를 조정해주세요.',
                                 onConfirm: () {
+                                  mapProvider.setTracking(false);
                                   stepProvider.stopTracking();
                                 },
                               );

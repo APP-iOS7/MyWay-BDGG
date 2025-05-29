@@ -81,7 +81,13 @@ class _CourseRecommendBottomsheetState
                         const Spacer(),
                         ElevatedButton(
                           onPressed: () {
-                            if (!mapProvider.isMapLoading) {
+                            print('버튼 클릭');
+                            if (Provider.of<MapProvider>(
+                                  context,
+                                  listen: false,
+                                ).isMapLoading ==
+                                false) {
+                              print('내부');
                               mapProvider.setTracking(true);
                               mapProvider.showStartTrackingBottomSheet();
                               CountdownDiallog.show(
@@ -90,22 +96,23 @@ class _CourseRecommendBottomsheetState
                                   stepProvider.startTracking();
                                 },
                               );
-                            } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('지도 로딩 중입니다. 잠시 후 다시 시도해주세요.'),
-                                  duration: Duration(seconds: 1),
-                                ),
-                              );
                             }
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: ORANGE_PRIMARY_500,
+                            backgroundColor:
+                                (Provider.of<MapProvider>(
+                                          context,
+                                          listen: false,
+                                        ).isMapLoading ==
+                                        false)
+                                    ? ORANGE_PRIMARY_500
+                                    : GRAYSCALE_LABEL_300,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
                             ),
                             elevation: 0,
                           ),
+
                           child: Text(
                             '시작',
                             style: TextStyle(

@@ -7,6 +7,8 @@ import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 import 'package:rxdart/rxdart.dart';
 
+import '../../provider/map_provider.dart';
+import '../../provider/step_provider.dart';
 import '/const/colors.dart';
 import 'mycourse_screen.dart';
 import 'park_list_screen.dart';
@@ -35,6 +37,11 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> fetchImages() async {
+    if (!mounted) {
+      print('HomeScreen is not mounted, skipping fetchImages');
+      return;
+    }
+
     final ref = FirebaseStorage.instance.ref().child('walk_result');
     final result = await ref.listAll();
     print(result);
@@ -435,6 +442,14 @@ class _HomeScreenState extends State<HomeScreen> {
                       height: 56,
                       child: ElevatedButton(
                         onPressed: () {
+                          Provider.of<MapProvider>(
+                            context,
+                            listen: false,
+                          ).resetState();
+                          Provider.of<StepProvider>(
+                            context,
+                            listen: false,
+                          ).resetTracking();
                           Navigator.pushNamed(context, 'map');
                         },
                         style: ElevatedButton.styleFrom(

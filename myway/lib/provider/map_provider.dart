@@ -13,6 +13,7 @@ class MapProvider with ChangeNotifier {
   Course? _selectedCourse;
   Uint8List? _courseImage;
   bool _isMapLoading = true;
+  bool _disposed = false; // dispose 상태 추적
 
   bool get isCourseRecommendBottomSheetVisible =>
       _isCourseRecommendBottomSheetVisible;
@@ -23,31 +24,56 @@ class MapProvider with ChangeNotifier {
   Uint8List? get courseImage => _courseImage;
   bool get isMapLoading => _isMapLoading;
 
-  void showCourseRecommendBottomSheet() {
+  void resetState() {
+    if (_disposed) return; // dispose된 경우 early return
+
     _isCourseRecommendBottomSheetVisible = true;
     _isStartTrackingBottomSheetVisible = false;
     _isTracking = false;
-    notifyListeners();
+    _selectedCourse = null;
+    _courseImage = null;
+    _isMapLoading = true;
+    print('MapProvider state reset');
+
+    // 안전하게 notifyListeners 호출
+    _safeNotifyListeners();
+  }
+
+  void showCourseRecommendBottomSheet() {
+    if (_disposed) return;
+
+    _isCourseRecommendBottomSheetVisible = true;
+    _isStartTrackingBottomSheetVisible = false;
+    _isTracking = false;
+    _safeNotifyListeners();
   }
 
   void showStartTrackingBottomSheet() {
+    if (_disposed) return;
+
     _isCourseRecommendBottomSheetVisible = false;
     _isStartTrackingBottomSheetVisible = true;
     _isTracking = true;
-    notifyListeners();
+    _safeNotifyListeners();
   }
 
   void setTracking(bool value) {
+    if (_disposed) return;
+
     _isTracking = value;
-    notifyListeners();
+    _safeNotifyListeners();
   }
 
   void setMapLoading(bool value) {
+    if (_disposed) return;
+
     _isMapLoading = value;
-    notifyListeners();
+    _safeNotifyListeners();
   }
 
   void selectCourse(Course? course) {
+    if (_disposed) return;
+
     if (course != null) {
       _selectedCourse = course;
       print('title: ${course.title}');
@@ -58,17 +84,38 @@ class MapProvider with ChangeNotifier {
     }
     print('course in pro: $course');
 
-    notifyListeners();
+    _safeNotifyListeners();
   }
 
   void saveImage(Uint8List img) {
+    if (_disposed) return;
+
     _courseImage = img;
-    notifyListeners();
+    _safeNotifyListeners();
   }
 
   void courseClear() {
+    if (_disposed) return;
+
     _courseImage = null;
-    notifyListeners();
+    _safeNotifyListeners();
+  }
+
+  // 안전한 notifyListeners 호출
+  void _safeNotifyListeners() {
+    if (_disposed) return;
+
+    try {
+      notifyListeners();
+    } catch (e) {
+      print('MapProvider: notifyListeners 호출 중 오류 발생: $e');
+    }
+  }
+
+  @override
+  void dispose() {
+    _disposed = true; // dispose 상태 설정
+    super.dispose();
   }
 
   Future<Uint8List?> captureMap(GlobalKey boundaryKey) async {

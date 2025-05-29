@@ -13,7 +13,7 @@ import 'provider/map_provider.dart';
 import 'provider/step_provider.dart';
 import 'provider/user_provider.dart';
 import 'provider/weather_provider.dart';
-import 'provider/park_data_provider.dart'; // ParkDataProvider 임포트
+import 'provider/park_data_provider.dart';
 
 import 'screen/setting/find_password_screen.dart';
 import 'screen/home/home_screen.dart';
@@ -28,7 +28,6 @@ import 'temp/test_drawer.dart';
 import 'temp/test_map.dart';
 
 Future<void> main() async {
-  print('initial commit for dev_2');
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(
@@ -41,9 +40,7 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (context) => StepProvider()),
         ChangeNotifierProvider(create: (context) => MapProvider()),
         ChangeNotifierProvider(create: (context) => ActivityLogProvider()),
-        ChangeNotifierProvider(
-          create: (context) => ParkDataProvider(),
-        ), // ParkDataProvider 추가
+        ChangeNotifierProvider(create: (context) => ParkDataProvider()),
       ],
       child: const MyApp(),
     ),

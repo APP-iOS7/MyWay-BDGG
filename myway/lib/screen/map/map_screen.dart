@@ -40,6 +40,12 @@ class _MapScreenState extends State<MapScreen>
     walkingRoute.clear();
     polylines.clear();
     _checkLocationPermission();
+
+    // initState에서 mapProvider 로딩 상태 설정
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final mapProvider = Provider.of<MapProvider>(context, listen: false);
+      mapProvider.setMapLoading(isLoading);
+    });
   }
 
   @override
@@ -273,7 +279,14 @@ class _MapScreenState extends State<MapScreen>
     print('📍 stopLocationTracking');
     print('📍 위치 추적 일시정지됨');
     _tracking = false;
-    final Uint8List? imageBytes = await mapController!.takeSnapshot();
+
+    // mapController null 체크 추가
+    if (mapController == null) {
+      print('📍 mapController가 null입니다');
+      return;
+    }
+
+    final Uint8List? imageBytes = await mapController?.takeSnapshot();
     final stepProvider = Provider.of<StepProvider>(context, listen: false);
 
     stepProvider.stopTracking();
@@ -283,7 +296,9 @@ class _MapScreenState extends State<MapScreen>
       debugPrint('PNG signature: ${imageBytes.sublist(0, 8)}');
 
       if (!context.mounted) return;
+      print(stepProvider.currentStepModel);
       WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.pop(context); // 현재 화면 닫기
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -326,6 +341,12 @@ class _MapScreenState extends State<MapScreen>
           }
         }
       });
+
+      // setState 완료 후 mapProvider 업데이트
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final mapProvider = Provider.of<MapProvider>(context, listen: false);
+        mapProvider.setMapLoading(isLoading);
+      });
     }
   }
 
@@ -352,18 +373,35 @@ class _MapScreenState extends State<MapScreen>
     final mapProvider = Provider.of<MapProvider>(context);
     final status = stepProvider.status;
     final selectedCourse = Provider.of<MapProvider>(context).selectedCourse;
-    drawRecommendPolylines(selectedCourse);
+    if (mapProvider.selectedCourse == null) {
+      print('null course');
+      // 추천 코스가 선택되지 않은 경우 특정 polyline 그리지않음
+      polylines.removeWhere((p) => p.polylineId.value == 'recommended');
+    } else {
+      drawRecommendPolylines(selectedCourse);
+    }
+
     if (mapProvider.isTracking && !_tracking) {
       startLocationTracking();
     }
-    if (_prevStatus != TrackingStatus.stopped &&
+
+    // 상태 변화 체크를 안전하게 처리
+    if (_prevStatus != null &&
+        _prevStatus != TrackingStatus.stopped &&
         status == TrackingStatus.stopped) {
       _tracking = false;
-      stopLocationTracking();
+      // build 중이 아닌 시점에 실행되도록 스케줄링
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        stopLocationTracking();
+      });
     }
     _prevStatus = status;
-    mapProvider.setMapLoading(isLoading);
+
+    // build() 메서드 내에서 mapProvider 상태 변경 제거
+    // mapProvider.setMapLoading(isLoading); <- 이 줄 제거
+
     return Scaffold(
+      backgroundColor: WHITE,
       appBar: AppBar(
         backgroundColor: WHITE,
         elevation: 0,
@@ -394,21 +432,17 @@ class _MapScreenState extends State<MapScreen>
             builder: (BuildContext context, BoxConstraints constraints) {
               final mapHeight = constraints.maxHeight - 200;
 
-              // if (mapProvider.selectedCourse != null) {
-              //   print("provider selectedCourse is not null");
-              //   drawRecommendPolylines(mapProvider.selectedCourse!);
-              // }
-              // if (mapProvider.selectedCourse == null) {
-              //   print("provider selectedCourse is null");
-              //   polylines.clear();
-              // }
               return Column(
                 children: [
                   SizedBox(
                     height: mapHeight,
                     child:
                         isLoading
-                            ? const Center(child: CircularProgressIndicator())
+                            ? const Center(
+                              child: CircularProgressIndicator(
+                                color: ORANGE_PRIMARY_500,
+                              ),
+                            )
                             : GoogleMap(
                               onMapCreated: (controller) {
                                 mapController = controller;

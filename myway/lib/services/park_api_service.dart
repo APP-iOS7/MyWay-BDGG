@@ -114,7 +114,7 @@ class ParkApiService {
               currentPage++;
 
               if (totalItemsFromApi != null &&
-                  allParksRaw.length >= totalItemsFromApi!) {
+                  allParksRaw.length >= totalItemsFromApi) {
                 moreDataExists = false;
               } else if (parksInPage.length < rowsPerPage) {
                 moreDataExists = false;

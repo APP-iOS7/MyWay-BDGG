@@ -57,6 +57,7 @@ class StepProvider extends ChangeNotifier {
     _currentSteps = 0;
     _elapsed = Duration.zero;
     _startTime = DateTime.now();
+    _status = TrackingStatus.running;
 
     _timer?.cancel();
     _timer = Timer.periodic(Duration(seconds: 1), (_) {
@@ -106,12 +107,15 @@ class StepProvider extends ChangeNotifier {
     _currentSteps = 0;
     _elapsed = Duration.zero;
     _status = TrackingStatus.stopped;
+    print('stepProvider state reset');
 
     notifyListeners();
   }
 
   void stopTracking() {
     _status = TrackingStatus.stopped;
+    _timer?.cancel();
+    _timer = null;
     _currentStepModel = createStepModel();
     notifyListeners();
   }
