@@ -199,7 +199,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return SizedBox(
                       height: 430,
-                      child: Center(child: CircularProgressIndicator()),
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          color: ORANGE_PRIMARY_300,
+                        ),
+                      ),
                     );
                   }
 
