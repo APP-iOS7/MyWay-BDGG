@@ -4,6 +4,7 @@ class StepModel {
   final String distance;
   final String stopTime;
   final String courseName;
+  final String imageUrl;
 
   StepModel({
     required this.steps,
@@ -11,6 +12,7 @@ class StepModel {
     required this.distance,
     required this.stopTime,
     required this.courseName,
+    required this.imageUrl,
   });
 
   Map<String, dynamic> toJson() {
@@ -20,6 +22,7 @@ class StepModel {
       '거리': distance,
       '종료시간': stopTime,
       '코스이름': courseName,
+      '이미지 Url': imageUrl,
     };
   }
 
@@ -30,6 +33,7 @@ class StepModel {
       distance: json['거리'],
       stopTime: json['종료시간'],
       courseName: json['코스이름'],
+      imageUrl: json['이미지 Url'],
     );
   }
 }

@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:myway/model/step_model.dart';
@@ -8,14 +7,13 @@ import 'package:pedometer/pedometer.dart';
 enum TrackingStatus { running, paused, stopped }
 
 class StepProvider extends ChangeNotifier {
+  final TextEditingController courseName = TextEditingController();
   int _baseSteps = 0;
   int _currentSteps = 0;
   int get steps => _currentSteps;
-  final TextEditingController courseName = TextEditingController();
 
   bool _isCourseNameValid = false;
   bool get isCourseNameValid => _isCourseNameValid;
-
   StepProvider() {
     courseName.addListener(_validateCourseName);
   }
@@ -25,11 +23,13 @@ class StepProvider extends ChangeNotifier {
   String get distanceKm =>
       (_currentSteps * _strideLengthCm / 100000).toStringAsFixed(2);
 
+  // 이미지
+
   // 시간
   DateTime? _startTime;
   DateTime? _stopTime;
   Timer? _timer;
-  Duration _elapsed = Duration.zero;
+  Duration _elapsed = Duration.zero; // 경과
   String _formattedStopTime = '';
   String get formattedElapsed => _formatDuration(_elapsed);
   String get formattedStopTime => _formattedStopTime;
@@ -39,6 +39,10 @@ class StepProvider extends ChangeNotifier {
 
   TrackingStatus _status = TrackingStatus.running;
   TrackingStatus get status => _status;
+
+  // 현재 저장된 데이터를 관리하는 변수
+  StepModel? _currentStepModel;
+  StepModel? get currentStepModel => _currentStepModel;
 
   void toggle() {
     if (_status == TrackingStatus.running) {
@@ -78,7 +82,7 @@ class StepProvider extends ChangeNotifier {
   }
 
   // 새로운 메서드: StepModel만 생성하고 상태는 변경하지 않음
-  StepModel createStepModel() {
+  StepModel createStepModel({String imageUrl = ''}) {
     _stopTime = DateTime.now();
     _formattedStopTime = DateFormat('yyyy-MM-dd HH:mm').format(_stopTime!);
 
@@ -88,10 +92,12 @@ class StepProvider extends ChangeNotifier {
       distance: distanceKm,
       stopTime: formattedStopTime,
       courseName: courseName.text,
+      imageUrl: imageUrl,
     );
   }
 
   // 기존 메서드: 내부 상태를 초기화하고 notifyListeners 호출
+
   void resetTracking() {
     _subscription?.cancel();
     _timer?.cancel();
@@ -104,27 +110,32 @@ class StepProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // 기존 메서드를 유지하되 내부 구현을 변경 (하위 호환성 유지)
-  StepModel stopTracking() {
-    _subscription?.cancel();
-    _timer?.cancel();
-
-    final result = createStepModel();
-
-    // 상태 초기화 (동기적으로 실행)
-    _baseSteps = 0;
-    _currentSteps = 0;
-    _elapsed = Duration.zero;
+  void stopTracking() {
     _status = TrackingStatus.stopped;
-
-    try {
-      notifyListeners();
-    } catch (e) {
-      print('StepProvider stopTracking notifyListeners 오류: $e');
-    }
-
-    return result;
+    _currentStepModel = createStepModel();
+    notifyListeners();
   }
+
+  // StepModel stopTracking(String imageUrl) {
+  //   _subscription?.cancel();
+  //   _timer?.cancel();
+
+  //   final result = createStepModel(imageUrl: imageUrl);
+
+  //   // 상태 초기화 (동기적으로 실행)
+  //   _baseSteps = 0;
+  //   _currentSteps = 0;
+  //   _elapsed = Duration.zero;
+  //   _status = TrackingStatus.stopped;
+
+  //   try {
+  //     notifyListeners();
+  //   } catch (e) {
+  //     print('StepProvider stopTracking notifyListeners 오류: $e');
+  //   }
+
+  //   return result;
+  // }
 
   void pause() {
     _subscription?.cancel();

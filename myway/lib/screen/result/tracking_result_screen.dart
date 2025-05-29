@@ -1,9 +1,5 @@
 import 'dart:io';
 import 'dart:ui';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:gallery_saver_plus/gallery_saver.dart';
@@ -99,63 +95,13 @@ class _TrackingResultScreenState extends State<TrackingResultScreen> {
     }
   }
 
-  Future<void> captureImageUpload() async {
-    try {
-      final boundary =
-          repaintBoundary.currentContext!.findRenderObject()!
-              as RenderRepaintBoundary;
-      final image = await boundary.toImage(pixelRatio: 2.0);
-      final byteData = await image.toByteData(format: ImageByteFormat.png);
-      final pngBytes = byteData!.buffer.asUint8List();
-
-      // Storage업로드
-      final fileName =
-          'walk_result_${DateTime.now().millisecondsSinceEpoch}.png';
-      final ref = FirebaseStorage.instance.ref().child('walk_result/$fileName');
-
-      final uploadTask = await ref.putData(pngBytes);
-
-      // 업로드 완료 후 downloadUrl 얻기
-      final downloadUrl = await uploadTask.ref.getDownloadURL();
-
-      // firestore에 url저장
-      final user = FirebaseAuth.instance.currentUser;
-      await FirebaseFirestore.instance
-          .collection('walk_results')
-          .doc(user!.uid)
-          .set({
-            'result_images': FieldValue.arrayUnion([downloadUrl]),
-          }, SetOptions(merge: true));
-      final message =
-          pngBytes.isEmpty ? '이미지 업로드 및 저장완료' : 'Saved to $pngBytes';
-
-      toastification.show(
-        context: context,
-        style: ToastificationStyle.flat,
-        type: ToastificationType.success,
-        autoCloseDuration: Duration(seconds: 5),
-        alignment: Alignment.bottomCenter,
-        title: Text(message),
-      );
-
-      print('storage업로드 및 Firestore 저장완료');
-    } catch (e) {
-      print('업로드 및 저장 실패: $e');
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final stepProvider = Provider.of<StepProvider>(context);
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        leading: IconButton(
-          onPressed: () {
-            Navigator.popUntil(context, (route) => route.isFirst);
-          },
-          icon: Icon(Icons.arrow_back_ios, color: Colors.black),
-        ),
+        automaticallyImplyLeading: false,
         backgroundColor: Colors.white,
         title: Text(
           '산책완료',
@@ -171,153 +117,166 @@ class _TrackingResultScreenState extends State<TrackingResultScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            RepaintBoundary(
-              key: repaintBoundary,
-              child: Container(
-                width: double.infinity,
-                padding: EdgeInsets.only(bottom: 22),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color.fromARGB(69, 148, 147, 147),
-                      offset: Offset(2, 2),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    Image.asset('assets/images/map.png'),
-                    SizedBox(height: 20),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 20.0, right: 20.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            widget.courseName,
-                            style: TextStyle(color: Colors.black, fontSize: 18),
-                          ),
-                          Text(
-                            stepProvider.formattedStopTime,
-                            style: TextStyle(color: Colors.black, fontSize: 13),
-                          ),
-                        ],
+            Container(
+              width: double.infinity,
+              margin: EdgeInsets.only(top: 8),
+              padding: EdgeInsets.only(bottom: 22),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: GRAYSCALE_LABEL_300,
+                    spreadRadius: 1,
+                    blurRadius: 8,
+                    offset: Offset(1, 1),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  RepaintBoundary(
+                    key: repaintBoundary,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(12),
                       ),
+                      child: Image.asset('assets/images/map.png'),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 20.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          Text(
-                            '중앙공원',
-                            style: TextStyle(color: Colors.black, fontSize: 16),
+                  ),
+                  SizedBox(height: 20),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 20.0, right: 20.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          widget.courseName,
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
                           ),
-                        ],
-                      ),
+                        ),
+                        Text(
+                          stepProvider.formattedStopTime,
+                          style: TextStyle(color: Colors.black, fontSize: 13),
+                        ),
+                      ],
                     ),
-                    SizedBox(height: 40),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 20.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text.rich(
-                                TextSpan(
-                                  text: widget.result.distance,
-                                  style: TextStyle(
-                                    color: Colors.black,
-                                    fontSize: 40,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  children: <TextSpan>[
-                                    TextSpan(
-                                      text: ' Km',
-                                      style: TextStyle(
-                                        color: Colors.black,
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
-                                      ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 20.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Text(
+                          '중앙공원',
+                          style: TextStyle(color: Colors.black, fontSize: 16),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 20.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text.rich(
+                              TextSpan(
+                                text: widget.result.distance,
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 40,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                children: <TextSpan>[
+                                  TextSpan(
+                                    text: ' Km',
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                ],
                               ),
-                              Text(
-                                '거리',
-                                style: TextStyle(
-                                  color: GRAYSCALE_LABEL_400,
-                                  fontSize: 14,
-                                ),
+                            ),
+                            Text(
+                              '거리',
+                              style: TextStyle(
+                                color: GRAYSCALE_LABEL_400,
+                                fontSize: 14,
                               ),
-                            ],
-                          ),
-                        ],
-                      ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
-                    SizedBox(height: 20),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 20.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                widget.result.duration,
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                  ),
+                  SizedBox(height: 20),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 20.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              widget.result.duration,
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
                               ),
-                              Text(
-                                '시간',
-                                style: TextStyle(
-                                  color: GRAYSCALE_LABEL_400,
-                                  fontSize: 14,
-                                ),
+                            ),
+                            Text(
+                              '시간',
+                              style: TextStyle(
+                                color: GRAYSCALE_LABEL_400,
+                                fontSize: 14,
                               ),
-                            ],
-                          ),
-                          SizedBox(width: 30),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                '${widget.result.steps}',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(width: 30),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '${widget.result.steps}',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
                               ),
-                              Text(
-                                '걸음수',
-                                style: TextStyle(
-                                  color: GRAYSCALE_LABEL_400,
-                                  fontSize: 14,
-                                ),
+                            ),
+                            Text(
+                              '걸음수',
+                              style: TextStyle(
+                                color: GRAYSCALE_LABEL_400,
+                                fontSize: 14,
                               ),
-                            ],
-                          ),
-                        ],
-                      ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
             SizedBox(height: 30),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Expanded(
+                Flexible(
+                  flex: 2,
                   child: GestureDetector(
                     onTap: () {
                       saveCardAsImage();
@@ -359,42 +318,32 @@ class _TrackingResultScreenState extends State<TrackingResultScreen> {
                   ),
                 ),
                 SizedBox(width: 10),
-                Expanded(
+                Flexible(
+                  flex: 1,
                   child: GestureDetector(
                     onTap: () {
-                      captureImageUpload();
+                      Navigator.popUntil(context, (route) => route.isFirst);
+                      stepProvider.resetTracking();
                     },
                     child: Container(
                       alignment: Alignment.center,
-                      padding: EdgeInsets.all(5),
+                      padding: EdgeInsets.all(20),
                       decoration: BoxDecoration(
                         color: YELLOW_INFO_BASE_30,
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: Padding(
-                        padding: const EdgeInsets.only(left: 30.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              '내 코스 공유',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            '홈 으로',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
                             ),
-                            IconButton(
-                              onPressed: () {
-                                captureImageUpload();
-                              },
-                              icon: Icon(
-                                Icons.share_outlined,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
                   ),

@@ -1,6 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:myway/const/colors.dart';
+import 'package:myway/screen/alert/dialog.dart';
+
+import 'notice/notice_list_screen.dart';
 
 class SettingScreen extends StatelessWidget {
   const SettingScreen({super.key});
@@ -14,7 +17,11 @@ class SettingScreen extends StatelessWidget {
         backgroundColor: WHITE,
         title: Text(
           '설정',
-          style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
+          style: TextStyle(
+            color: GRAYSCALE_LABEL_950,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         centerTitle: true,
       ),
@@ -72,9 +79,15 @@ class SettingScreen extends StatelessWidget {
                 children: [
                   _buildSettingItem(
                     text: '공지사항',
-                    onTap: () {
-                      // 공지사항 이동
-                    },
+                    onTap:
+                        () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) {
+                              return const NoticeListScreen();
+                            },
+                          ),
+                        ),
                   ),
                   _buildSettingItem(
                     text: '고객센터',
@@ -84,36 +97,26 @@ class SettingScreen extends StatelessWidget {
                   _buildSettingItem(
                     showArrow: false,
                     text: '로그아웃',
-                    textColor: Colors.red,
+                    textColor: RED_DANGER_TEXT_50,
                     onTap: () async {
-                      final confirm = await showDialog<bool>(
+                      await showDialog(
                         context: context,
                         builder:
-                            (context) => AlertDialog(
-                              title: Text('로그아웃'),
-                              content: Text('정말 로그아웃 하시겠습니까?'),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.pop(context, true),
-                                  child: Text('로그아웃'),
-                                ),
-                                TextButton(
-                                  onPressed:
-                                      () => Navigator.pop(context, false),
-                                  child: Text('취소'),
-                                ),
-                              ],
+                            (context) => ConfirmationDialog(
+                              title: '로그아웃',
+                              content: '로그아웃 하시겠습니까?',
+                              onConfirm: () async {
+                                // 로그아웃 처리
+                                await FirebaseAuth.instance.signOut();
+                                // 로그인 화면으로 이동
+                                Navigator.pushNamedAndRemoveUntil(
+                                  context,
+                                  'signIn',
+                                  (route) => false,
+                                );
+                              },
                             ),
                       );
-
-                      if (confirm == true) {
-                        await FirebaseAuth.instance.signOut();
-                        Navigator.pushNamedAndRemoveUntil(
-                          context,
-                          'signIn',
-                          (route) => false,
-                        );
-                      }
                     },
                   ),
                 ],

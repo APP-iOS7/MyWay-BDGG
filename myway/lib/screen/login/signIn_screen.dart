@@ -4,7 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:myway/const/colors.dart';
-import 'package:myway/screen/home_screen.dart';
+import 'package:myway/screen/home/home_screen.dart';
 
 class SigninScreen extends StatefulWidget {
   const SigninScreen({super.key});
@@ -45,139 +45,138 @@ class _SigninScreenState extends State<SigninScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.only(top: 250.0, left: 20),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                '나만 알고 있던\n알려주고 싶은',
-                style: GoogleFonts.inter(
-                  color: GRAYSCALE_LABEL_900,
-                  fontSize: 30,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Text(
-                '마이웨이',
-                style: GoogleFonts.inter(
-                  color: BLUE_SECONDARY_700,
-                  fontSize: 30,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              SizedBox(height: 20),
-              Padding(
-                padding: const EdgeInsets.only(right: 20),
-                child: TextFormField(
-                  controller: _emailController,
-                  cursorColor: ORANGE_PRIMARY_600,
-                  keyboardType: TextInputType.emailAddress,
-                  decoration: InputDecoration(
-                    labelText: '이메일',
-                    labelStyle: TextStyle(color: Colors.grey),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide(color: GRAYSCALE_LABEL_400),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide(color: GRAYSCALE_LABEL_400),
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(height: 20),
-              Padding(
-                padding: const EdgeInsets.only(right: 20),
-                child: TextFormField(
-                  controller: _passwordController,
-                  cursorColor: ORANGE_PRIMARY_500,
-                  obscureText: true,
-                  decoration: InputDecoration(
-                    labelText: '비밀번호',
-                    labelStyle: TextStyle(color: Colors.grey),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide(color: GRAYSCALE_LABEL_400),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide(color: GRAYSCALE_LABEL_400),
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(height: 20),
-              GestureDetector(
-                onTap: _signIn,
-
-                child: Padding(
-                  padding: const EdgeInsets.only(right: 20.0),
-                  child: Container(
-                    alignment: Alignment.center,
-                    width: double.infinity,
-                    height: 56,
-                    decoration: BoxDecoration(
-                      color: ORANGE_PRIMARY_500,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      '로그인',
-                      style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(height: 10),
-              Row(
+      resizeToAvoidBottomInset: true, // 키보드 올라올 때 자동 조정
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: MediaQuery.of(context).size.height,
+            ),
+            child: IntrinsicHeight(
+              child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '계정이 없으신가요?',
-                    style: GoogleFonts.inter(color: Colors.black, fontSize: 15),
+                    '나만 알고 있던,\n알려주고 싶은',
+                    style: GoogleFonts.inter(
+                      color: GRAYSCALE_LABEL_900,
+                      fontSize: 30,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pushNamed(context, 'signUp');
-                    },
-                    child: Text(
-                      '회원가입',
-                      style: GoogleFonts.inter(
-                        color: BLUE_SECONDARY_600,
-                        fontSize: 15,
+                  Text(
+                    '마이웨이',
+                    style: GoogleFonts.inter(
+                      color: BLUE_SECONDARY_700,
+                      fontSize: 30,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                  TextFormField(
+                    controller: _emailController,
+                    cursorColor: ORANGE_PRIMARY_600,
+                    keyboardType: TextInputType.emailAddress,
+                    decoration: InputDecoration(
+                      labelText: '이메일',
+                      labelStyle: TextStyle(color: Colors.grey),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: GRAYSCALE_LABEL_400),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: GRAYSCALE_LABEL_400),
                       ),
                     ),
                   ),
-                ],
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Transform.translate(
-                    offset: Offset(0, -15),
-                    child: TextButton(
-                      onPressed: () {
-                        Navigator.pushNamed(context, 'findPassword');
-                      },
+                  SizedBox(height: 10),
+                  TextFormField(
+                    controller: _passwordController,
+                    cursorColor: ORANGE_PRIMARY_500,
+                    obscureText: true,
+                    decoration: InputDecoration(
+                      labelText: '비밀번호',
+                      labelStyle: TextStyle(color: Colors.grey),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: GRAYSCALE_LABEL_400),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: GRAYSCALE_LABEL_400),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                  GestureDetector(
+                    onTap: _signIn,
+
+                    child: Container(
+                      alignment: Alignment.center,
+                      width: double.infinity,
+                      height: 56,
+                      decoration: BoxDecoration(
+                        color: ORANGE_PRIMARY_500,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                       child: Text(
-                        '비밀번호 찾기',
+                        '로그인',
                         style: GoogleFonts.inter(
-                          color: GRAYSCALE_LABEL_600,
-                          fontSize: 15,
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
                   ),
+                  SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        '계정이 없으신가요?',
+                        style: GoogleFonts.inter(
+                          color: Colors.black,
+                          fontSize: 15,
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pushNamed(context, 'signUp');
+                        },
+                        child: Text(
+                          '회원가입',
+                          style: GoogleFonts.inter(
+                            color: BLUE_SECONDARY_600,
+                            fontSize: 15,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pushNamed(context, 'findPassword');
+                        },
+                        child: Text(
+                          '비밀번호 찾기',
+                          style: GoogleFonts.inter(
+                            color: GRAYSCALE_LABEL_600,
+                            fontSize: 15,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
-            ],
+            ),
           ),
         ),
       ),
