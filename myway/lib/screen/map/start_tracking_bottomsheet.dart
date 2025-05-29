@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:myway/provider/step_provider.dart';
-import 'package:myway/screen/result/course_name_screen.dart';
+import 'package:myway/screen/alert/dialog.dart';
 import 'package:provider/provider.dart';
 
 import '../../const/colors.dart';
@@ -179,47 +179,13 @@ class _StartTrackingBottomsheetState extends State<StartTrackingBottomsheet> {
                           showDialog(
                             context: context,
                             builder: (BuildContext context) {
-                              return CupertinoAlertDialog(
-                                content: Text(
-                                  '산책을 종료 하시겠습니까?',
-                                  style: TextStyle(
-                                    color: BLUE_SECONDARY_800,
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                actions: [
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      TextButton(
-                                        onPressed: () {
-                                          Navigator.pop(context);
-                                        },
-                                        child: Text(
-                                          '취소',
-                                          style: TextStyle(
-                                            color: Colors.black,
-                                            fontSize: 15,
-                                          ),
-                                        ),
-                                      ),
-                                      TextButton(
-                                        onPressed: () {
-                                          stepProvider.stopTracking();
-                                        },
-                                        child: Text(
-                                          '종료',
-                                          style: TextStyle(
-                                            color: Colors.red,
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
+                              return ConfirmationDialog(
+                                title: '산책 종료',
+                                content:
+                                    '산책을 종료합니다.\n 화면에 보이는 지도를 이미지로 변환합니다. 지도를 조정해주세요.',
+                                onConfirm: () {
+                                  stepProvider.stopTracking();
+                                },
                               );
                             },
                           );

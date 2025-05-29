@@ -1,13 +1,18 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
-
-import '/services/airquality_api_service.dart';
-import '/services/weather_api_service.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:location/location.dart' as loc;
+import 'package:location/location.dart';
+import '../services/airquality_api_service.dart';
+import '../services/weather_api_service.dart';
 
 class WeatherProvider extends ChangeNotifier {
   final WeatherApiService _weatherApi = WeatherApiService();
   final AirQualityService _airApi = AirQualityService();
+  final loc.Location location = loc.Location();
 
   bool isLoading = true;
+  String cityName = '현재 위치';
 
   String temperature = '-';
   String humidity = '-';
@@ -26,25 +31,118 @@ class WeatherProvider extends ChangeNotifier {
     isLoading = true;
     notifyListeners();
 
-    await Future.wait([
-      _fetchCurrentWeather(),
-      _fetchSkyPty(),
-      _fetchAirQuality(),
-      _fetchHourlyForecast(),
-    ]);
+    try {
+      final hasPermission = await _checkLocationPermission();
+      if (!hasPermission) {
+        print('위치 권한 거부됨');
+        cityName = '위치 권한 필요';
+        isLoading = false;
+        notifyListeners();
+        return;
+      }
+
+      final current = await location.getLocation();
+      final grid = convertToGrid(current.latitude!, current.longitude!);
+      cityName = await _getAddressFromCoordinates(
+        current.latitude!,
+        current.longitude!,
+      );
+
+      final nx = grid['nx']!;
+      final ny = grid['ny']!;
+
+      await Future.wait([
+        _fetchCurrentWeather(nx, ny),
+        _fetchSkyPty(nx, ny),
+        _fetchAirQuality(cityName),
+        _fetchHourlyForecast(nx, ny),
+      ]);
+    } catch (e) {
+      print('위치 기반 날씨 로딩 오류: $e');
+    }
 
     isLoading = false;
     notifyListeners();
-
-    await _fetchHourlyForecast();
   }
 
-  Future<void> _fetchCurrentWeather() async {
+  Future<bool> _checkLocationPermission() async {
+    PermissionStatus permission = await location.hasPermission();
+    if (permission == PermissionStatus.denied) {
+      permission = await location.requestPermission();
+      if (permission != PermissionStatus.granted) {
+        return false;
+      }
+    }
+
+    final serviceEnabled = await location.serviceEnabled();
+    if (!serviceEnabled) {
+      final enabled = await location.requestService();
+      if (!enabled) return false;
+    }
+
+    return true;
+  }
+
+  Future<String> _getAddressFromCoordinates(double lat, double lon) async {
+    try {
+      final placemarks = await placemarkFromCoordinates(lat, lon);
+      final adminArea = placemarks.first.administrativeArea ?? '서울특별시';
+
+      if (adminArea.contains('서울')) return '서울';
+      if (adminArea.contains('부산')) return '부산';
+      if (adminArea.contains('대구')) return '대구';
+      if (adminArea.contains('인천')) return '인천';
+      if (adminArea.contains('광주')) return '광주';
+      if (adminArea.contains('대전')) return '대전';
+      if (adminArea.contains('울산')) return '울산';
+      if (adminArea.contains('세종')) return '세종';
+      if (adminArea.contains('경기')) return '경기';
+      if (adminArea.contains('강원')) return '강원';
+      if (adminArea.contains('충북')) return '충북';
+      if (adminArea.contains('충남')) return '충남';
+      if (adminArea.contains('전북')) return '전북';
+      if (adminArea.contains('전남')) return '전남';
+      if (adminArea.contains('경북')) return '경북';
+      if (adminArea.contains('경남')) return '경남';
+      if (adminArea.contains('제주')) return '제주';
+
+      return '서울'; // fallback (혹시라도 실패할 경우)
+    } catch (e) {
+      print('역지오코딩 실패: $e');
+      return '위치 불명';
+    }
+  }
+
+  Map<String, String> convertToGrid(double lat, double lon) {
+    const RE = 6371.00877, GRID = 5.0;
+    const SLAT1 = 30.0, SLAT2 = 60.0, OLON = 126.0, OLAT = 38.0;
+    const XO = 43, YO = 136;
+    final DEGRAD = pi / 180.0;
+    final re = RE / GRID;
+    final slat1 = SLAT1 * DEGRAD, slat2 = SLAT2 * DEGRAD;
+    final olon = OLON * DEGRAD, olat = OLAT * DEGRAD;
+
+    var sn =
+        log(cos(slat1) / cos(slat2)) /
+        log(tan(pi * 0.25 + slat2 * 0.5) / tan(pi * 0.25 + slat1 * 0.5));
+    var sf = pow(tan(pi * 0.25 + slat1 * 0.5), sn) * cos(slat1) / sn;
+    var ro = re * sf / pow(tan(pi * 0.25 + olat * 0.5), sn);
+    var ra = re * sf / pow(tan(pi * 0.25 + lat * DEGRAD * 0.5), sn);
+    var theta = lon * DEGRAD - olon;
+    if (theta > pi) theta -= 2 * pi;
+    if (theta < -pi) theta += 2 * pi;
+    theta *= sn;
+
+    final nx = (ra * sin(theta) + XO + 0.5).floor();
+    final ny = (ro - ra * cos(theta) + YO + 0.5).floor();
+
+    return {'nx': nx.toString(), 'ny': ny.toString()};
+  }
+
+  Future<void> _fetchCurrentWeather(String nx, String ny) async {
     final now = DateTime.now();
     final baseDate = WeatherServiceHelper.formatDate(now);
     final baseTime = WeatherServiceHelper.getSafeUltraSrtNcstBaseTime(now);
-    const nx = '59';
-    const ny = '126';
 
     final data = await _weatherApi.fetchCurrentWeather(
       baseDate: baseDate,
@@ -55,7 +153,6 @@ class WeatherProvider extends ChangeNotifier {
 
     if (data != null) {
       final items = data['response']['body']['items']['item'] as List<dynamic>;
-
       for (var item in items) {
         switch (item['category']) {
           case 'T1H':
@@ -73,13 +170,11 @@ class WeatherProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> _fetchSkyPty() async {
+  Future<void> _fetchSkyPty(String nx, String ny) async {
     final now = DateTime.now();
     final baseDate = WeatherServiceHelper.formatDate(now);
     final baseTime = WeatherServiceHelper.getSafeForecastBaseTime(now);
     final fcstTime = WeatherServiceHelper.getFcstTargetTime(now);
-    const nx = '59';
-    const ny = '126';
 
     final data = await _weatherApi.fetchForecastWeather(
       baseDate: baseDate,
@@ -90,7 +185,6 @@ class WeatherProvider extends ChangeNotifier {
 
     if (data != null) {
       final items = data['response']['body']['items']['item'] as List<dynamic>;
-
       final skyItem = items.firstWhere(
         (e) => e['category'] == 'SKY' && e['fcstTime'] == fcstTime,
         orElse: () => null,
@@ -103,7 +197,6 @@ class WeatherProvider extends ChangeNotifier {
       if (skyItem != null && ptyItem != null) {
         final sky = skyItem['fcstValue'];
         final pty = ptyItem['fcstValue'];
-
         weatherStatus = _getWeatherStatus(sky, pty);
         weatherIconPath = _getWeatherIconPath(
           weatherStatus,
@@ -113,12 +206,11 @@ class WeatherProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> _fetchAirQuality() async {
-    final data = await _airApi.fetchAirQuality('서울');
+  Future<void> _fetchAirQuality(String region) async {
+    final data = await _airApi.fetchAirQuality(region);
     if (data != null) {
       final items = data['response']['body']['items'] as List<dynamic>;
       final first = items.first;
-
       pm10Value = first['pm10Value'] ?? '-';
       pm25Value = first['pm25Value'] ?? '-';
       pm10Grade = _getDustGrade(int.tryParse(pm10Value));
@@ -126,7 +218,7 @@ class WeatherProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> _fetchHourlyForecast() async {
+  Future<void> _fetchHourlyForecast(String nx, String ny) async {
     final now = DateTime.now();
     final baseDate = WeatherServiceHelper.formatDate(now);
     final baseTime = WeatherServiceHelper.getSafeForecastBaseTime(now);
@@ -134,26 +226,25 @@ class WeatherProvider extends ChangeNotifier {
     final data = await _weatherApi.fetchForecastWeather(
       baseDate: baseDate,
       baseTime: baseTime,
-      nx: '59',
-      ny: '126',
+      nx: nx,
+      ny: ny,
     );
 
     if (data != null) {
       final items = data['response']['body']['items']['item'] as List<dynamic>;
-
       final forecastMap = <String, Map<String, String>>{};
+
       for (var item in items) {
         final time = item['fcstTime'];
         if (!_isEvery3Hour(time)) continue;
 
         forecastMap.putIfAbsent(time, () => {});
-        if (item['category'] == 'TMP') {
+        if (item['category'] == 'TMP')
           forecastMap[time]!['temp'] = item['fcstValue'];
-        } else if (item['category'] == 'SKY') {
+        if (item['category'] == 'SKY')
           forecastMap[time]!['sky'] = item['fcstValue'];
-        } else if (item['category'] == 'PTY') {
+        if (item['category'] == 'PTY')
           forecastMap[time]!['pty'] = item['fcstValue'];
-        }
       }
 
       hourlyForecast =
@@ -166,12 +257,10 @@ class WeatherProvider extends ChangeNotifier {
             final iconPath = _getWeatherIconPath(status, false);
             return {
               'time': timeLabel,
-              'temp': '${e.value['temp']}°',
+              'temp': '${e.value['temp']}\u00b0',
               'icon': iconPath,
             };
           }).toList();
-
-      notifyListeners();
     }
   }
 

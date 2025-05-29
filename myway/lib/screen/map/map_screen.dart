@@ -86,22 +86,58 @@ class _MapScreenState extends State<MapScreen>
           title: Text("위치 권한 요청"),
           content: Text("위치 권한을 허용해야 앱을 정상적으로 사용할 수 있습니다."),
           actions: [
-            TextButton(
-              onPressed: () async {
-                Navigator.pop(context);
-                // 권한 요청
-                PermissionStatus status = await location.requestPermission();
-                if (status == PermissionStatus.granted) {
-                  print("위치 권한 허용됨");
-                } else {
-                  print("위치 권한 거부됨");
-                }
-              },
-              child: Text("다시 시도"),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text("취소"),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      elevation: 0,
+                      backgroundColor: GRAYSCALE_LABEL_100,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      shadowColor: Colors.transparent,
+                      overlayColor: GRAYSCALE_LABEL_800,
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: Text(
+                      '취소',
+                      style: TextStyle(color: GRAYSCALE_LABEL_900),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 10),
+                Expanded(
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      elevation: 0,
+                      backgroundColor: ORANGE_PRIMARY_500,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      overlayColor: ORANGE_PRIMARY_800,
+                      shadowColor: Colors.transparent,
+                    ),
+                    onPressed: () async {
+                      Navigator.pop(context);
+                      // 권한 요청
+                      PermissionStatus status =
+                          await location.requestPermission();
+                      if (status == PermissionStatus.granted) {
+                        print("위치 권한 허용됨");
+                      } else {
+                        print("위치 권한 거부됨");
+                      }
+                    },
+                    child: Text(
+                      '다시 시도',
+                      style: TextStyle(color: GRAYSCALE_LABEL_900),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         );
@@ -116,18 +152,75 @@ class _MapScreenState extends State<MapScreen>
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text("위치 권한 영구 거부"),
-          content: Text("위치 권한이 영구적으로 거부되었습니다. 설정에서 권한을 수동으로 허용해야 합니다."),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text("설정으로 가기"),
+          elevation: 0,
+          backgroundColor: WHITE,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          title: Text(
+            "위치 권한 영구 거부",
+            style: TextStyle(
+              color: GRAYSCALE_LABEL_900,
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
             ),
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text("취소"),
+          ),
+          content: Text(
+            "위치 권한이 영구적으로 거부되었습니다. 설정에서 권한을 수동으로 허용해야 합니다.",
+            style: TextStyle(
+              fontSize: 16,
+              color: GRAYSCALE_LABEL_700,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          actionsPadding: const EdgeInsets.only(
+            bottom: 12,
+            left: 12,
+            right: 12,
+          ),
+          actions: [
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      elevation: 0,
+                      backgroundColor: GRAYSCALE_LABEL_100,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      shadowColor: Colors.transparent,
+                      overlayColor: GRAYSCALE_LABEL_800,
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: Text(
+                      '취소',
+                      style: TextStyle(color: GRAYSCALE_LABEL_900),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 10),
+                Expanded(
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      elevation: 0,
+                      backgroundColor: ORANGE_PRIMARY_500,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      overlayColor: ORANGE_PRIMARY_800,
+                      shadowColor: Colors.transparent,
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: Text(
+                      '설정으로 이동',
+                      style: TextStyle(color: GRAYSCALE_LABEL_900),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         );
@@ -182,6 +275,9 @@ class _MapScreenState extends State<MapScreen>
     print('📍 위치 추적 일시정지됨');
     _tracking = false;
     final Uint8List? imageBytes = await mapController!.takeSnapshot();
+    final stepProvider = Provider.of<StepProvider>(context, listen: false);
+
+    stepProvider.stopTracking();
 
     if (imageBytes != null && imageBytes.isNotEmpty) {
       debugPrint('📍 이미지 캡처 성공, 길이: ${imageBytes.length}');
@@ -192,7 +288,11 @@ class _MapScreenState extends State<MapScreen>
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => CourseNameScreen(courseImage: imageBytes),
+            builder:
+                (context) => CourseNameScreen(
+                  courseImage: imageBytes,
+                  stepModel: stepProvider.currentStepModel!,
+                ),
           ),
         );
       });
@@ -263,7 +363,7 @@ class _MapScreenState extends State<MapScreen>
       stopLocationTracking();
     }
     _prevStatus = status;
-
+    mapProvider.setMapLoading(isLoading);
     return Scaffold(
       appBar: AppBar(
         backgroundColor: WHITE,

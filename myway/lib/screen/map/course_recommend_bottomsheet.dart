@@ -81,14 +81,23 @@ class _CourseRecommendBottomsheetState
                         const Spacer(),
                         ElevatedButton(
                           onPressed: () {
-                            mapProvider.setTracking(true);
-                            mapProvider.showStartTrackingBottomSheet();
-                            CountdownDiallog.show(
-                              context,
-                              onComplete: () {
-                                stepProvider.startTracking();
-                              },
-                            );
+                            if (!mapProvider.isMapLoading) {
+                              mapProvider.setTracking(true);
+                              mapProvider.showStartTrackingBottomSheet();
+                              CountdownDiallog.show(
+                                context,
+                                onComplete: () {
+                                  stepProvider.startTracking();
+                                },
+                              );
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('지도 로딩 중입니다. 잠시 후 다시 시도해주세요.'),
+                                  duration: Duration(seconds: 1),
+                                ),
+                              );
+                            }
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: ORANGE_PRIMARY_500,

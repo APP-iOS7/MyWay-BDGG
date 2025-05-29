@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:myway/provider/user_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -31,6 +32,9 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     fetchImages();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<UserProvider>().loadNickname();
+    });
   }
 
   Future<void> fetchImages() async {
@@ -50,9 +54,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    User? user = FirebaseAuth.instance.currentUser;
     final weatherProvider = Provider.of<WeatherProvider>(context);
-
+    final nickname = context.watch<UserProvider>().nickname;
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -136,7 +139,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     Text.rich(
                       TextSpan(
-                        text: user?.displayName,
+                        text: nickname,
                         style: TextStyle(
                           color: BLUE_SECONDARY_600,
                           fontSize: 20,

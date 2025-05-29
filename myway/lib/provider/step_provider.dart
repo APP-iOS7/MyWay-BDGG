@@ -40,6 +40,10 @@ class StepProvider extends ChangeNotifier {
   TrackingStatus _status = TrackingStatus.running;
   TrackingStatus get status => _status;
 
+  // 현재 저장된 데이터를 관리하는 변수
+  StepModel? _currentStepModel;
+  StepModel? get currentStepModel => _currentStepModel;
+
   void toggle() {
     if (_status == TrackingStatus.running) {
       pause();
@@ -93,6 +97,7 @@ class StepProvider extends ChangeNotifier {
   }
 
   // 기존 메서드: 내부 상태를 초기화하고 notifyListeners 호출
+
   void resetTracking() {
     _subscription?.cancel();
     _timer?.cancel();
@@ -107,10 +112,10 @@ class StepProvider extends ChangeNotifier {
 
   void stopTracking() {
     _status = TrackingStatus.stopped;
+    _currentStepModel = createStepModel();
     notifyListeners();
   }
 
-  // 기존 메서드를 유지하되 내부 구현을 변경 (하위 호환성 유지)
   // StepModel stopTracking(String imageUrl) {
   //   _subscription?.cancel();
   //   _timer?.cancel();
