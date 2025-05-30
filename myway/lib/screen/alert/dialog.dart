@@ -36,7 +36,7 @@ class ConfirmationDialog extends StatelessWidget {
       content: Text(
         content,
         style: const TextStyle(
-          fontSize: 16,
+          fontSize: 15,
           color: GRAYSCALE_LABEL_700,
           fontWeight: FontWeight.w500,
         ),
@@ -48,6 +48,7 @@ class ConfirmationDialog extends StatelessWidget {
             Expanded(
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
+                  overlayColor: Colors.transparent,
                   elevation: 0,
                   backgroundColor: GRAYSCALE_LABEL_100,
                   shadowColor: Colors.transparent,
@@ -68,6 +69,7 @@ class ConfirmationDialog extends StatelessWidget {
                 style: ElevatedButton.styleFrom(
                   elevation: 0,
                   backgroundColor: confirmColor,
+                  overlayColor: Colors.transparent,
                   shadowColor: Colors.transparent,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),

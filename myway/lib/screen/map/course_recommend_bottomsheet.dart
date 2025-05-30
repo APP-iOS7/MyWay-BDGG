@@ -90,7 +90,7 @@ class _CourseRecommendBottomsheetState
                               print('내부');
                               mapProvider.setTracking(true);
                               mapProvider.showStartTrackingBottomSheet();
-                              CountdownDiallog.show(
+                              CountdownDialog.show(
                                 context,
                                 onComplete: () {
                                   stepProvider.startTracking();
@@ -99,6 +99,7 @@ class _CourseRecommendBottomsheetState
                             }
                           },
                           style: ElevatedButton.styleFrom(
+                            overlayColor: Colors.transparent,
                             backgroundColor:
                                 (Provider.of<MapProvider>(
                                           context,

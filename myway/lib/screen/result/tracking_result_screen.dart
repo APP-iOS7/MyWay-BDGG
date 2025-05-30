@@ -4,13 +4,14 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:gallery_saver_plus/gallery_saver.dart';
-import 'package:myway/const/colors.dart';
 import 'package:myway/model/step_model.dart';
 import 'package:myway/provider/step_provider.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:toastification/toastification.dart';
+
+import '../../const/colors.dart';
 
 class TrackingResultScreen extends StatefulWidget {
   final StepModel result;
@@ -169,8 +170,8 @@ class _TrackingResultScreenState extends State<TrackingResultScreen> {
                                 widget.courseName,
                                 style: TextStyle(
                                   color: GRAYSCALE_LABEL_950,
-                                  fontSize: 23,
-                                  fontWeight: FontWeight.bold,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                               Text(
@@ -203,9 +204,6 @@ class _TrackingResultScreenState extends State<TrackingResultScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    crossAxisAlignment: CrossAxisAlignment.end,
                                     children: [
                                       Text(
                                         widget.result.distance,
@@ -303,7 +301,7 @@ class _TrackingResultScreenState extends State<TrackingResultScreen> {
                         padding: EdgeInsets.all(5),
 
                         decoration: BoxDecoration(
-                          color: Color(0xff4c2b0a),
+                          color: MAP_BLUE,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Padding(
@@ -314,7 +312,7 @@ class _TrackingResultScreenState extends State<TrackingResultScreen> {
                               Text(
                                 '이미지 저장',
                                 style: TextStyle(
-                                  color: Colors.white,
+                                  color: WHITE,
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -346,7 +344,7 @@ class _TrackingResultScreenState extends State<TrackingResultScreen> {
                         alignment: Alignment.center,
                         padding: EdgeInsets.all(20),
                         decoration: BoxDecoration(
-                          color: YELLOW_INFO_BASE_30,
+                          color: ORANGE_PRIMARY_500,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Row(
@@ -355,7 +353,7 @@ class _TrackingResultScreenState extends State<TrackingResultScreen> {
                             Text(
                               '홈 으로',
                               style: TextStyle(
-                                color: Colors.white,
+                                color: GRAYSCALE_LABEL_900,
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -367,6 +365,7 @@ class _TrackingResultScreenState extends State<TrackingResultScreen> {
                   ),
                 ],
               ),
+              SizedBox(height: 20),
             ],
           ),
         ),

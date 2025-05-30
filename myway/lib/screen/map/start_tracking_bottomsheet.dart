@@ -185,7 +185,9 @@ class _StartTrackingBottomsheetState extends State<StartTrackingBottomsheet> {
                               return ConfirmationDialog(
                                 title: '산책 종료',
                                 content:
-                                    '산책을 종료합니다.\n 화면에 보이는 지도를 이미지로 변환합니다. 지도를 조정해주세요.',
+                                    '산책을 종료합니다.\n산책코스가 모두 보이도록 지도를 축소해주세요.',
+                                cancelText: '취소',
+                                confirmText: '종료',
                                 onConfirm: () {
                                   mapProvider.setTracking(false);
                                   stepProvider.stopTracking();
