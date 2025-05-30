@@ -72,3 +72,5 @@ const GREEN_SECONDARY_800 = Color(0XFF759248);
 
 const WHITE = Color(0xFFFFFFFF);
 const BLACK = Color(0xFF000000);
+
+const MAP_BLUE = Color(0xFF4B70A6);
