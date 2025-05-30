@@ -28,13 +28,18 @@ class _MycourseScreenState extends State<MycourseScreen> {
     final docRef = _firestore
         .collection('trackingResult')
         .doc(_auth.currentUser?.uid);
-    final newList = <dynamic>[];
 
+    final newList = <dynamic>[];
     for (int i = 0; i < trackingResult.length; i++) {
       if (!_selected[i]) newList.add(trackingResult[i]);
     }
 
-    await docRef.update({'TrackingResult': newList});
+    if (newList.isEmpty) {
+      await docRef.update({'TrackingResult': FieldValue.delete()});
+    } else {
+      await docRef.update({'TrackingResult': newList});
+    }
+
     setState(() {
       isEditing = false;
     });
@@ -50,49 +55,33 @@ class _MycourseScreenState extends State<MycourseScreen> {
               .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
-          return Scaffold(
-            backgroundColor: WHITE,
-
-            appBar: AppBar(
-              backgroundColor: Colors.white,
-              scrolledUnderElevation: 0,
-              centerTitle: true,
-              title: const Text(
-                '나의 코스',
-                style: TextStyle(
-                  color: GRAYSCALE_LABEL_950,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            body: const Center(child: Text('에러가 발생했습니다.')),
+          return _buildScaffoldWithBody(
+            const Center(child: Text('에러가 발생했습니다.')),
           );
         }
-        if (!snapshot.hasData || !snapshot.data!.exists) {
-          return Scaffold(
-            backgroundColor: WHITE,
-            appBar: AppBar(
-              backgroundColor: Colors.white,
-              scrolledUnderElevation: 0,
-              elevation: 0,
-              centerTitle: true,
-              title: const Text(
-                '나의 코스',
-                style: TextStyle(
-                  color: GRAYSCALE_LABEL_950,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            body: Padding(
+
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return _buildScaffoldWithBody(
+            const Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        final data = snapshot.data?.data() as Map<String, dynamic>? ?? {};
+        final trackingResult = List<Map<String, dynamic>>.from(
+          data['TrackingResult'] ?? [],
+        );
+
+        if (!snapshot.hasData ||
+            !snapshot.data!.exists ||
+            trackingResult.isEmpty) {
+          return _buildScaffoldWithBody(
+            Padding(
               padding: const EdgeInsets.only(top: 200.0),
               child: Column(
                 children: [
-                  Icon(Icons.directions_walk),
+                  const Icon(Icons.directions_walk),
                   const SizedBox(height: 10),
-                  SizedBox(
+                  const SizedBox(
                     width: double.infinity,
                     child: Text(
                       '저장된 기록이 없습니다.',
@@ -104,7 +93,7 @@ class _MycourseScreenState extends State<MycourseScreen> {
                       ),
                     ),
                   ),
-                  Text(
+                  const Text(
                     '산책을 시작해서 나만의 코스를 만들어보세요!',
                     textAlign: TextAlign.center,
                     style: TextStyle(
@@ -118,37 +107,12 @@ class _MycourseScreenState extends State<MycourseScreen> {
             ),
           );
         }
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Scaffold(
-            backgroundColor: WHITE,
-            appBar: AppBar(
-              backgroundColor: Colors.white,
-              scrolledUnderElevation: 0,
-              centerTitle: true,
-              title: Text(
-                '나의 코스',
-                style: TextStyle(
-                  color: GRAYSCALE_LABEL_950,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            body: Center(child: CircularProgressIndicator()),
-          );
-        }
-
-        final data = snapshot.data!.data() as Map<String, dynamic>;
-        final trackingResult = List<Map<String, dynamic>>.from(
-          data['TrackingResult'] ?? [],
-        );
 
         trackingResult.sort(
           (a, b) =>
               DateTime.parse(b['종료시간']).compareTo(DateTime.parse(a['종료시간'])),
         );
 
-        // 선택 리스트 초기화 (길이 바뀔 경우만)
         if (_selected.length != trackingResult.length) {
           _selected = List<bool>.filled(trackingResult.length, false);
         }
@@ -197,10 +161,6 @@ class _MycourseScreenState extends State<MycourseScreen> {
                         ),
                       ),
                     ],
-            // bottom: PreferredSize(
-            //   preferredSize: const Size.fromHeight(1),
-            //   child: Divider(height: 1, thickness: 1, color: Colors.grey[300]),
-            // ),
           ),
           body: Padding(
             padding: const EdgeInsets.all(20),
@@ -298,6 +258,26 @@ class _MycourseScreenState extends State<MycourseScreen> {
           ),
         );
       },
+    );
+  }
+
+  Scaffold _buildScaffoldWithBody(Widget bodyContent) {
+    return Scaffold(
+      backgroundColor: WHITE,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        scrolledUnderElevation: 0,
+        centerTitle: true,
+        title: const Text(
+          '나의 코스',
+          style: TextStyle(
+            color: GRAYSCALE_LABEL_950,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+      body: bodyContent,
     );
   }
 }
