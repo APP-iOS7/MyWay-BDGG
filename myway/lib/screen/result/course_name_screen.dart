@@ -39,12 +39,19 @@ class _CourseNameScreenState extends State<CourseNameScreen> {
 
   Future<String?> imageUpload() async {
     try {
+      final boundary =
+          repaintBoundary.currentContext!.findRenderObject()!
+              as RenderRepaintBoundary;
+      final image = await boundary.toImage(pixelRatio: 2.0);
+      final byteData = await image.toByteData(format: ImageByteFormat.png);
+      final pngBytes = byteData!.buffer.asUint8List();
+
       // Storage업로드
       final fileName =
           'walk_result_map${DateTime.now().millisecondsSinceEpoch}.png';
       final ref = FirebaseStorage.instance.ref().child('walk_result/$fileName');
 
-      final uploadTask = await ref.putData(widget.courseImage);
+      final uploadTask = await ref.putData(pngBytes);
 
       // 업로드 완료 후 URL 얻기
       final downloadUrl = await uploadTask.ref.getDownloadURL();
@@ -69,14 +76,13 @@ class _CourseNameScreenState extends State<CourseNameScreen> {
           },
           icon: Icon(Icons.close_rounded, color: Colors.black),
         ),
-        elevation: 0,
-        scrolledUnderElevation: 0,
         backgroundColor: Colors.white,
+        scrolledUnderElevation: 0,
         title: Text(
           '산책 완료',
           style: TextStyle(
-            color: GRAYSCALE_LABEL_950,
-            fontSize: 18,
+            color: Colors.black,
+            fontSize: 16,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -333,7 +339,7 @@ class _CourseNameScreenState extends State<CourseNameScreen> {
                     color:
                         stepProvider.isCourseNameValid
                             ? ORANGE_PRIMARY_500
-                            : GRAYSCALE_LABEL_300,
+                            : GRAYSCALE_LABEL_200,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(

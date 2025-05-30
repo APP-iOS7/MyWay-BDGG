@@ -35,7 +35,6 @@ class _MycourseScreenState extends State<MycourseScreen> {
     }
 
     if (newList.isEmpty) {
-      await docRef.update({'TrackingResult': FieldValue.delete()});
     } else {
       await docRef.update({'TrackingResult': newList});
     }
