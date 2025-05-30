@@ -244,6 +244,8 @@ class _MapScreenState extends State<MapScreen>
 
     // 위치 추적 시작
     location.onLocationChanged.listen((LocationData currentLocation) {
+      if (!mounted) return;
+
       final trackingStatus =
           Provider.of<StepProvider>(context, listen: false).status;
 

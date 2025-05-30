@@ -67,7 +67,7 @@ class _CourseNameScreenState extends State<CourseNameScreen> {
             Navigator.popUntil(context, (route) => route.isFirst);
             stepProvider.resetTracking();
           },
-          icon: Icon(Icons.close_rounded, color: Colors.black),
+          icon: Icon(Icons.close_rounded, color: GRAYSCALE_LABEL_950),
         ),
         elevation: 0,
         scrolledUnderElevation: 0,
@@ -133,13 +133,13 @@ class _CourseNameScreenState extends State<CourseNameScreen> {
                               Text(
                                 '제목',
                                 style: TextStyle(
-                                  color: Colors.black,
+                                  color: GRAYSCALE_LABEL_950,
                                   fontSize: 16,
                                 ),
                               ),
                               Text(
                                 stepProvider.formattedStopTime,
-                                style: TextStyle(color: Colors.black),
+                                style: TextStyle(color: GRAYSCALE_LABEL_950),
                               ),
                             ],
                           ),
@@ -168,7 +168,7 @@ class _CourseNameScreenState extends State<CourseNameScreen> {
                               Text(
                                 '중앙공원',
                                 style: TextStyle(
-                                  color: Colors.black,
+                                  color: GRAYSCALE_LABEL_950,
                                   fontWeight: FontWeight.bold,
                                   fontSize: 18,
                                 ),
@@ -184,7 +184,7 @@ class _CourseNameScreenState extends State<CourseNameScreen> {
                                   Text(
                                     widget.stepModel.distance,
                                     style: TextStyle(
-                                      color: Colors.black,
+                                      color: GRAYSCALE_LABEL_950,
                                       fontSize: 40,
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -193,7 +193,7 @@ class _CourseNameScreenState extends State<CourseNameScreen> {
                                   Text(
                                     'km',
                                     style: TextStyle(
-                                      color: Colors.black,
+                                      color: GRAYSCALE_LABEL_950,
                                       fontSize: 20,
                                       fontWeight: FontWeight.w600,
                                     ),
@@ -218,7 +218,7 @@ class _CourseNameScreenState extends State<CourseNameScreen> {
                                   Text(
                                     widget.stepModel.duration,
                                     style: TextStyle(
-                                      color: Colors.black,
+                                      color: GRAYSCALE_LABEL_950,
                                       fontSize: 16,
                                       fontWeight: FontWeight.w600,
                                     ),
@@ -240,7 +240,7 @@ class _CourseNameScreenState extends State<CourseNameScreen> {
                                   Text(
                                     '${widget.stepModel.steps}',
                                     style: TextStyle(
-                                      color: Colors.black,
+                                      color: GRAYSCALE_LABEL_950,
                                       fontSize: 16,
                                       fontWeight: FontWeight.w600,
                                     ),
@@ -268,7 +268,6 @@ class _CourseNameScreenState extends State<CourseNameScreen> {
                 onTap:
                     stepProvider.isCourseNameValid
                         ? () async {
-                          // 현재 인증된 사용자 확인
                           User? currentUser = _auth.currentUser;
                           if (currentUser == null) {
                             ScaffoldMessenger.of(context).showSnackBar(
@@ -288,43 +287,85 @@ class _CourseNameScreenState extends State<CourseNameScreen> {
                             return;
                           }
 
-                          // 이미지 업로드는 비동기로 처리
-                          imageUpload().then((imageUrl) async {
+                          showDialog(
+                            context: context,
+                            barrierDismissible: false,
+                            barrierColor: GRAYSCALE_LABEL_950.withValues(
+                              alpha: 0.5,
+                            ),
+                            builder: (context) {
+                              return const Center(
+                                child: CircularProgressIndicator(
+                                  color: ORANGE_PRIMARY_500,
+                                ),
+                              );
+                            },
+                          );
+
+                          try {
+                            final imageUrl = await imageUpload();
+
                             final result = stepProvider.createStepModel(
                               imageUrl: imageUrl ?? '',
                             );
 
-                            try {
-                              await _firestore
-                                  .collection('trackingResult')
-                                  .doc(currentUser.uid)
-                                  .set({
-                                    'TrackingResult': FieldValue.arrayUnion([
-                                      result.toJson(),
-                                    ]),
-                                  }, SetOptions(merge: true));
-                              print('산책결과가 FireStore에 저장되었습니다.');
-                            } catch (firestoreError) {
-                              print('Firestore 저장 오류: $firestoreError');
-                            }
-                          });
+                            await _firestore
+                                .collection('trackingResult')
+                                .doc(currentUser.uid)
+                                .set({
+                                  'TrackingResult': FieldValue.arrayUnion([
+                                    result.toJson(),
+                                  ]),
+                                }, SetOptions(merge: true));
 
-                          // 먼저 다음 페이지로 이동
-                          final result = stepProvider.createStepModel(
-                            imageUrl: '',
-                          );
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder:
-                                  (context) => TrackingResultScreen(
-                                    result: result,
-                                    courseName: result.courseName,
-                                  ),
-                            ),
-                          );
+                            print('산책결과가 FireStore에 저장되었습니다.');
+
+                            if (context.mounted) {
+                              Navigator.of(context).pop();
+                            }
+
+                            if (context.mounted) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder:
+                                      (context) => TrackingResultScreen(
+                                        result: result,
+                                        courseName: result.courseName,
+                                        courseImage: widget.courseImage,
+                                      ),
+                                ),
+                              );
+                            }
+
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  '산책 결과가 저장되었습니다.',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ),
+                            );
+                          } catch (e) {
+                            print('Firestore 저장 오류: $e');
+
+                            if (context.mounted) {
+                              Navigator.of(context).pop();
+                            }
+
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  '오류가 발생했습니다. 다시 시도해주세요.',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          }
                         }
                         : null,
+
                 child: Container(
                   alignment: Alignment.center,
                   padding: EdgeInsets.all(20),
@@ -350,6 +391,17 @@ class _CourseNameScreenState extends State<CourseNameScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Future<void> showLoadingDialog(BuildContext context) async {
+    return showDialog(
+      context: context,
+      barrierDismissible: false,
+      barrierColor: GRAYSCALE_LABEL_950.withValues(alpha: 0.5),
+      builder: (BuildContext context) {
+        return const Center(child: CircularProgressIndicator());
+      },
     );
   }
 }
