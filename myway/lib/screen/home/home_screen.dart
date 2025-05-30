@@ -5,7 +5,6 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
-import 'package:rxdart/rxdart.dart';
 
 import '/const/colors.dart';
 import 'mycourse_screen.dart';
@@ -43,10 +42,12 @@ class _HomeScreenState extends State<HomeScreen> {
       result.items.map((item) => item.getDownloadURL()),
     );
 
-    setState(() {
-      imageUrls = urls;
-      isLoading = false;
-    });
+    if (mounted) {
+      setState(() {
+        imageUrls = urls;
+        isLoading = false;
+      });
+    }
   }
 
   @override
@@ -179,14 +180,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               StreamBuilder<DocumentSnapshot>(
-                stream: _firestore
-                    .collection('trackingResult')
-                    .doc(_auth.currentUser?.uid)
-                    .snapshots()
-                    .distinct()
-                    .debounceTime(
-                      Duration(milliseconds: 300),
-                    ), // 너무 잦은 업데이트로 인해 깜박임 발생 방지
+                stream:
+                    _firestore
+                        .collection('trackingResult')
+                        .doc(_auth.currentUser?.uid)
+                        .snapshots()
+                        .distinct(),
 
                 builder: (context, snapshot) {
                   if (snapshot.hasError) {
@@ -223,7 +222,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   trackingResult.sort((a, b) {
                     final aTime = DateTime.parse(a['종료시간']);
                     final bTime = DateTime.parse(b['종료시간']);
-                    return bTime.compareTo(aTime); // 내림차순 정렬 (최신순)
+                    return bTime.compareTo(aTime);
                   });
 
                   // 필드내에서 5개로 제한
@@ -231,6 +230,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       trackingResult.length > 5
                           ? trackingResult.sublist(0, 5)
                           : trackingResult;
+
                   return SizedBox(
                     height: 480,
                     child: CarouselSlider(
