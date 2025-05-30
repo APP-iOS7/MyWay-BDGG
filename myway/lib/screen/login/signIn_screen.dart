@@ -139,7 +139,7 @@ class _SigninScreenState extends State<SigninScreen> {
                       Text(
                         '계정이 없으신가요?',
                         style: GoogleFonts.inter(
-                          color: Colors.black,
+                          color: GRAYSCALE_LABEL_950,
                           fontSize: 15,
                         ),
                       ),

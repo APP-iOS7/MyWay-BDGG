@@ -131,7 +131,7 @@ class SettingScreen extends StatelessWidget {
   Widget _buildSettingItem({
     required String text,
     required VoidCallback onTap,
-    Color textColor = Colors.black,
+    Color textColor = GRAYSCALE_LABEL_950,
     bool showArrow = true,
   }) {
     return GestureDetector(

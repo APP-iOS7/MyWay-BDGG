@@ -148,7 +148,7 @@ class _MycourseScreenState extends State<MycourseScreen> {
                         },
                         child: const Text(
                           '취소',
-                          style: TextStyle(color: Colors.black),
+                          style: TextStyle(color: GRAYSCALE_LABEL_950),
                         ),
                       ),
                     ]
@@ -157,7 +157,7 @@ class _MycourseScreenState extends State<MycourseScreen> {
                         onPressed: () => toggleEditing(trackingResult.length),
                         child: const Text(
                           '편집',
-                          style: TextStyle(color: Colors.black),
+                          style: TextStyle(color: GRAYSCALE_LABEL_950),
                         ),
                       ),
                     ],

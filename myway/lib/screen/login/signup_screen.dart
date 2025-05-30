@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
-
-import 'package:google_fonts/google_fonts.dart';
 import 'package:myway/const/colors.dart';
 import 'package:myway/provider/user_provider.dart';
 import 'package:myway/screen/home/home_screen.dart';
@@ -567,7 +565,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             const Text(
                               '이미 계정이 있으신가요?',
                               style: TextStyle(
-                                color: Colors.black54,
+                                color: GRAYSCALE_LABEL_950,
                                 fontSize: 14.0,
                               ),
                             ),
@@ -708,7 +706,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           const Text(
                             '이미 계정이 있으신가요?',
                             style: TextStyle(
-                              color: Colors.black54,
+                              color: GRAYSCALE_LABEL_950,
                               fontSize: 14.0,
                             ),
                           ),

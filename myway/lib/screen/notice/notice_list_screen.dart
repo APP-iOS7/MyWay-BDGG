@@ -50,7 +50,7 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
           ),
         ),
         centerTitle: true,
-        foregroundColor: Colors.black,
+        foregroundColor: GRAYSCALE_LABEL_950,
 
         actions: [
           if (_isAdmin())

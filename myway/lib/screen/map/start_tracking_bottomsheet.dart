@@ -65,7 +65,7 @@ class _StartTrackingBottomsheetState extends State<StartTrackingBottomsheet> {
                           Text(
                             '${stepProvider.steps}',
                             style: TextStyle(
-                              color: Colors.black,
+                              color: GRAYSCALE_LABEL_950,
                               fontSize: 25,
                               fontWeight: FontWeight.bold,
                             ),
@@ -84,7 +84,7 @@ class _StartTrackingBottomsheetState extends State<StartTrackingBottomsheet> {
                           Text(
                             stepProvider.formattedElapsed,
                             style: TextStyle(
-                              color: Colors.black,
+                              color: GRAYSCALE_LABEL_950,
                               fontSize: 25,
                               fontWeight: FontWeight.bold,
                             ),
@@ -103,7 +103,7 @@ class _StartTrackingBottomsheetState extends State<StartTrackingBottomsheet> {
                           Text(
                             stepProvider.distanceKm,
                             style: TextStyle(
-                              color: Colors.black,
+                              color: GRAYSCALE_LABEL_950,
                               fontSize: 25,
                               fontWeight: FontWeight.bold,
                             ),

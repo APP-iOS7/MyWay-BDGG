@@ -402,7 +402,7 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withAlpha(10),
+            color: GRAYSCALE_LABEL_950.withAlpha(10),
             blurRadius: 10,
             offset: Offset(0, 4),
           ),

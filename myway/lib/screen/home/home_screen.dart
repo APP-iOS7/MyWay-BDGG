@@ -75,7 +75,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     Text(
                       '마이웨이',
                       style: TextStyle(
-                        color: Colors.black,
+                        color: GRAYSCALE_LABEL_950,
                         fontSize: 30,
                         fontWeight: FontWeight.w700,
                       ),
@@ -336,7 +336,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                                       Text(
                                                         'km',
                                                         style: TextStyle(
-                                                          color: Colors.black,
+                                                          color:
+                                                              GRAYSCALE_LABEL_950,
                                                           fontSize: 20,
                                                           fontWeight:
                                                               FontWeight.bold,
@@ -568,7 +569,10 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 10),
               Text(
                 label,
-                style: const TextStyle(color: Colors.black, fontSize: 13),
+                style: const TextStyle(
+                  color: GRAYSCALE_LABEL_950,
+                  fontSize: 13,
+                ),
               ),
             ],
           ),
