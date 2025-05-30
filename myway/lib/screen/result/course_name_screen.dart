@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:myway/const/colors.dart';
 import 'package:myway/model/step_model.dart';
 import 'package:myway/provider/step_provider.dart';
@@ -81,181 +82,196 @@ class _CourseNameScreenState extends State<CourseNameScreen> {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.only(left: 20.0, right: 20.0),
-          child: Column(
-            children: [
-              Container(
-                width: double.infinity,
-                margin: EdgeInsets.only(top: 8),
-                padding: EdgeInsets.only(bottom: 25),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: GRAYSCALE_LABEL_300,
-                      spreadRadius: 1,
-                      blurRadius: 8,
-                      offset: Offset(1, 1),
-                    ),
-                  ],
-                ),
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.only(left: 20.0, right: 20.0),
                 child: Column(
                   children: [
-                    RepaintBoundary(
-                      key: repaintBoundary,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.vertical(
-                          top: Radius.circular(20),
-                        ),
-                        child: Image.memory(
-                          widget.courseImage,
-                          gaplessPlayback: true,
-                          width: double.infinity,
-                          height: 364,
-                          fit: BoxFit.cover,
-                          errorBuilder:
-                              (_, __, ___) => const Text('이미지를 불러올 수 없습니다'),
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 20),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 20.0, right: 20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                '제목',
-                                style: TextStyle(
-                                  color: GRAYSCALE_LABEL_950,
-                                  fontSize: 16,
-                                ),
-                              ),
-                              Text(
-                                stepProvider.formattedStopTime,
-                                style: TextStyle(color: GRAYSCALE_LABEL_950),
-                              ),
-                            ],
+                    Container(
+                      width: double.infinity,
+                      margin: EdgeInsets.only(top: 8),
+                      padding: EdgeInsets.only(bottom: 25),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: GRAYSCALE_LABEL_300,
+                            spreadRadius: 1,
+                            blurRadius: 8,
+                            offset: Offset(1, 1),
                           ),
-                          TextFormField(
-                            controller: stepProvider.courseName,
-                            cursorColor: ORANGE_PRIMARY_500,
-                            decoration: InputDecoration(
-                              labelText: '코스 이름을 설정해주세요',
-                              labelStyle: TextStyle(color: Colors.grey),
-                              enabledBorder: UnderlineInputBorder(
-                                borderSide: BorderSide(
-                                  color: ORANGE_PRIMARY_500,
-                                ),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          RepaintBoundary(
+                            key: repaintBoundary,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.vertical(
+                                top: Radius.circular(20),
                               ),
-                              focusedBorder: UnderlineInputBorder(
-                                borderSide: BorderSide(
-                                  color: ORANGE_PRIMARY_500,
-                                ),
+                              child: Image.memory(
+                                widget.courseImage,
+                                gaplessPlayback: true,
+                                width: double.infinity,
+                                height: 350,
+                                fit: BoxFit.cover,
+                                errorBuilder:
+                                    (_, __, ___) =>
+                                        const Text('이미지를 불러올 수 없습니다'),
                               ),
                             ),
                           ),
-                          SizedBox(height: 10),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              Text(
-                                '중앙공원',
-                                style: TextStyle(
-                                  color: GRAYSCALE_LABEL_950,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 18,
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                TextFormField(
+                                  inputFormatters: [
+                                    LengthLimitingTextInputFormatter(20),
+                                  ],
+                                  controller: stepProvider.courseName,
+                                  cursorColor: ORANGE_PRIMARY_500,
+                                  decoration: InputDecoration(
+                                    labelText: '코스 이름',
+                                    labelStyle: TextStyle(
+                                      color: GRAYSCALE_LABEL_600,
+                                    ),
+                                    enabledBorder: UnderlineInputBorder(
+                                      borderSide: BorderSide(
+                                        color: GRAYSCALE_LABEL_400,
+                                      ),
+                                    ),
+                                    focusedBorder: UnderlineInputBorder(
+                                      borderSide: BorderSide(
+                                        color: ORANGE_PRIMARY_500,
+                                      ),
+                                    ),
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 20),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Text(
-                                    widget.stepModel.distance,
-                                    style: TextStyle(
-                                      color: GRAYSCALE_LABEL_950,
-                                      fontSize: 40,
-                                      fontWeight: FontWeight.bold,
+                                SizedBox(height: 10),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      stepProvider.formattedStopTime,
+                                      style: TextStyle(
+                                        color: GRAYSCALE_LABEL_950,
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 14,
+                                      ),
                                     ),
-                                  ),
-                                  SizedBox(width: 10),
-                                  Text(
-                                    'km',
-                                    style: TextStyle(
-                                      color: GRAYSCALE_LABEL_950,
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              Text(
-                                '거리',
-                                style: TextStyle(
-                                  color: GRAYSCALE_LABEL_500,
-                                  fontSize: 14,
+                                  ],
                                 ),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 20),
-                          Row(
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    widget.stepModel.duration,
-                                    style: TextStyle(
-                                      color: GRAYSCALE_LABEL_950,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
+                                SizedBox(height: 10),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      '중앙공원',
+                                      style: TextStyle(
+                                        color: GRAYSCALE_LABEL_950,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 18,
+                                      ),
                                     ),
-                                  ),
-                                  Text(
-                                    '시간',
-                                    style: TextStyle(
-                                      color: GRAYSCALE_LABEL_500,
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w500,
+                                  ],
+                                ),
+                                SizedBox(height: 10),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Text(
+                                              widget.stepModel.distance,
+                                              style: TextStyle(
+                                                color: GRAYSCALE_LABEL_950,
+                                                fontSize: 25,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        Row(
+                                          children: [
+                                            Text(
+                                              '거리(km)',
+                                              style: TextStyle(
+                                                color: GRAYSCALE_LABEL_500,
+                                                fontSize: 16,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
                                     ),
-                                  ),
-                                ],
-                              ),
-                              SizedBox(width: 20),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    '${widget.stepModel.steps}',
-                                    style: TextStyle(
-                                      color: GRAYSCALE_LABEL_950,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
+                                    SizedBox(width: 20),
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Text(
+                                              widget.stepModel.duration,
+                                              style: TextStyle(
+                                                color: GRAYSCALE_LABEL_950,
+                                                fontSize: 25,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        Text(
+                                          '시간',
+                                          style: TextStyle(
+                                            color: GRAYSCALE_LABEL_500,
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                  ),
-                                  Text(
-                                    '걸음수',
-                                    style: TextStyle(
-                                      color: GRAYSCALE_LABEL_500,
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w500,
+                                    SizedBox(width: 30),
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Text(
+                                              '${widget.stepModel.steps}',
+                                              style: TextStyle(
+                                                color: GRAYSCALE_LABEL_950,
+                                                fontSize: 25,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        Text(
+                                          '걸음수',
+                                          style: TextStyle(
+                                            color: GRAYSCALE_LABEL_500,
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                  ),
-                                ],
-                              ),
-                            ],
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       ),
@@ -263,133 +279,143 @@ class _CourseNameScreenState extends State<CourseNameScreen> {
                   ],
                 ),
               ),
-              SizedBox(height: 20),
-              GestureDetector(
-                onTap:
-                    stepProvider.isCourseNameValid
-                        ? () async {
-                          User? currentUser = _auth.currentUser;
-                          if (currentUser == null) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  '코스이름을 지정하기 위해선 로그인이 필요합니다.',
-                                  style: TextStyle(color: Colors.white),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            child: GestureDetector(
+              onTap:
+                  stepProvider.isCourseNameValid
+                      ? () async {
+                        User? currentUser = _auth.currentUser;
+                        if (currentUser == null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                '코스이름을 지정하기 위해선 로그인이 필요합니다.',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                          Navigator.pushNamedAndRemoveUntil(
+                            context,
+                            'signIn',
+                            (route) => false,
+                          );
+                          return;
+                        }
+
+                        showDialog(
+                          context: context,
+                          barrierDismissible: false,
+                          barrierColor: GRAYSCALE_LABEL_950.withValues(
+                            alpha: 0.5,
+                          ),
+                          builder: (context) {
+                            return Scaffold(
+                              body: const Center(
+                                child: Column(
+                                  children: [
+                                    CircularProgressIndicator(
+                                      color: ORANGE_PRIMARY_500,
+                                    ),
+                                    Text('산책 데이터를 저장중입니다...'),
+                                  ],
                                 ),
-                                backgroundColor: Colors.red,
                               ),
                             );
-                            Navigator.pushNamedAndRemoveUntil(
-                              context,
-                              'signIn',
-                              (route) => false,
-                            );
-                            return;
-                          }
+                          },
+                        );
 
-                          showDialog(
-                            context: context,
-                            barrierDismissible: false,
-                            barrierColor: GRAYSCALE_LABEL_950.withValues(
-                              alpha: 0.5,
-                            ),
-                            builder: (context) {
-                              return const Center(
-                                child: CircularProgressIndicator(
-                                  color: ORANGE_PRIMARY_500,
-                                ),
-                              );
-                            },
+                        try {
+                          final imageUrl = await imageUpload();
+
+                          final result = stepProvider.createStepModel(
+                            imageUrl: imageUrl ?? '',
                           );
 
-                          try {
-                            final imageUrl = await imageUpload();
+                          await _firestore
+                              .collection('trackingResult')
+                              .doc(currentUser.uid)
+                              .set({
+                                'TrackingResult': FieldValue.arrayUnion([
+                                  result.toJson(),
+                                ]),
+                              }, SetOptions(merge: true));
 
-                            final result = stepProvider.createStepModel(
-                              imageUrl: imageUrl ?? '',
-                            );
+                          print('산책결과가 FireStore에 저장되었습니다.');
 
-                            await _firestore
-                                .collection('trackingResult')
-                                .doc(currentUser.uid)
-                                .set({
-                                  'TrackingResult': FieldValue.arrayUnion([
-                                    result.toJson(),
-                                  ]),
-                                }, SetOptions(merge: true));
+                          if (context.mounted) {
+                            Navigator.of(context).pop();
+                          }
 
-                            print('산책결과가 FireStore에 저장되었습니다.');
-
-                            if (context.mounted) {
-                              Navigator.of(context).pop();
-                            }
-
-                            if (context.mounted) {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder:
-                                      (context) => TrackingResultScreen(
-                                        result: result,
-                                        courseName: result.courseName,
-                                        courseImage: widget.courseImage,
-                                      ),
-                                ),
-                              );
-                            }
-
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  '산책 결과가 저장되었습니다.',
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                              ),
-                            );
-                          } catch (e) {
-                            print('Firestore 저장 오류: $e');
-
-                            if (context.mounted) {
-                              Navigator.of(context).pop();
-                            }
-
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  '오류가 발생했습니다. 다시 시도해주세요.',
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                                backgroundColor: Colors.red,
+                          if (context.mounted) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder:
+                                    (context) => TrackingResultScreen(
+                                      result: result,
+                                      courseName: result.courseName,
+                                      courseImage: widget.courseImage,
+                                    ),
                               ),
                             );
                           }
-                        }
-                        : null,
 
-                child: Container(
-                  alignment: Alignment.center,
-                  padding: EdgeInsets.all(20),
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color:
-                        stepProvider.isCourseNameValid
-                            ? ORANGE_PRIMARY_500
-                            : GRAYSCALE_LABEL_300,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    '저장 및 공유',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                '산책 결과가 저장되었습니다.',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ),
+                          );
+                        } catch (e) {
+                          print('Firestore 저장 오류: $e');
+
+                          if (context.mounted) {
+                            Navigator.of(context).pop();
+                          }
+
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                '오류가 발생했습니다. 다시 시도해주세요.',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
+                      }
+                      : null,
+
+              child: Container(
+                height: 56,
+                alignment: Alignment.center,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color:
+                      stepProvider.isCourseNameValid
+                          ? ORANGE_PRIMARY_500
+                          : GRAYSCALE_LABEL_300,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  '저장 및 공유',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
-            ],
+            ),
           ),
-        ),
+          SizedBox(height: 20),
+        ],
       ),
     );
   }
