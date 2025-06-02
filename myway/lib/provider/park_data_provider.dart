@@ -252,4 +252,43 @@ class ParkDataProvider extends ChangeNotifier {
         .where((course) => nearbyParkIds.contains(course.parkId))
         .toList();
   }
+
+  // 반경 2km 이내의 공원 목록을 반환하는 getter(course_recommended_bottom_sheet에 서 사용 )
+  List<ParkInfo> get nearbyParks2km {
+    const double nearbyFilterRadiusKm = 2.0; // 반경 5km 기준
+    if (_currentPosition == null || _allFetchedParks.isEmpty) {
+      return []; // 위치 정보가 없거나 공원 목록이 비어있으면 빈 리스트 반환
+    }
+
+    // 현재 위치에서 반경 2km 이내의 공원만 필터링
+    final filteredParks =
+        _allFetchedParks
+            .where(
+              (park) => (park.distanceKm) < nearbyFilterRadiusKm,
+            ) // distanceInKm 사용
+            .toList();
+
+    // 거리에 따라 정렬 (선택 사항)
+    filteredParks.sort((a, b) => (a.distanceKm).compareTo(b.distanceKm));
+
+    return filteredParks;
+  }
+
+  // 반경 2km 이내 공원에 속한 추천 코스 목록을 반환하는 getter
+  List<ParkCourseInfo> get nearbyRecommendedCourses2km {
+    if (_currentPosition == null || _allGeneratedRecommendedCourses.isEmpty) {
+      return []; // 위치 정보가 없거나 코스 목록이 비어있으면 빈 리스트 반환
+    }
+
+    // 2km 이내 공원의 ID 목록
+    final nearbyParkIds =
+        nearbyParks2km // 위에서 정의한 nearbyParks getter 사용
+            .map((park) => park.id)
+            .toSet();
+
+    // 2km 이내 공원에 속한 코스만 필터링
+    return _allGeneratedRecommendedCourses
+        .where((course) => nearbyParkIds.contains(course.parkId))
+        .toList();
+  }
 }
