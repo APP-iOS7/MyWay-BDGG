@@ -15,7 +15,6 @@ List<Course> courses = [
     date: DateTime.now(),
     distance: 2.0,
     duration: '30분',
-    calories: 200,
     steps: 3000,
     imageUrl: 'https://picsum.photos/250?image=9',
     route: [
@@ -39,7 +38,7 @@ List<Course> courses = [
     date: DateTime.now(),
     distance: 3.5,
     duration: '45분',
-    calories: 300,
+
     steps: 4000,
     imageUrl: 'https://picsum.photos/250?image=9',
     route: [
@@ -55,7 +54,6 @@ List<Course> courses = [
     date: DateTime.now(),
     distance: 3.5,
     duration: '45분',
-    calories: 300,
     steps: 4000,
     imageUrl: 'https://picsum.photos/250?image=9',
     route: [
@@ -70,7 +68,7 @@ List<Course> courses = [
     date: DateTime.now(),
     distance: 3.5,
     duration: '45분',
-    calories: 300,
+
     steps: 4000,
     imageUrl: 'https://picsum.photos/250?image=9',
     route: [
@@ -85,7 +83,6 @@ List<Course> courses = [
     date: DateTime.now(),
     distance: 3.5,
     duration: '45분',
-    calories: 300,
     steps: 4000,
     imageUrl: 'https://picsum.photos/250?image=9',
     route: [
@@ -100,7 +97,7 @@ List<Course> courses = [
     date: DateTime.now(),
     distance: 3.5,
     duration: '45분',
-    calories: 300,
+
     steps: 4000,
     imageUrl: 'https://picsum.photos/250?image=9',
     route: [
@@ -115,7 +112,7 @@ List<Course> courses = [
     date: DateTime.now(),
     distance: 3.5,
     duration: '45분',
-    calories: 300,
+
     steps: 4000,
     imageUrl: 'https://picsum.photos/250?image=9',
     route: [
@@ -130,7 +127,7 @@ List<Course> courses = [
     date: DateTime.now(),
     distance: 3.5,
     duration: '45분',
-    calories: 300,
+
     steps: 4000,
     imageUrl: 'https://picsum.photos/250?image=9',
     route: [
@@ -145,7 +142,7 @@ List<Course> courses = [
     date: DateTime.now(),
     distance: 3.5,
     duration: '45분',
-    calories: 300,
+
     steps: 4000,
     imageUrl: 'https://picsum.photos/250?image=9',
     route: [
@@ -160,7 +157,7 @@ List<Course> courses = [
     date: DateTime.now(),
     distance: 3.5,
     duration: '45분',
-    calories: 300,
+
     steps: 4000,
     imageUrl: 'https://picsum.photos/250?image=9',
     route: [
@@ -175,7 +172,7 @@ List<Course> courses = [
     date: DateTime.now(),
     distance: 3.5,
     duration: '45분',
-    calories: 300,
+
     steps: 4000,
     imageUrl: 'https://picsum.photos/250?image=9',
     route: [

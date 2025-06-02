@@ -6,7 +6,6 @@ class Course {
   final DateTime date; // 날짜
   final double distance; // 거리 (km)
   final String duration; // 시간 (예: '30분')
-  final int calories; // 칼로리 (예: '200kcal')
   final int steps; // 걸음수
   final String imageUrl; // 이미지 URL
   final List<LatLng> route; // 경로 (LatLng 리스트)
@@ -17,7 +16,6 @@ class Course {
     required this.date,
     required this.distance,
     required this.duration,
-    required this.calories,
     required this.steps,
     required this.imageUrl,
     required this.route,
