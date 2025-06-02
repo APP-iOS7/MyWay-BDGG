@@ -70,8 +70,7 @@ class ParkDataProvider extends ChangeNotifier {
     if (courseIndex != -1) {
       _allGeneratedRecommendedCourses[courseIndex].isFavorite =
           newFavoriteState;
-    } else {
-    }
+    } else {}
     notifyListeners();
   }
 
@@ -165,7 +164,7 @@ class ParkDataProvider extends ChangeNotifier {
   void _generateAllRecommendedCoursesInternal() {
     List<ParkCourseInfo> tempCourses = [];
     for (var park in _allFetchedParks) {
-      String course1Id = "course_${park.id}_1"; 
+      String course1Id = "course_${park.id}_1";
       tempCourses.add(
         ParkCourseInfo(
           id: course1Id,
@@ -174,12 +173,12 @@ class ParkDataProvider extends ChangeNotifier {
           title: "${park.name} 힐링 산책로",
           details:
               "아름다운 자연 속에서 여유를 즐길 수 있는 ${park.name}의 대표 코스입니다. 약 45분 소요됩니다.",
-          imagePath: 'assets/images/course_placeholder_1.png', 
+          imagePath: 'assets/images/course_placeholder_1.png',
           isFavorite: _favoriteCourseIds.contains(course1Id),
         ),
       );
 
-      String course2Id = "course_${park.id}_2"; 
+      String course2Id = "course_${park.id}_2";
       tempCourses.add(
         ParkCourseInfo(
           id: course2Id,
@@ -188,12 +187,12 @@ class ParkDataProvider extends ChangeNotifier {
           title: "${park.name} 활력 충전 코스",
           details:
               "가벼운 운동과 함께 상쾌한 공기를 마실 수 있는 ${park.name}의 인기 코스입니다. 약 1시간 15분 소요됩니다.",
-          imagePath: 'assets/images/course_placeholder_2.png', 
+          imagePath: 'assets/images/course_placeholder_2.png',
           isFavorite: _favoriteCourseIds.contains(course2Id),
         ),
       );
 
-      String course3Id = "course_${park.id}_3"; 
+      String course3Id = "course_${park.id}_3";
       tempCourses.add(
         ParkCourseInfo(
           id: course3Id,
@@ -213,5 +212,44 @@ class ParkDataProvider extends ChangeNotifier {
   Future<void> refreshData() async {
     _hasDataBeenFetched = false;
     await fetchAllDataIfNeeded();
+  }
+
+  // 반경 5km 이내의 공원 목록을 반환하는 getter
+  List<ParkInfo> get nearbyParks {
+    const double nearbyFilterRadiusKm = 5.0; // 반경 5km 기준
+    if (_currentPosition == null || _allFetchedParks.isEmpty) {
+      return []; // 위치 정보가 없거나 공원 목록이 비어있으면 빈 리스트 반환
+    }
+
+    // 현재 위치에서 반경 5km 이내의 공원만 필터링
+    final filteredParks =
+        _allFetchedParks
+            .where(
+              (park) => (park.distanceKm) < nearbyFilterRadiusKm,
+            ) // distanceInKm 사용
+            .toList();
+
+    // 거리에 따라 정렬 (선택 사항)
+    filteredParks.sort((a, b) => (a.distanceKm).compareTo(b.distanceKm));
+
+    return filteredParks;
+  }
+
+  // 반경 5km 이내 공원에 속한 추천 코스 목록을 반환하는 getter
+  List<ParkCourseInfo> get nearbyRecommendedCourses {
+    if (_currentPosition == null || _allGeneratedRecommendedCourses.isEmpty) {
+      return []; // 위치 정보가 없거나 코스 목록이 비어있으면 빈 리스트 반환
+    }
+
+    // 5km 이내 공원의 ID 목록
+    final nearbyParkIds =
+        nearbyParks // 위에서 정의한 nearbyParks getter 사용
+            .map((park) => park.id)
+            .toSet();
+
+    // 5km 이내 공원에 속한 코스만 필터링
+    return _allGeneratedRecommendedCourses
+        .where((course) => nearbyParkIds.contains(course.parkId))
+        .toList();
   }
 }
