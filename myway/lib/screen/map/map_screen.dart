@@ -236,7 +236,7 @@ class _MapScreenState extends State<MapScreen>
   // 위치 추적 시작
   void startLocationTracking() {
     walkingRoute.clear(); // 이전 경로 초기화
-    polylines.clear();
+    // polylines.clear();
     setState(() {
       _tracking = true; // 추적 상태로 변경
     });
@@ -281,13 +281,13 @@ class _MapScreenState extends State<MapScreen>
     print('📍 stopLocationTracking');
     print('📍 위치 추적 일시정지됨');
     _tracking = false;
-
     // mapController null 체크 추가
     if (mapController == null) {
       print('📍 mapController가 null입니다');
       return;
     }
 
+    polylines.removeWhere((p) => p.polylineId.value == 'route');
     final Uint8List? imageBytes = await mapController?.takeSnapshot();
     final stepProvider = Provider.of<StepProvider>(context, listen: false);
 
@@ -356,7 +356,7 @@ class _MapScreenState extends State<MapScreen>
     if (selectedCourse == null || selectedCourse == _prevCourse) return;
     _prevCourse = selectedCourse;
 
-    // 기존 추천 경로만 제거
+    // 기존 추천 경로 제거
     polylines.removeWhere((p) => p.polylineId.value == 'recommended');
 
     // 추천 경로 다시 그리기
@@ -380,6 +380,7 @@ class _MapScreenState extends State<MapScreen>
       // 추천 코스가 선택되지 않은 경우 특정 polyline 그리지않음
       polylines.removeWhere((p) => p.polylineId.value == 'recommended');
     } else {
+      print('drawLine');
       drawRecommendPolylines(selectedCourse);
     }
 
