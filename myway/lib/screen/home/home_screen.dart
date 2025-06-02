@@ -155,23 +155,31 @@ class _HomeScreenState extends State<HomeScreen> {
                         ],
                       ),
                     ),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) {
-                              return const MycourseScreen();
-                            },
+                    Material(
+                      color: BLUE_SECONDARY_600,
+                      borderRadius: BorderRadius.circular(12),
+                      child: InkWell(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const MycourseScreen(),
+                            ),
+                          );
+                        },
+                        borderRadius: BorderRadius.circular(12),
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Center(
+                            child: Text(
+                              '더보기 +',
+                              style: TextStyle(
+                                color: WHITE,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
                           ),
-                        );
-                      },
-                      child: Text(
-                        '더보기 +',
-                        style: TextStyle(
-                          color: GRAYSCALE_LABEL_900,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w400,
                         ),
                       ),
                     ),
@@ -201,7 +209,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       height: 430,
                       child: Center(
                         child: CircularProgressIndicator(
-                          color: ORANGE_PRIMARY_300,
+                          color: ORANGE_PRIMARY_500,
                         ),
                       ),
                     );
@@ -215,9 +223,50 @@ class _HomeScreenState extends State<HomeScreen> {
                   }
 
                   // TrackingResult 배열 가져오기
-                  final data = snapshot.data!.data() as Map<String, dynamic>;
+                  final data =
+                      snapshot.data?.data() as Map<String, dynamic>? ?? {};
+                  final trackingData = data['TrackingResult'];
+
                   final trackingResult =
-                      data['TrackingResult'] as List<dynamic>;
+                      (trackingData != null && trackingData is List)
+                          ? List<Map<String, dynamic>>.from(trackingData)
+                          : <Map<String, dynamic>>[];
+
+                  if (trackingResult.isEmpty) {
+                    return SizedBox(
+                      height: 430,
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.directions_walk),
+                            const SizedBox(height: 10),
+                            const SizedBox(
+                              width: double.infinity,
+                              child: Text(
+                                '저장된 기록이 없습니다.',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: GRAYSCALE_LABEL_800,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 20,
+                                ),
+                              ),
+                            ),
+                            const Text(
+                              '산책을 시작해서 나만의 코스를 만들어보세요!',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: GRAYSCALE_LABEL_600,
+                                fontWeight: FontWeight.w500,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }
 
                   // 종료시간을 기준으로 최신순 정렬
                   trackingResult.sort((a, b) {

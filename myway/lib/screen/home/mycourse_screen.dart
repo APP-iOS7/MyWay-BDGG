@@ -3,6 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:myway/const/colors.dart';
 
+import '../../const/custome_button.dart';
+
 class MycourseScreen extends StatefulWidget {
   const MycourseScreen({super.key});
 
@@ -31,14 +33,12 @@ class _MycourseScreenState extends State<MycourseScreen> {
 
     final newList = <dynamic>[];
     for (int i = 0; i < trackingResult.length; i++) {
-      if (!_selected[i]) newList.add(trackingResult[i]);
+      if (!_selected[i]) {
+        newList.add(trackingResult[i]);
+      }
     }
 
-    if (newList.isEmpty) {
-      await docRef.update({'TrackingResult': FieldValue.delete()});
-    } else {
-      await docRef.update({'TrackingResult': newList});
-    }
+    await docRef.update({'TrackingResult': newList});
 
     setState(() {
       isEditing = false;
@@ -137,6 +137,7 @@ class _MycourseScreenState extends State<MycourseScreen> {
                     ? [
                       TextButton(
                         onPressed: () => deleteSelected(trackingResult),
+                        style: customTextButtonStyle(),
                         child: const Text(
                           '삭제',
                           style: TextStyle(color: Colors.red),
@@ -146,6 +147,7 @@ class _MycourseScreenState extends State<MycourseScreen> {
                         onPressed: () {
                           setState(() => isEditing = false);
                         },
+                        style: customTextButtonStyle(),
                         child: const Text(
                           '취소',
                           style: TextStyle(color: Colors.black),
@@ -155,6 +157,7 @@ class _MycourseScreenState extends State<MycourseScreen> {
                     : [
                       TextButton(
                         onPressed: () => toggleEditing(trackingResult.length),
+                        style: customTextButtonStyle(),
                         child: const Text(
                           '편집',
                           style: TextStyle(color: Colors.black),
@@ -244,6 +247,7 @@ class _MycourseScreenState extends State<MycourseScreen> {
                         right: 8,
                         child: Checkbox(
                           value: _selected[index],
+                          activeColor: ORANGE_PRIMARY_500,
                           onChanged: (val) {
                             setState(() {
                               _selected[index] = val!;

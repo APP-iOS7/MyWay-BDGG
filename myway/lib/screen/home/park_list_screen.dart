@@ -412,6 +412,8 @@ class _ParkListScreenState extends State<ParkListScreen>
             child: TextField(
               controller: _searchController,
               onChanged: (value) => _onParkSearchChanged(),
+
+              cursorColor: ORANGE_PRIMARY_500,
               decoration: InputDecoration(
                 hintText: "공원 이름 또는 주소 검색",
                 hintStyle: const TextStyle(
@@ -1102,6 +1104,7 @@ class _ParkListScreenState extends State<ParkListScreen>
               unselectedLabelColor: GRAYSCALE_LABEL_500,
               indicatorColor: BLUE_SECONDARY_700,
               indicatorWeight: 3.0,
+              overlayColor: WidgetStateProperty.all(Colors.transparent),
               labelStyle: const TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,

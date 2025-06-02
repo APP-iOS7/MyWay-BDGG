@@ -7,6 +7,8 @@ import 'package:myway/provider/user_provider.dart';
 import 'package:myway/screen/home/home_screen.dart';
 import 'package:provider/provider.dart';
 
+import '../../const/custome_button.dart';
+
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
 
@@ -573,16 +575,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             ),
                             TextButton(
                               onPressed: () {
-                                // 로그인 화면으로 이동
                                 Navigator.of(
                                   context,
                                 ).pushReplacementNamed('/home');
                               },
-                              style: TextButton.styleFrom(
-                                minimumSize: Size.zero,
-                                padding: const EdgeInsets.only(left: 4.0),
-                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                              ),
+                              style: customTextButtonStyle(),
                               child: const Text(
                                 '로그인',
                                 style: TextStyle(
@@ -718,6 +715,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               Navigator.pushNamed(context, 'signIn');
                             },
                             style: TextButton.styleFrom(
+                              overlayColor: Colors.transparent,
                               minimumSize: Size.zero,
                               padding: const EdgeInsets.only(left: 4.0),
                               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
