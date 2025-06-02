@@ -38,41 +38,24 @@ class _CourseRecommendBottomsheetState
       LatLng(37.39953, 126.93780),
     ];
 
-    // 공원 ID를 기반으로 공원 정보를 찾아 실제 거리 가져오기
-    double actualDistance = 2.0; // 기본값
+    double actualDistance = 2.0;
 
-    // 2km 이내 공원 목록에서 찾기
     ParkInfo? parkInfo;
     try {
       parkInfo = parkDataProvider.nearbyParks2km.firstWhere(
         (park) => park.id == parkCourse.parkId,
       );
-      // 찾은 공원의 실제 거리 사용
       actualDistance = parkInfo.distanceKm;
-      print(
-        '공원 ID: ${parkInfo.id}, 이름: ${parkInfo.name}, 거리: ${parkInfo.distanceKm}km',
-      );
     } catch (e) {
-      // 2km 이내 공원 목록에서 찾지 못한 경우
-      print('2km 이내 공원 목록에서 ID가 ${parkCourse.parkId}인 공원을 찾을 수 없습니다: $e');
-
-      // 안전을 위해 전체 목록에서 찾아봄
       try {
         final fallbackParkInfo = parkDataProvider.allFetchedParks.firstWhere(
           (park) => park.id == parkCourse.parkId,
         );
-        print(
-          '전체 목록에서 찾은 공원: ${fallbackParkInfo.name}, 거리: ${fallbackParkInfo.distanceKm}km',
-        );
-
-        // 여기서 거리가 2km를 초과하는 경우를 확인
         if (fallbackParkInfo.distanceKm <= 2.0) {
           actualDistance = fallbackParkInfo.distanceKm;
-        } else {
-          print('공원 거리가 2km 초과하여 표시하지 않습니다: ${fallbackParkInfo.distanceKm}km');
         }
       } catch (e2) {
-        print('공원을 찾을 수 없습니다: $e2');
+        // 공원을 찾지 못한 경우 기본값 사용
       }
     }
 
@@ -84,7 +67,7 @@ class _CourseRecommendBottomsheetState
       title: parkCourse.title,
       park: parkCourse.parkName ?? '정보 없음',
       date: DateTime.now(),
-      distance: actualDistance, // 임시값, 실제로는 계산된 값 사용
+      distance: actualDistance,
       duration: '30분', // 임시값
       steps: 3000, // 임시값
       imageUrl:
@@ -112,27 +95,20 @@ class _CourseRecommendBottomsheetState
   Widget build(BuildContext context) {
     return Consumer3<MapProvider, StepProvider, ParkDataProvider>(
       builder: (context, mapProvider, stepProvider, parkDataProvider, child) {
-        // 반경 2km 이내의 추천 코스 변환
-        _nearbyCourses =
-            parkDataProvider.nearbyRecommendedCourses2km
-                .map(
-                  (parkCourse) =>
-                      _convertToCourse(parkCourse, parkDataProvider),
-                )
-                .toList();
-        // 거리가 가까운 순으로 정렬 (오름차순)
-        _nearbyCourses.sort((a, b) => a.distance.compareTo(b.distance));
-
-        // 2km 이상인 코스 필터링 (추가 안전장치)
-        _nearbyCourses =
-            _nearbyCourses.where((course) => course.distance <= 2.0).toList();
-
-        print('표시될 코스 수: ${_nearbyCourses.length}');
-        for (var course in _nearbyCourses) {
-          print(
-            '코스: ${course.title}, 공원: ${course.park}, 거리: ${course.distance}km',
-          );
+        // _nearbyCourses 계산을 최적화
+        if (_nearbyCourses.isEmpty &&
+            !parkDataProvider.isLoadingParks &&
+            !parkDataProvider.isLoadingLocation) {
+          _nearbyCourses =
+              parkDataProvider.nearbyRecommendedCourses2km
+                  .map(
+                    (parkCourse) =>
+                        _convertToCourse(parkCourse, parkDataProvider),
+                  )
+                  .toList();
+          _nearbyCourses.sort((a, b) => a.distance.compareTo(b.distance));
         }
+
         return DraggableScrollableSheet(
           initialChildSize: 0.5,
           minChildSize: 0.4,
@@ -358,18 +334,6 @@ class _CourseRecommendBottomsheetState
                                                   mainAxisAlignment:
                                                       MainAxisAlignment.start,
                                                   children: [
-                                                    Text(
-                                                      _nearbyCourses[index]
-                                                          .title,
-                                                      style: const TextStyle(
-                                                        fontSize: 14,
-                                                        fontWeight:
-                                                            FontWeight.w600,
-                                                      ),
-                                                      maxLines: 1,
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                    ),
                                                     Padding(
                                                       padding:
                                                           const EdgeInsets.only(
@@ -380,6 +344,7 @@ class _CourseRecommendBottomsheetState
                                                             MainAxisAlignment
                                                                 .spaceBetween,
                                                         children: [
+                                                          // 추후에는 사용자가 설정한 코스이름 넣어야 함
                                                           Text(
                                                             _nearbyCourses[index]
                                                                 .park,
@@ -389,8 +354,12 @@ class _CourseRecommendBottomsheetState
                                                                   FontWeight
                                                                       .w500,
                                                               color:
-                                                                  GRAYSCALE_LABEL_800,
+                                                                  GRAYSCALE_LABEL_900,
                                                             ),
+                                                            maxLines: 1,
+                                                            overflow:
+                                                                TextOverflow
+                                                                    .ellipsis,
                                                           ),
                                                           Text(
                                                             '${_nearbyCourses[index].distance.toStringAsFixed(1)}km',
