@@ -521,7 +521,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           backgroundColor: RECOMMEND_BACKGROUND,
                           label: '추천 코스',
                           iconPath: 'assets/images/location.svg',
-                          iconColor: BLUE_SECONDARY_600,
+                          iconColor: BLUE_SECONDARY_700,
                           iconWidth: 30,
                           iconHeight: 30,
                           onTap: () {
