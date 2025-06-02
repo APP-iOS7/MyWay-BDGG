@@ -401,8 +401,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
     final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
     _isKeyboardVisible = keyboardHeight > 0;
 
-    // 버튼을 하단에 고정할지 여부 결정
-    final shouldFixButtonToBottom = !_hasAnyText && !_isKeyboardVisible;
+    // // 버튼을 하단에 고정할지 여부 결정
+    // final shouldFixButtonToBottom = !_hasAnyText && !_isKeyboardVisible;
 
     return Scaffold(
       backgroundColor: const Color(0xFFFFFFFF),
@@ -467,152 +467,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 _passwordController.text ==
                                     _confirmPasswordController.text),
                       ),
-                      if (!shouldFixButtonToBottom) ...[
-                        const SizedBox(height: 20.0),
-                        Center(
-                          child: Text(
-                            centerMessage,
-                            style: TextStyle(
-                              color:
-                                  centerMessage.isEmpty
-                                      ? Colors.transparent
-                                      : Colors.red[400],
-                              fontSize: 14.0,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 20.0),
-                        SizedBox(
-                          width: double.infinity,
-                          height: 48.0,
-                          child: Consumer<UserProvider>(
-                            builder: (context, userProvider, child) {
-                              return ElevatedButton(
-                                onPressed:
-                                    _allFieldsFilled
-                                        ? () async {
-                                          // 회원가입 로직
-                                          if (!userProvider.isLoading) {
-                                            bool success = await userProvider
-                                                .signUp(
-                                                  email: _emailController.text,
-                                                  password:
-                                                      _passwordController.text,
-                                                  checkPassword:
-                                                      _confirmPasswordController
-                                                          .text,
-                                                  username:
-                                                      _nicknameController.text,
-                                                );
-                                            ScaffoldMessenger.of(
-                                              context,
-                                            ).hideCurrentSnackBar();
 
-                                            if (success) {
-                                              ScaffoldMessenger.of(
-                                                context,
-                                              ).showSnackBar(
-                                                SnackBar(
-                                                  content: Text(
-                                                    '회원가입 성공! 이름: ${userProvider.currentUser?.displayName}',
-                                                  ),
-                                                ),
-                                              );
-                                              Navigator.pushReplacement(
-                                                context,
-                                                MaterialPageRoute(
-                                                  builder:
-                                                      (context) => HomeScreen(),
-                                                ),
-                                              );
-                                            } else {
-                                              ScaffoldMessenger.of(
-                                                context,
-                                              ).showSnackBar(
-                                                SnackBar(
-                                                  content: Text(
-                                                    '회원가입 실패! ${userProvider.errorMessage ?? '알 수 없는 오류'}',
-                                                  ),
-                                                ),
-                                              );
-                                            }
-                                          }
-                                        }
-                                        : null,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: ORANGE_PRIMARY_500,
-                                  disabledBackgroundColor: Colors.grey[300],
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8.0),
-                                  ),
-                                ),
-                                child: const Text(
-                                  '회원가입',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 16.0,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                        const SizedBox(height: 20.0),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Text(
-                              '이미 계정이 있으신가요?',
-                              style: TextStyle(
-                                color: GRAYSCALE_LABEL_950,
-                                fontSize: 14.0,
-                              ),
-                            ),
-                            TextButton(
-                              onPressed: () {
-                                // 로그인 화면으로 이동
-                                Navigator.of(
-                                  context,
-                                ).pushReplacementNamed('/home');
-                              },
-                              style: TextButton.styleFrom(
-                                minimumSize: Size.zero,
-                                padding: const EdgeInsets.only(left: 4.0),
-                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                              ),
-                              child: const Text(
-                                '로그인',
-                                style: TextStyle(
-                                  color: BLUE_SECONDARY_600,
-                                  fontSize: 14.0,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 20.0),
-                      ],
-                      if (shouldFixButtonToBottom)
-                        SizedBox(
-                          height: MediaQuery.of(context).size.height * 0.2,
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-              // 텍스트가 없고 키보드가 보이지 않는 경우에만 하단에 고정
-              if (shouldFixButtonToBottom)
-                Container(
-                  color: Colors.white,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 0.0,
-                    vertical: 10.0,
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
+                      const SizedBox(height: 20.0),
                       Center(
                         child: Text(
                           centerMessage,
@@ -681,8 +537,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                       }
                                       : null,
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF567FD9),
-                                disabledBackgroundColor: Colors.grey[300],
+                                overlayColor: Colors.transparent,
+                                backgroundColor: ORANGE_PRIMARY_500,
+                                disabledBackgroundColor: GRAYSCALE_LABEL_300,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(8.0),
                                 ),
@@ -699,7 +556,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           },
                         ),
                       ),
-                      const SizedBox(height: 20.0),
+                      const SizedBox(height: 10.0),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -713,7 +570,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           TextButton(
                             onPressed: () {
                               // 로그인 화면으로 이동
-                              Navigator.pushNamed(context, 'signIn');
+                              Navigator.of(
+                                context,
+                              ).pushReplacementNamed('/home');
                             },
                             style: TextButton.styleFrom(
                               minimumSize: Size.zero,
@@ -724,17 +583,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               '로그인',
                               style: TextStyle(
                                 color: BLUE_SECONDARY_600,
-                                fontSize: 14.0,
+                                fontSize: 15.0,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 40.0),
+                      const SizedBox(height: 20.0),
                     ],
                   ),
                 ),
+              ),
             ],
           ),
         ),
