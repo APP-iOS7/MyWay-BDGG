@@ -6,7 +6,18 @@ import 'package:myway/model/activity_period.dart';
 
 import '../const/colors.dart';
 
+// 데이터 상태를 더 정확하게 추적하기 위한 열거형
+enum DataStatus {
+  hasData, // 데이터가 있음
+  noDataInPeriod, // 해당 기간에 데이터가 없음 (다른 기간에는 있을 수 있음)
+  noDataAtAll, // 전체적으로 데이터가 없음
+}
+
 class ActivityLogProvider extends ChangeNotifier {
+  // 현재 데이터 상태
+  DataStatus _currentDataStatus = DataStatus.hasData;
+  DataStatus get currentDataStatus => _currentDataStatus;
+
   // Firestore 데이터 처리
   Future<Map<String, dynamic>> getWeeklyData(DateTime date) async {
     final startOfWeek = date.subtract(Duration(days: date.weekday - 1));
@@ -22,12 +33,31 @@ class ActivityLogProvider extends ChangeNotifier {
 
     if (!snapshot.exists) {
       print('문서가 존재하지 않습니다.');
-      return {'distance': 0, 'duration': Duration.zero, 'steps': 0, 'count': 0};
+      _currentDataStatus = DataStatus.noDataAtAll;
+      return {
+        'distance': 0.0,
+        'duration': Duration.zero,
+        'steps': 0,
+        'count': 0,
+      };
     }
 
     final data = snapshot.data()?['TrackingResult'] as List<dynamic>? ?? [];
-    print('조회된 데이터 수: ${data.length}');
+    print('조회된 전체 데이터 수: ${data.length}');
 
+    // 전체 데이터가 없는 경우
+    if (data.isEmpty) {
+      print('전체 데이터가 없습니다.');
+      _currentDataStatus = DataStatus.noDataAtAll;
+      return {
+        'distance': 0.0,
+        'duration': Duration.zero,
+        'steps': 0,
+        'count': 0,
+      };
+    }
+
+    // 해당 주간의 데이터 필터링
     final weeklyData =
         data.where((item) {
           final itemDate = DateTime.parse(item['종료시간']);
@@ -39,6 +69,21 @@ class ActivityLogProvider extends ChangeNotifier {
         }).toList();
 
     print('주간 데이터 필터링 결과: ${weeklyData.length}개');
+
+    // 해당 주간에 데이터가 없는 경우 (하지만 전체 데이터는 존재)
+    if (weeklyData.isEmpty) {
+      print('선택한 주에 데이터가 없습니다.');
+      _currentDataStatus = DataStatus.noDataInPeriod;
+      return {
+        'distance': 0.0,
+        'duration': Duration.zero,
+        'steps': 0,
+        'count': 0,
+      };
+    }
+
+    // 데이터가 있는 경우
+    _currentDataStatus = DataStatus.hasData;
     final result = _aggregateData(weeklyData);
     updateStats(result);
     return result;
@@ -58,12 +103,21 @@ class ActivityLogProvider extends ChangeNotifier {
 
     if (!snapshot.exists) {
       print('문서가 존재하지 않습니다.');
+      _currentDataStatus = DataStatus.noDataAtAll;
       return {'distance': 0, 'duration': Duration.zero, 'steps': 0, 'count': 0};
     }
 
     final data = snapshot.data()?['TrackingResult'] as List<dynamic>? ?? [];
-    print('조회된 데이터 수: ${data.length}');
+    print('조회된 전체 데이터 수: ${data.length}');
 
+    // 전체 데이터가 없는 경우
+    if (data.isEmpty) {
+      print('전체 데이터가 없습니다.');
+      _currentDataStatus = DataStatus.noDataAtAll;
+      return {'distance': 0, 'duration': Duration.zero, 'steps': 0, 'count': 0};
+    }
+
+    // 해당 월의 데이터 필터링
     final monthlyData =
         data.where((item) {
           final itemDate = DateTime.parse(item['종료시간']);
@@ -75,18 +129,45 @@ class ActivityLogProvider extends ChangeNotifier {
         }).toList();
 
     print('월간 데이터 필터링 결과: ${monthlyData.length}개');
+
+    // 해당 월에 데이터가 없는 경우
+    if (monthlyData.isEmpty) {
+      print('선택한 월에 데이터가 없습니다.');
+      _currentDataStatus = DataStatus.noDataInPeriod;
+      return {'distance': 0, 'duration': Duration.zero, 'steps': 0, 'count': 0};
+    }
+
+    // 데이터가 있는 경우
+    _currentDataStatus = DataStatus.hasData;
     final result = _aggregateData(monthlyData);
     updateStats(result);
     return result;
   }
 
   Future<void> loadData() async {
-    if (_selectedPeriod == ActivityPeriod.weekly) {
-      final data = await getWeeklyData(_currentDate);
-      updateStats(data);
-    } else {
-      final data = await getMonthlyData(_currentDate.year, _currentDate.month);
-      updateStats(data);
+    try {
+      if (_selectedPeriod == ActivityPeriod.weekly) {
+        final data = await getWeeklyData(_currentDate);
+        print('주간 데이터 로드 결과: $data');
+        updateStats(data);
+      } else {
+        final data = await getMonthlyData(
+          _currentDate.year,
+          _currentDate.month,
+        );
+        print('월간 데이터 로드 결과: $data');
+        updateStats(data);
+      }
+    } catch (e) {
+      print('데이터 로드 중 오류 발생: $e');
+      // 오류 발생 시 데이터 없음으로 처리
+      _currentDataStatus = DataStatus.noDataAtAll;
+      updateStats({
+        'distance': 0,
+        'duration': Duration.zero,
+        'steps': 0,
+        'count': 0,
+      });
     }
   }
 
@@ -100,7 +181,12 @@ class ActivityLogProvider extends ChangeNotifier {
     for (var item in data) {
       print('항목 처리 중: ${item.toString()}');
 
-      totalDistance += double.tryParse(item['거리'].toString()) ?? 0;
+      final distance =
+          (item['거리'] is int)
+              ? (item['거리'] as int).toDouble()
+              : double.tryParse(item['거리'].toString()) ?? 0.0;
+      totalDistance += distance;
+      print('거리: $distance km');
 
       // 시간 계산
       final timeStr = item['소요시간'].toString();
@@ -108,7 +194,6 @@ class ActivityLogProvider extends ChangeNotifier {
 
       final parts = timeStr.split(':');
       if (parts.length >= 2) {
-        // HH:mm 또는 HH:mm:ss 형식 모두 처리
         try {
           final hours = int.tryParse(parts[0]) ?? 0;
           final minutes = int.tryParse(parts[1]) ?? 0;
@@ -129,10 +214,13 @@ class ActivityLogProvider extends ChangeNotifier {
         print('시간 형식 오류: $timeStr (예상 형식: HH:mm 또는 HH:mm:ss)');
       }
 
-      totalSteps += int.tryParse(item['걸음수'].toString()) ?? 0;
+      // 걸음수 계산
+      final steps = int.tryParse(item['걸음수'].toString()) ?? 0;
+      totalSteps += steps;
+      print('걸음수: $steps');
     }
 
-    print('집계 결과:');
+    print('최종 집계 결과:');
     print('- 총 거리: $totalDistance km');
     print(
       '- 총 소요시간: ${totalDuration.inHours}시간 ${totalDuration.inMinutes.remainder(60)}분',
@@ -164,6 +252,10 @@ class ActivityLogProvider extends ChangeNotifier {
   // Getters
   double get totalDistance => _totalDistance;
   String get formattedTotalDuration {
+    if (_totalDuration == Duration.zero) {
+      return '00시간 00분';
+    }
+
     String twoDigits(int n) => n.toString().padLeft(2, '0');
     final hours = twoDigits(_totalDuration.inHours);
     final minutes = twoDigits(_totalDuration.inMinutes.remainder(60));
@@ -173,12 +265,58 @@ class ActivityLogProvider extends ChangeNotifier {
   int get totalCount => _totalCount;
   int get totalSteps => _totalSteps;
 
+  // 데이터 상태를 확인하는 편의 메서드들
+  bool get hasNoData => _currentDataStatus == DataStatus.noDataAtAll;
+  bool get hasNoDataInCurrentPeriod =>
+      _currentDataStatus == DataStatus.noDataInPeriod;
+  bool get hasData => _currentDataStatus == DataStatus.hasData;
+
+  // 주간 데이터 상태 확인
+  bool get hasNoWeeklyData =>
+      _selectedPeriod == ActivityPeriod.weekly &&
+      (_currentDataStatus == DataStatus.noDataInPeriod ||
+          _currentDataStatus == DataStatus.noDataAtAll);
+
+  // 월간 데이터 상태 확인
+  bool get hasNoMonthlyData =>
+      _selectedPeriod == ActivityPeriod.monthly &&
+      (_currentDataStatus == DataStatus.noDataInPeriod ||
+          _currentDataStatus == DataStatus.noDataAtAll);
+
+  // UI에서 표시할 메시지를 반환하는 메서드
+  String getNoDataMessage() {
+    switch (_currentDataStatus) {
+      case DataStatus.noDataAtAll:
+        return '데이터가 없습니다';
+      case DataStatus.noDataInPeriod:
+        if (_selectedPeriod == ActivityPeriod.weekly) {
+          return '이 주에는 데이터가 없습니다';
+        } else {
+          return '이 달에는 데이터가 없습니다';
+        }
+      case DataStatus.hasData:
+        return '';
+    }
+  }
+
   // 데이터 업데이트 메서드
   void updateStats(Map<String, dynamic> data) {
-    _totalDistance = data['distance'] ?? 0;
+    print('updateStats 호출: $data');
+
+    _totalDistance =
+        (data['distance'] is int)
+            ? (data['distance'] as int).toDouble()
+            : (data['distance'] as double?) ?? 0.0;
     _totalDuration = data['duration'] as Duration;
     _totalCount = data['count'] ?? 0;
     _totalSteps = data['steps'] ?? 0;
+
+    print('업데이트된 값:');
+    print('거리: $_totalDistance');
+    print('시간: $_totalDuration');
+    print('횟수: $_totalCount');
+    print('걸음수: $_totalSteps');
+
     notifyListeners();
   }
 
@@ -187,10 +325,8 @@ class ActivityLogProvider extends ChangeNotifier {
     final currentMonth = DateTime.now().month;
 
     if (_currentDate.year == currentYear) {
-      // 현재 년도인 경우 5월부터 현재 월까지
       return List.generate(currentMonth - 4, (index) => '${index + 5}월');
     } else {
-      // 이전 년도인 경우 5월부터 12월까지
       return List.generate(8, (index) => '${index + 5}월');
     }
   }
@@ -201,12 +337,29 @@ class ActivityLogProvider extends ChangeNotifier {
     _selectedMonth = month;
     final monthNumber = int.parse(month.replaceAll('월', ''));
     _currentDate = DateTime(_currentDate.year, monthNumber, 1);
-    loadData(); // 월 변경 시 데이터 로드
+
+    // 새로운 주차 목록 생성
+    final newAvailableWeeks = getWeeksInMonth(_currentDate.year, monthNumber);
+    availableWeeks = newAvailableWeeks;
+
+    // 현재 선택된 주차가 새로운 목록에 있는지 확인
+    if (!newAvailableWeeks.contains(_selectedWeek)) {
+      // 현재 날짜와 같은 년월이면 현재 주차로, 아니면 첫 번째 주차로 설정
+      final now = DateTime.now();
+      if (_currentDate.year == now.year && monthNumber == now.month) {
+        final curretWeek = getWeekNumber(now);
+        _selectedWeek = '$curretWeek주';
+      } else {
+        _selectedWeek =
+            newAvailableWeeks.isNotEmpty ? newAvailableWeeks.first : '1주';
+      }
+    }
+    loadData();
     notifyListeners();
   }
 
   ActivityLogProvider() {
-    _currentDate = DateTime(2025, 5, 1); // 초기값을 2025년 5월 1일로 설정
+    _currentDate = DateTime.now();
     _updateDateInfo();
   }
 
@@ -217,6 +370,8 @@ class ActivityLogProvider extends ChangeNotifier {
     availableWeeks = getWeeksInMonth(currentYear, currentMonth);
 
     final currentWeek = getWeekNumber(_currentDate);
+    // 현재 주차를 선택된 주차로 설정
+    _selectedWeek = '$currentWeek 주';
     _currentDisplayDateWeekly = "$currentYear년 $currentMonth월 $currentWeek주";
     _currentDisplayDateMonthly = "$currentYear년 $currentMonth월";
 
@@ -228,20 +383,60 @@ class ActivityLogProvider extends ChangeNotifier {
     final firstDayOfMonth = DateTime(date.year, date.month, 1);
     final firstWeekday = firstDayOfMonth.weekday;
     final dayOfMonth = date.day;
-    return ((dayOfMonth + firstWeekday - 1) / 7).ceil();
+
+    // 첫 번째 주의 시작일 계산
+    final firstWeekStart = firstDayOfMonth.subtract(
+      Duration(days: firstWeekday - 1),
+    );
+
+    // 해당 날짜까지의 일수를 7로 나누어 주차 계산
+    final daysDifference = date.difference(firstWeekStart).inDays;
+    final weekNumber = (daysDifference / 7).floor() + 1;
+
+    // 월의 첫 날이 월요일이 아닌 경우, 첫 주의 일수를 고려하여 조정
+    if (firstWeekday != DateTime.monday) {
+      // 첫 주의 일수가 4일 이상인 경우에만 1주차로 계산
+      if (dayOfMonth <= (8 - firstWeekday)) {
+        return 1;
+      }
+    }
+
+    return weekNumber;
   }
 
   // 특정 월의 모든 주차 목록 생성
   List<String> getWeeksInMonth(int year, int month) {
     final firstDay = DateTime(year, month, 1);
     final lastDay = DateTime(year, month + 1, 0);
-    final firstWeek = getWeekNumber(firstDay);
-    final lastWeek = getWeekNumber(lastDay);
 
-    return List.generate(
-      lastWeek - firstWeek + 1,
-      (index) => '${firstWeek + index}주',
-    );
+    // 첫번째 주의 월요일
+    DateTime firstWeekStart = firstDay;
+    while (firstWeekStart.weekday != DateTime.monday) {
+      firstWeekStart = firstWeekStart.subtract(Duration(days: 1));
+    }
+
+    // 마지막 주의 일요일
+    DateTime lastWeekEnd = lastDay;
+    while (lastWeekEnd.weekday != DateTime.sunday) {
+      lastWeekEnd = lastWeekEnd.add(Duration(days: 1));
+    }
+
+    // 전체 주 수 계산
+    final totalWeeks = (lastWeekEnd.difference(firstWeekStart).inDays + 1) ~/ 7;
+
+    // 주차 목록 생성
+    List<String> weeks = [];
+    for (int i = 0; i < totalWeeks; i++) {
+      final weekStart = firstWeekStart.add(Duration(days: i * 7));
+      final weekEnd = weekStart.add(Duration(days: 6));
+
+      // 해당 주가 이번 달과 겹치는지 확인
+      if (weekEnd.month == month || weekStart.month == month) {
+        weeks.add('${i + 1}주');
+      }
+    }
+
+    return weeks;
   }
 
   // 주간/월간 선택 상태
@@ -252,7 +447,7 @@ class ActivityLogProvider extends ChangeNotifier {
   String _selectedValue = '';
   String get currentSelectedValue => _selectedValue;
 
-  // 현재 선택된 주
+  // 현재 선택된 주 (초기값을 현재 주차로 설정)
   String _selectedWeek = '1주';
   String get selectedWeek => _selectedWeek;
 
@@ -266,7 +461,15 @@ class ActivityLogProvider extends ChangeNotifier {
   // 주간/월간 선택 변경
   void setPeriod(ActivityPeriod period) {
     _selectedPeriod = period;
-    loadData(); // 기간 변경 시 데이터 로드
+    if (period == ActivityPeriod.weekly) {
+      _currentDate = DateTime.now();
+      _updateDateInfo();
+
+      // 현재 주차로 설정
+      final currentWeek = getWeekNumber(DateTime.now());
+      _selectedWeek = '$currentWeek주';
+    }
+    loadData();
     notifyListeners();
   }
 
@@ -287,11 +490,39 @@ class ActivityLogProvider extends ChangeNotifier {
   void updateSelectedWeek(String week) {
     _selectedWeek = week;
     final weekNumber = int.parse(week.replaceAll('주', ''));
-    // 주차에 해당하는 날짜 계산
+
+    // 해당 월의 첫 번째 날
     final firstDayOfMonth = DateTime(_currentDate.year, _currentDate.month, 1);
-    final firstWeekday = firstDayOfMonth.weekday;
-    final dayOffset = (weekNumber - 1) * 7 - (firstWeekday - 1);
-    _currentDate = firstDayOfMonth.add(Duration(days: dayOffset));
+
+    // 첫번째 주의 월요일 계산
+    final firstWeekStart = firstDayOfMonth.subtract(
+      Duration(days: firstDayOfMonth.weekday - 1),
+    );
+
+    // 선택된 주차의 시작일 계산
+    final selectedWeekStart = firstWeekStart.add(
+      Duration(days: (weekNumber - 1) * 7),
+    );
+
+    // 선택된 주의 중간 날짜로 _currentDate 설정 (해당 주의 수요일)
+    _currentDate = selectedWeekStart.add(Duration(days: 2));
+
+    // 만약 계산된 날짜가 해당 월을 벗어나면 해당 월 내의 날짜로 조정
+    if (_currentDate.month != firstDayOfMonth.month) {
+      if (_currentDate.isBefore(firstDayOfMonth)) {
+        _currentDate = firstDayOfMonth;
+      } else {
+        final lastDayOfMonth = DateTime(
+          _currentDate.year,
+          _currentDate.month + 1,
+          0,
+        );
+        _currentDate = lastDayOfMonth;
+      }
+    }
+
+    print('주차 변경: $week -> _currentDate: $_currentDate');
+
     loadData(); // 주 변경 시 데이터 로드
     notifyListeners();
   }
@@ -377,22 +608,39 @@ class ActivityLogProvider extends ChangeNotifier {
   void updateYear(int year) {
     _currentDate = DateTime(year, _currentDate.month, _currentDate.day);
     _updateDateInfo();
+
+    // 새로운 년월의 주차 목록을 먼저 생성
+    final newAvailableWeeks = getWeeksInMonth(year, _currentDate.month);
+
+    // 현재 선택된 주차가 새로운 목록에 있는지 확인
+    if (!newAvailableWeeks.contains(_selectedWeek)) {
+      // 현재 날짜와 같은 년월이면 현재 주차로, 아니면 첫 번째 주차로 설정
+      final now = DateTime.now();
+      if (year == now.year && _currentDate.month == now.month) {
+        final currentWeek = getWeekNumber(now);
+        _selectedWeek = '$currentWeek주';
+      } else {
+        _selectedWeek =
+            newAvailableWeeks.isNotEmpty ? newAvailableWeeks.first : '1주';
+      }
+    }
     loadData();
     notifyListeners();
   }
 
   // 사용 가능한 년도와 월 조합 목록 생성
   List<String> get availableYearMonthCombinations {
-    final currentYear = DateTime.now().year;
-    final currentMonth = DateTime.now().month;
+    final now = DateTime.now();
     final List<String> combinations = [];
 
-    // 2025년 5월부터 현재까지의 모든 조합 생성
-    for (int year = 2025; year <= currentYear; year++) {
-      int startMonth = (year == 2025) ? 5 : 1;
-      int endMonth = (year == currentYear) ? currentMonth : 12;
+    // 현재 년도부터 2년 전까지
+    for (int year = now.year - 2; year <= now.year; year++) {
+      // 현재 년도인 경우 현재 월까지만
+      int maxMonth = (year == now.year) ? now.month : 12;
+      // 2년 전부터는 1월부터
+      int minMonth = (year == now.year - 2) ? 1 : 1;
 
-      for (int month = startMonth; month <= endMonth; month++) {
+      for (int month = minMonth; month <= maxMonth; month++) {
         combinations.add('$year년 $month월');
       }
     }
@@ -401,7 +649,9 @@ class ActivityLogProvider extends ChangeNotifier {
   }
 
   // 현재 선택된 년도와 월
-  String get currentYearMonth => "${_currentDate.year}년 ${_currentDate.month}월";
+  String get currentYearMonth {
+    return '$currentYear년 $_selectedMonth';
+  }
 
   // 주차 선택을 위한 드롭다운 아이템 생성
   List<DropdownMenuItem<String>> getWeekDropdownItems() {

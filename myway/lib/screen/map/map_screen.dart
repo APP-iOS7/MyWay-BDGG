@@ -356,7 +356,6 @@ class _MapScreenState extends State<MapScreen>
     if (selectedCourse == null || selectedCourse == _prevCourse) return;
     _prevCourse = selectedCourse;
 
-    // 기존 추천 경로 제거
     polylines.removeWhere((p) => p.polylineId.value == 'recommended');
 
     // 추천 경로 다시 그리기
@@ -399,10 +398,7 @@ class _MapScreenState extends State<MapScreen>
       });
     }
     _prevStatus = status;
-
-    // build() 메서드 내에서 mapProvider 상태 변경 제거
-    // mapProvider.setMapLoading(isLoading); <- 이 줄 제거
-
+    mapProvider.setMapLoading(isLoading);
     return Scaffold(
       backgroundColor: WHITE,
       appBar: AppBar(

@@ -16,25 +16,22 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
   @override
   void initState() {
     super.initState();
-    // 초기 데이터 로드
+    // 초기 데이터 로드 및 현재 주차 설정
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<ActivityLogProvider>().loadData();
+      final activityProvider = context.read<ActivityLogProvider>();
+      // 주간기록 모드 일때 현재 주차로 설정
+      if (activityProvider.selectedPeriod == ActivityPeriod.weekly) {
+        final currentWeek = activityProvider.getWeekNumber(DateTime.now());
+        activityProvider.updateSelectedWeek('$currentWeek주');
+      }
+      activityProvider.loadData();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    const double horizontalPageMargin = 20.0;
-    const double labelToTextMargin = 5.0;
-
     return Consumer<ActivityLogProvider>(
       builder: (context, activityProvider, child) {
-        // 모든 데이터가 0인지 확인
-        bool hasNoData =
-            activityProvider.totalDistance == 0 &&
-            activityProvider.totalCount == 0 &&
-            activityProvider.totalSteps == 0;
-
         return Scaffold(
           backgroundColor: BACKGROUND_COLOR,
           appBar: AppBar(
@@ -50,98 +47,161 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
             ),
             centerTitle: true,
           ),
-          body:
-              hasNoData
-                  ? Padding(
-                    padding: const EdgeInsets.only(top: 200),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Text(
-                              '저장된 활동이 없습니다',
-                              style: TextStyle(
-                                fontSize: 20,
-                                color: GRAYSCALE_LABEL_800,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              '산책을 시작해서 나만의 활동을 기록 해보세요!',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: GRAYSCALE_LABEL_600,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  )
-                  : SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: horizontalPageMargin,
-                      vertical: 16,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        _buildPeriodSelector(context, activityProvider),
-                        SizedBox(height: 24),
-                        _buildDateSelector(context, activityProvider),
-                        SizedBox(height: labelToTextMargin + 10),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.baseline,
-                          textBaseline: TextBaseline.alphabetic,
-                          children: [
-                            Text(
-                              activityProvider.totalDistance.toStringAsFixed(1),
-                              style: TextStyle(
-                                fontSize: 36,
-                                fontWeight: FontWeight.bold,
-                                color: GRAYSCALE_LABEL_950,
-                                height: 1.1,
-                              ),
-                            ),
-                            SizedBox(width: 6),
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 4.0),
-                              child: Text(
-                                "km",
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: GRAYSCALE_LABEL_950,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: labelToTextMargin - 1),
-                        Text(
-                          "거리",
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: GRAYSCALE_LABEL_800,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        SizedBox(height: 20),
-                        Row(
-                          spacing: 20,
-                          children: [_buildStatItem(context, activityProvider)],
-                        ),
-                        SizedBox(height: 24),
-                        _buildBarChart(context, activityProvider),
-                        SizedBox(height: 20),
-                      ],
-                    ),
-                  ),
+          body: _buildBody(activityProvider),
         );
       },
+    );
+  }
+
+  Widget _buildBody(ActivityLogProvider activityProvider) {
+    // 전체 데이터가 없는경우
+    if (activityProvider.hasNoData) {
+      return _buildNoDataMessage();
+    }
+
+    // 선택된 기간에 데이터가 없는 경우
+    if (activityProvider.hasNoDataInCurrentPeriod) {
+      return _buildNoDataInPeriodMessage(activityProvider);
+    }
+
+    // 데이터가 있는 경우
+    return _buildDataContent(activityProvider);
+  }
+
+  // 전체 데이터가 없을때의 메시지
+  Widget _buildNoDataMessage() {
+    return Padding(
+      padding: const EdgeInsets.only(top: 200),
+      child: Center(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              '저장된 활동이 없습니다',
+              style: TextStyle(
+                fontSize: 20,
+                color: GRAYSCALE_LABEL_800,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(height: 8),
+            Text(
+              '산책을 시작해서 나만의 활동을 기록 해보세요!',
+              style: TextStyle(
+                fontSize: 16,
+                color: GRAYSCALE_LABEL_600,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // 선택된 기간에 데이터가 없을 때의 메시지
+  Widget _buildNoDataInPeriodMessage(ActivityLogProvider activityProvider) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildPeriodSelector(context, activityProvider),
+          SizedBox(height: 24),
+          _buildDateSelector(context, activityProvider),
+          SizedBox(height: 40),
+          Center(
+            child: Column(
+              children: [
+                Icon(
+                  Icons.calendar_today_outlined,
+                  size: 48,
+                  color: GRAYSCALE_LABEL_400,
+                ),
+                SizedBox(height: 16),
+                Text(
+                  activityProvider.getNoDataMessage(),
+                  style: TextStyle(
+                    fontSize: 18,
+                    color: GRAYSCALE_LABEL_600,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                Text(
+                  '다른 기간을 선택해보세요',
+                  style: TextStyle(fontSize: 14, color: GRAYSCALE_LABEL_500),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 데이터가 있을 때의 내용
+  Widget _buildDataContent(ActivityLogProvider activityProvider) {
+    const double horizontalPageMargin = 20.0;
+    const double labelToTextMargin = 5.0;
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(
+        horizontal: horizontalPageMargin,
+        vertical: 16,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          _buildPeriodSelector(context, activityProvider),
+          SizedBox(height: 24),
+          _buildDateSelector(context, activityProvider),
+          SizedBox(height: labelToTextMargin + 10),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: [
+              Text(
+                activityProvider.totalDistance.toStringAsFixed(1),
+                style: TextStyle(
+                  fontSize: 36,
+                  fontWeight: FontWeight.bold,
+                  color: GRAYSCALE_LABEL_950,
+                  height: 1.1,
+                ),
+              ),
+              SizedBox(width: 6),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4.0),
+                child: Text(
+                  'km',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: GRAYSCALE_LABEL_950,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: labelToTextMargin - 1),
+          Text(
+            '거리',
+            style: TextStyle(
+              fontSize: 14,
+              color: GRAYSCALE_LABEL_800,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          SizedBox(height: 20),
+          Row(
+            spacing: 20,
+            children: [_buildStatItem(context, activityProvider)],
+          ),
+          SizedBox(height: 24),
+          _buildBarChart(context, activityProvider),
+          SizedBox(height: 20),
+        ],
+      ),
     );
   }
 
@@ -259,15 +319,18 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
     ActivityLogProvider activityProvider,
   ) {
     return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
       children: [
         if (activityProvider.selectedPeriod == ActivityPeriod.weekly)
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // 년도와 월 선택 드롭다운
               DropdownButtonHideUnderline(
                 child: DropdownButton<String>(
                   value: activityProvider.currentYearMonth,
                   dropdownColor: Colors.white,
+                  focusColor: Colors.transparent,
                   items:
                       activityProvider.availableYearMonthCombinations.map((
                         String value,
@@ -291,6 +354,12 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
                       final month = int.parse(parts[1].replaceAll('월', ''));
                       activityProvider.updateYear(year);
                       activityProvider.setSelectedMonth('$month월');
+
+                      final now = DateTime.now();
+                      if (year == now.year && month == now.month) {
+                        final currentWeek = activityProvider.getWeekNumber(now);
+                        activityProvider.updateSelectedWeek('$currentWeek주');
+                      }
                     }
                   },
                   style: TextStyle(
@@ -302,14 +371,38 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
                     Icons.keyboard_arrow_down_outlined,
                     color: GRAYSCALE_LABEL_950,
                   ),
+                  selectedItemBuilder: (BuildContext context) {
+                    return activityProvider.availableYearMonthCombinations.map((
+                      String value,
+                    ) {
+                      return Center(
+                        child: Text(
+                          value,
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: GRAYSCALE_LABEL_950,
+                          ),
+                        ),
+                      );
+                    }).toList();
+                  },
                 ),
               ),
-              SizedBox(width: 8),
+              // SizedBox(width: 8),
               // 주차 선택 드롭다운
               DropdownButtonHideUnderline(
                 child: DropdownButton<String>(
-                  value: activityProvider.selectedWeek,
+                  value:
+                      activityProvider.currentAvailableWeeks.contains(
+                            activityProvider.selectedWeek,
+                          )
+                          ? activityProvider.selectedWeek
+                          : (activityProvider.currentAvailableWeeks.isNotEmpty
+                              ? activityProvider.currentAvailableWeeks.first
+                              : null),
                   dropdownColor: Colors.white,
+                  focusColor: Colors.transparent,
                   items: activityProvider.getWeekDropdownItems(),
                   onChanged: (String? newValue) {
                     if (newValue != null) {
@@ -325,17 +418,83 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
                     Icons.keyboard_arrow_down_outlined,
                     color: GRAYSCALE_LABEL_950,
                   ),
+                  selectedItemBuilder: (BuildContext context) {
+                    return activityProvider.getWeekDropdownItems().map((
+                      DropdownMenuItem<String> item,
+                    ) {
+                      return Center(
+                        child: Text(
+                          item.value!,
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: GRAYSCALE_LABEL_950,
+                          ),
+                        ),
+                      );
+                    }).toList();
+                  },
                 ),
               ),
             ],
           )
         else
-          Text(
-            activityProvider.currentDisplayDateMonthly,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: GRAYSCALE_LABEL_950,
+          // 월간 선택 시 드롭다운
+          DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: activityProvider.currentYearMonth,
+              focusColor: Colors.transparent,
+              dropdownColor: Colors.white,
+              items:
+                  activityProvider.availableYearMonthCombinations.map((
+                    String value,
+                  ) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(
+                        value,
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: GRAYSCALE_LABEL_950,
+                        ),
+                      ),
+                    );
+                  }).toList(),
+              onChanged: (String? newValue) {
+                if (newValue != null) {
+                  final parts = newValue.split('년');
+                  final year = int.parse(parts[0]);
+                  final month = int.parse(parts[1].replaceAll('월', ''));
+                  activityProvider.updateYear(year);
+                  activityProvider.setSelectedMonth('$month월');
+                }
+              },
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: GRAYSCALE_LABEL_950,
+              ),
+              icon: Icon(
+                Icons.keyboard_arrow_down_outlined,
+                color: GRAYSCALE_LABEL_950,
+              ),
+              selectedItemBuilder: (BuildContext context) {
+                return activityProvider.availableYearMonthCombinations.map((
+                  String value,
+                ) {
+                  return Center(
+                    child: Text(
+                      value,
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: GRAYSCALE_LABEL_950,
+                      ),
+                    ),
+                  );
+                }).toList();
+              },
             ),
           ),
       ],
@@ -411,14 +570,6 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Text(
-          //   '거리(km)',
-          //   style: TextStyle(
-          //     fontSize: 16,
-          //     fontWeight: FontWeight.bold,
-          //     color: GRAYSCALE_LABEL_950,
-          //   ),
-          // ),
           SizedBox(height: 16),
           Expanded(
             child:
@@ -428,10 +579,33 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
                       builder: (context, snapshot) {
                         if (snapshot.connectionState ==
                             ConnectionState.waiting) {
-                          return Center(child: CircularProgressIndicator());
+                          return Center(
+                            child: CircularProgressIndicator(
+                              color: ORANGE_PRIMARY_500,
+                            ),
+                          );
                         }
                         if (snapshot.hasError) {
-                          return Center(child: Text('데이터를 불러오는데 실패했습니다.'));
+                          return Center(
+                            child: Text(
+                              '데이터를 불러오는데 실패했습니다.',
+                              style: TextStyle(
+                                color: GRAYSCALE_LABEL_600,
+                                fontSize: 14,
+                              ),
+                            ),
+                          );
+                        }
+                        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                          return Center(
+                            child: Text(
+                              '표시할 데이터가 없습니다.',
+                              style: TextStyle(
+                                color: GRAYSCALE_LABEL_600,
+                                fontSize: 14,
+                              ),
+                            ),
+                          );
                         }
                         return BarChart(
                           BarChartData(
@@ -507,7 +681,33 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
                       builder: (context, snapshot) {
                         if (snapshot.connectionState ==
                             ConnectionState.waiting) {
-                          return Center(child: Text('데이터를 불러오는데 실패했습니다.'));
+                          return Center(
+                            child: CircularProgressIndicator(
+                              color: ORANGE_PRIMARY_500,
+                            ),
+                          );
+                        }
+                        if (snapshot.hasError) {
+                          return Center(
+                            child: Text(
+                              '차트를 불러오는데 실패했습니다.',
+                              style: TextStyle(
+                                color: GRAYSCALE_LABEL_600,
+                                fontSize: 14,
+                              ),
+                            ),
+                          );
+                        }
+                        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                          return Center(
+                            child: Text(
+                              '표시할 데이터가 없습니다.',
+                              style: TextStyle(
+                                color: GRAYSCALE_LABEL_600,
+                                fontSize: 14,
+                              ),
+                            ),
+                          );
                         }
                         return BarChart(
                           BarChartData(
