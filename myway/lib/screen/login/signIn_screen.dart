@@ -149,9 +149,10 @@ class _SigninScreenState extends State<SigninScreen> {
                         },
                         child: Text(
                           '회원가입',
-                          style: GoogleFonts.inter(
+                          style: TextStyle(
                             color: BLUE_SECONDARY_600,
-                            fontSize: 15,
+                            fontSize: 15.0,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
@@ -161,14 +162,16 @@ class _SigninScreenState extends State<SigninScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       TextButton(
+                        style: TextButton.styleFrom(padding: EdgeInsets.zero),
                         onPressed: () {
                           Navigator.pushNamed(context, 'findPassword');
                         },
                         child: Text(
                           '비밀번호 찾기',
                           style: GoogleFonts.inter(
-                            color: GRAYSCALE_LABEL_600,
+                            color: GRAYSCALE_LABEL_700,
                             fontSize: 15,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ),
