@@ -3,6 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:myway/const/colors.dart';
 
+import '../../const/custome_button.dart';
+
 class MycourseScreen extends StatefulWidget {
   const MycourseScreen({super.key});
 
@@ -31,13 +33,12 @@ class _MycourseScreenState extends State<MycourseScreen> {
 
     final newList = <dynamic>[];
     for (int i = 0; i < trackingResult.length; i++) {
-      if (!_selected[i]) newList.add(trackingResult[i]);
+      if (!_selected[i]) {
+        newList.add(trackingResult[i]);
+      }
     }
 
-    if (newList.isEmpty) {
-    } else {
-      await docRef.update({'TrackingResult': newList});
-    }
+    await docRef.update({'TrackingResult': newList});
 
     setState(() {
       isEditing = false;
@@ -136,6 +137,7 @@ class _MycourseScreenState extends State<MycourseScreen> {
                     ? [
                       TextButton(
                         onPressed: () => deleteSelected(trackingResult),
+                        style: customTextButtonStyle(),
                         child: const Text(
                           '삭제',
                           style: TextStyle(color: Colors.red),
@@ -145,6 +147,7 @@ class _MycourseScreenState extends State<MycourseScreen> {
                         onPressed: () {
                           setState(() => isEditing = false);
                         },
+                        style: customTextButtonStyle(),
                         child: const Text(
                           '취소',
                           style: TextStyle(color: GRAYSCALE_LABEL_950),
@@ -154,6 +157,7 @@ class _MycourseScreenState extends State<MycourseScreen> {
                     : [
                       TextButton(
                         onPressed: () => toggleEditing(trackingResult.length),
+                        style: customTextButtonStyle(),
                         child: const Text(
                           '편집',
                           style: TextStyle(color: GRAYSCALE_LABEL_950),
@@ -165,8 +169,8 @@ class _MycourseScreenState extends State<MycourseScreen> {
             padding: const EdgeInsets.all(20),
             child: GridView.builder(
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                childAspectRatio: 0.7,
                 crossAxisCount: 2,
-                childAspectRatio: 1.0,
                 crossAxisSpacing: 10.0,
                 mainAxisSpacing: 10.0,
               ),
@@ -180,6 +184,7 @@ class _MycourseScreenState extends State<MycourseScreen> {
                     Card(
                       color: WHITE,
                       child: Column(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           imageUrl.isNotEmpty
                               ? ClipRRect(
@@ -189,20 +194,21 @@ class _MycourseScreenState extends State<MycourseScreen> {
                                 child: Image.network(
                                   imageUrl,
                                   width: double.infinity,
-                                  height: 98,
+                                  height: 100,
                                   fit: BoxFit.cover,
                                 ),
                               )
                               : const SizedBox(
                                 width: double.infinity,
-                                height: 98,
+                                height: 150,
                                 child: Icon(Icons.image_not_supported),
                               ),
                           const SizedBox(height: 5),
                           Padding(
-                            padding: const EdgeInsets.only(left: 10.0),
+                            padding: const EdgeInsets.symmetric(horizontal: 10),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
                               children: [
                                 Text(
                                   '${result['코스이름'] ?? ''}',
@@ -211,22 +217,38 @@ class _MycourseScreenState extends State<MycourseScreen> {
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                                const SizedBox(height: 20),
+                                const SizedBox(height: 2),
+                                Text(
+                                  '${result['종료시간']}',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: GRAYSCALE_LABEL_800,
+                                  ),
+                                ),
+                                const SizedBox(height: 5),
+                                Text(
+                                  '${result['거리']} km',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: GRAYSCALE_LABEL_950,
+                                  ),
+                                ),
                                 Row(
                                   children: [
-                                    Text(
-                                      '${result['거리']} km',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: GRAYSCALE_LABEL_500,
-                                      ),
-                                    ),
                                     const SizedBox(width: 10),
                                     Text(
                                       '${result['소요시간']}',
                                       style: TextStyle(
-                                        fontSize: 12,
-                                        color: GRAYSCALE_LABEL_500,
+                                        fontSize: 14,
+                                        color: GRAYSCALE_LABEL_950,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Text(
+                                      '${result['걸음수']}',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: GRAYSCALE_LABEL_950,
                                       ),
                                     ),
                                   ],
@@ -243,6 +265,7 @@ class _MycourseScreenState extends State<MycourseScreen> {
                         right: 8,
                         child: Checkbox(
                           value: _selected[index],
+                          activeColor: ORANGE_PRIMARY_500,
                           onChanged: (val) {
                             setState(() {
                               _selected[index] = val!;

@@ -662,8 +662,8 @@ class ActivityLogProvider extends ChangeNotifier {
         child: Text(
           week,
           style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
+            fontSize: 18,
+            fontWeight: FontWeight.w500,
             color: GRAYSCALE_LABEL_950,
           ),
         ),

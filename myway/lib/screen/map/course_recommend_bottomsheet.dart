@@ -104,7 +104,7 @@ class _CourseRecommendBottomsheetState
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    '내 주변 5km 추천코스',
+                                    '추천코스',
                                     style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.w600,

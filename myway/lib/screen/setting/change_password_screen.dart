@@ -69,7 +69,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide(color: GRAYSCALE_LABEL_700, width: 1.0),
+        borderSide: BorderSide(color: ORANGE_PRIMARY_500, width: 1.0),
       ),
       contentPadding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 15.0),
       suffixIcon:
@@ -112,6 +112,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
           child: TextField(
             controller: controller,
             obscureText: isObscured,
+            cursorColor: ORANGE_PRIMARY_500,
             decoration: _passwordInputDecoration(
               hintText,
               onToggleObscure: onToggleObscure,

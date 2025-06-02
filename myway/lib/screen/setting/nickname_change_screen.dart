@@ -199,7 +199,7 @@ class _NicknameChangeScreenState extends State<NicknameChangeScreen> {
                             borderRadiusValue,
                           ),
                           borderSide: BorderSide(
-                            color: GRAYSCALE_LABEL_700,
+                            color: ORANGE_PRIMARY_500,
                             width: 1.0,
                           ),
                         ),

@@ -115,16 +115,16 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
               children: [
                 Icon(
                   Icons.calendar_today_outlined,
-                  size: 48,
-                  color: GRAYSCALE_LABEL_400,
+                  size: 30,
+                  color: BLUE_SECONDARY_500,
                 ),
-                SizedBox(height: 16),
+                SizedBox(height: 10),
                 Text(
                   activityProvider.getNoDataMessage(),
                   style: TextStyle(
                     fontSize: 18,
-                    color: GRAYSCALE_LABEL_600,
-                    fontWeight: FontWeight.w500,
+                    color: GRAYSCALE_LABEL_900,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 Text(
@@ -340,8 +340,8 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
                           child: Text(
                             value,
                             style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500,
                               color: GRAYSCALE_LABEL_950,
                             ),
                           ),
@@ -362,11 +362,7 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
                       }
                     }
                   },
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: GRAYSCALE_LABEL_950,
-                  ),
+
                   icon: Icon(
                     Icons.keyboard_arrow_down_outlined,
                     color: GRAYSCALE_LABEL_950,
@@ -379,8 +375,8 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
                         child: Text(
                           value,
                           style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
                             color: GRAYSCALE_LABEL_950,
                           ),
                         ),
@@ -409,11 +405,7 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
                       activityProvider.updateSelectedWeek(newValue);
                     }
                   },
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: GRAYSCALE_LABEL_950,
-                  ),
+
                   icon: Icon(
                     Icons.keyboard_arrow_down_outlined,
                     color: GRAYSCALE_LABEL_950,
@@ -426,8 +418,8 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
                         child: Text(
                           item.value!,
                           style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
                             color: GRAYSCALE_LABEL_950,
                           ),
                         ),
@@ -455,7 +447,7 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
                         value,
                         style: TextStyle(
                           fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w500,
                           color: GRAYSCALE_LABEL_950,
                         ),
                       ),
@@ -470,11 +462,7 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
                   activityProvider.setSelectedMonth('$month월');
                 }
               },
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: GRAYSCALE_LABEL_950,
-              ),
+
               icon: Icon(
                 Icons.keyboard_arrow_down_outlined,
                 color: GRAYSCALE_LABEL_950,
@@ -487,8 +475,8 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
                     child: Text(
                       value,
                       style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
                         color: GRAYSCALE_LABEL_950,
                       ),
                     ),

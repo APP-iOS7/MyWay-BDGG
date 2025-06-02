@@ -6,6 +6,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:myway/const/colors.dart';
 import 'package:myway/screen/home/home_screen.dart';
 
+import '../../const/custome_button.dart';
+
 class SigninScreen extends StatefulWidget {
   const SigninScreen({super.key});
 
@@ -147,6 +149,7 @@ class _SigninScreenState extends State<SigninScreen> {
                         onPressed: () {
                           Navigator.pushNamed(context, 'signUp');
                         },
+                        style: customTextButtonStyle(),
                         child: Text(
                           '회원가입',
                           style: TextStyle(
@@ -162,10 +165,10 @@ class _SigninScreenState extends State<SigninScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       TextButton(
-                        style: TextButton.styleFrom(padding: EdgeInsets.zero),
                         onPressed: () {
                           Navigator.pushNamed(context, 'findPassword');
                         },
+                        style: customTextButtonStyle(),
                         child: Text(
                           '비밀번호 찾기',
                           style: GoogleFonts.inter(

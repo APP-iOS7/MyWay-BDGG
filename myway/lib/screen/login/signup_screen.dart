@@ -5,6 +5,8 @@ import 'package:myway/provider/user_provider.dart';
 import 'package:myway/screen/home/home_screen.dart';
 import 'package:provider/provider.dart';
 
+import '../../const/custome_button.dart';
+
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
 
@@ -575,6 +577,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               ).pushReplacementNamed('/home');
                             },
                             style: TextButton.styleFrom(
+                              overlayColor: Colors.transparent,
                               minimumSize: Size.zero,
                               padding: const EdgeInsets.only(left: 4.0),
                               tapTargetSize: MaterialTapTargetSize.shrinkWrap,

@@ -129,7 +129,7 @@ class _StartTrackingBottomsheetState extends State<StartTrackingBottomsheet> {
                       ClipRRect(
                         borderRadius: BorderRadius.circular(12),
                         child: Image.asset(
-                          'assets/images/walking_background_2.png',
+                          'assets/images/walking_background.png',
                           height: 130,
                           width: double.infinity,
                           fit: BoxFit.cover,

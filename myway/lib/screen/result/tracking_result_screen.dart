@@ -301,7 +301,7 @@ class _TrackingResultScreenState extends State<TrackingResultScreen> {
                         padding: EdgeInsets.all(5),
 
                         decoration: BoxDecoration(
-                          color: MAP_BLUE,
+                          color: STORE_IMAGE_BUTTON,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Padding(
