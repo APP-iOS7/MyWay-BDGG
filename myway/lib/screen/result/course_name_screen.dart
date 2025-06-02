@@ -7,9 +7,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:myway/const/colors.dart';
-import 'package:myway/model/park_course_info.dart';
 import 'package:myway/model/step_model.dart';
-import 'package:myway/provider/park_data_provider.dart';
 import 'package:myway/provider/step_provider.dart';
 import 'package:myway/screen/result/tracking_result_screen.dart';
 import 'package:provider/provider.dart';
@@ -34,31 +32,9 @@ class _CourseNameScreenState extends State<CourseNameScreen> {
   final repaintBoundary = GlobalKey();
   late Uint8List imageBytes;
 
-  // 추천 코스 관련 변수
-  ParkCourseInfo? selectedRecommendedCourse;
-  List<ParkCourseInfo> nearbyRecommendedCourses = [];
-  bool isLoadingRecommendedCourses = true;
-
   @override
   void initState() {
     super.initState();
-
-    // 컴포넌트가 초기화될 때 ParkDataProvider의 데이터 로드
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final parkDataProvider = Provider.of<ParkDataProvider>(
-        context,
-        listen: false,
-      );
-      parkDataProvider.fetchAllDataIfNeeded().then((_) {
-        if (mounted) {
-          setState(() {
-            nearbyRecommendedCourses =
-                parkDataProvider.nearbyRecommendedCourses;
-            isLoadingRecommendedCourses = false;
-          });
-        }
-      });
-    });
   }
 
   Future<String?> imageUpload() async {
@@ -311,31 +287,13 @@ class _CourseNameScreenState extends State<CourseNameScreen> {
                               imageUrl: imageUrl ?? '',
                             );
 
-                            // Firebase에 저장할 데이터 준비
-                            Map<String, dynamic> resultData = result.toJson();
-
-                            // 선택한 추천 코스 정보가 있으면 추가
-                            if (selectedRecommendedCourse != null) {
-                              resultData['recommendedCourse'] = {
-                                'parkName':
-                                    selectedRecommendedCourse!.parkName ?? '',
-                              };
-
-                              // 코스 이름이 기본값이면 선택한 코스 이름 사용
-                              if (result.courseName.isEmpty ||
-                                  result.courseName == '나의 코스') {
-                                resultData['코스이름'] =
-                                    selectedRecommendedCourse!.title;
-                              }
-                            }
-
                             try {
                               await _firestore
                                   .collection('trackingResult')
                                   .doc(currentUser.uid)
                                   .set({
                                     'TrackingResult': FieldValue.arrayUnion([
-                                      resultData,
+                                      result.toJson(),
                                     ]),
                                   }, SetOptions(merge: true));
                               print('산책결과가 FireStore에 저장되었습니다.');
