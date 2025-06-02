@@ -5,6 +5,7 @@ class StepModel {
   final String stopTime;
   final String courseName;
   final String imageUrl;
+  final String? parkName;
 
   StepModel({
     required this.steps,
@@ -13,6 +14,7 @@ class StepModel {
     required this.stopTime,
     required this.courseName,
     required this.imageUrl,
+    this.parkName,
   });
 
   Map<String, dynamic> toJson() {
@@ -23,6 +25,7 @@ class StepModel {
       '종료시간': stopTime,
       '코스이름': courseName,
       '이미지 Url': imageUrl,
+      if (parkName != null) '공원명': parkName,
     };
   }
 
@@ -34,6 +37,7 @@ class StepModel {
       stopTime: json['종료시간'],
       courseName: json['코스이름'],
       imageUrl: json['이미지 Url'],
+      parkName: json['공원명'],
     );
   }
 }

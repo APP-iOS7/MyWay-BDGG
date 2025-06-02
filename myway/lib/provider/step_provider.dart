@@ -8,6 +8,14 @@ enum TrackingStatus { running, paused, stopped }
 
 class StepProvider extends ChangeNotifier {
   final TextEditingController courseName = TextEditingController();
+  String? _parkName;
+  String? get parkName => _parkName;
+
+  void setParkName(String? parkName) {
+    _parkName = parkName;
+    notifyListeners();
+  }
+
   int _baseSteps = 0;
   int _currentSteps = 0;
   int get steps => _currentSteps;
@@ -93,6 +101,7 @@ class StepProvider extends ChangeNotifier {
       stopTime: formattedStopTime,
       courseName: courseName.text,
       imageUrl: imageUrl,
+      parkName: _parkName,
     );
   }
 
@@ -106,6 +115,7 @@ class StepProvider extends ChangeNotifier {
     _currentSteps = 0;
     _elapsed = Duration.zero;
     _status = TrackingStatus.stopped;
+    _parkName = null;
 
     notifyListeners();
   }
