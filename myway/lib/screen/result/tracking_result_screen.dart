@@ -171,7 +171,7 @@ class _TrackingResultScreenState extends State<TrackingResultScreen> {
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
                         Text(
-                          '중앙공원',
+                          '${stepProvider.parkName}',
                           style: TextStyle(color: Colors.black, fontSize: 16),
                         ),
                       ],
