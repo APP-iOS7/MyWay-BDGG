@@ -12,6 +12,7 @@ import 'package:provider/provider.dart';
 import 'package:toastification/toastification.dart';
 
 import '../../const/colors.dart';
+import '../../provider/map_provider.dart';
 
 class TrackingResultScreen extends StatefulWidget {
   final StepModel result;
@@ -102,6 +103,7 @@ class _TrackingResultScreenState extends State<TrackingResultScreen> {
   @override
   Widget build(BuildContext context) {
     final stepProvider = Provider.of<StepProvider>(context);
+    final mapProvider = Provider.of<MapProvider>(context);
     return PopScope(
       canPop: false,
       child: Scaffold(
@@ -339,6 +341,7 @@ class _TrackingResultScreenState extends State<TrackingResultScreen> {
                       onTap: () {
                         Navigator.popUntil(context, (route) => route.isFirst);
                         stepProvider.resetTracking();
+                        mapProvider.resetState();
                       },
                       child: Container(
                         alignment: Alignment.center,
@@ -353,9 +356,9 @@ class _TrackingResultScreenState extends State<TrackingResultScreen> {
                             Text(
                               '홈 으로',
                               style: TextStyle(
-                                color: GRAYSCALE_LABEL_900,
+                                color: GRAYSCALE_LABEL_950,
                                 fontSize: 16,
-                                fontWeight: FontWeight.bold,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                           ],

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart'; // Geolocator 경로 확인
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:myway/model/park_info.dart';
 import 'package:myway/model/park_course_info.dart';
+import 'package:myway/model/step_model.dart';
 import 'package:myway/services/park_api_service.dart'; // ParkApiService 경로 확인
 
 class ParkDataProvider extends ChangeNotifier {
@@ -168,41 +170,94 @@ class ParkDataProvider extends ChangeNotifier {
       tempCourses.add(
         ParkCourseInfo(
           id: course1Id,
-          parkId: park.id,
-          parkName: park.name,
-          title: "${park.name} 힐링 산책로",
-          details:
-              "아름다운 자연 속에서 여유를 즐길 수 있는 ${park.name}의 대표 코스입니다. 약 45분 소요됩니다.",
-          imagePath: 'assets/images/course_placeholder_1.png',
           isFavorite: _favoriteCourseIds.contains(course1Id),
+          details: StepModel(
+            steps: 100,
+            duration: '100',
+            distance: '100',
+            stopTime: '12:00',
+            courseName: 'test',
+            imageUrl: 'assets/images/course_placeholder_1.png',
+            parkId: park.id,
+            parkName: park.name,
+            route: [
+              LatLng(37.40020, 126.93613),
+              LatLng(37.400120, 126.93657),
+              LatLng(37.39948, 126.93656),
+              LatLng(37.39948, 126.93656),
+              LatLng(37.399476, 126.937293),
+
+              LatLng(37.39953, 126.93780),
+              LatLng(37.400076, 126.938185),
+              LatLng(37.400675, 126.93859),
+              LatLng(37.40129, 126.93866),
+              LatLng(37.401855, 126.938573),
+              LatLng(37.40216, 126.93897),
+            ],
+          ),
         ),
       );
 
       String course2Id = "course_${park.id}_2";
       tempCourses.add(
         ParkCourseInfo(
-          id: course2Id,
-          parkId: park.id,
-          parkName: park.name,
-          title: "${park.name} 활력 충전 코스",
-          details:
-              "가벼운 운동과 함께 상쾌한 공기를 마실 수 있는 ${park.name}의 인기 코스입니다. 약 1시간 15분 소요됩니다.",
-          imagePath: 'assets/images/course_placeholder_2.png',
-          isFavorite: _favoriteCourseIds.contains(course2Id),
+          id: course1Id,
+          isFavorite: _favoriteCourseIds.contains(course1Id),
+          details: StepModel(
+            steps: 100,
+            duration: '100',
+            distance: '100',
+            stopTime: '12:00',
+            courseName: 'test',
+            imageUrl: 'assets/images/course_placeholder_1.png',
+            parkId: park.id,
+            parkName: park.name,
+            route: [
+              LatLng(37.40020, 126.93613),
+              LatLng(37.400120, 126.93657),
+              LatLng(37.39948, 126.93656),
+              LatLng(37.39948, 126.93656),
+              LatLng(37.399476, 126.937293),
+
+              LatLng(37.39953, 126.93780),
+              LatLng(37.400076, 126.938185),
+              LatLng(37.400675, 126.93859),
+              LatLng(37.40129, 126.93866),
+              LatLng(37.401855, 126.938573),
+              LatLng(37.40216, 126.93897),
+            ],
+          ),
         ),
       );
-
       String course3Id = "course_${park.id}_3";
       tempCourses.add(
         ParkCourseInfo(
-          id: course3Id,
-          parkId: park.id,
-          parkName: park.name,
-          title: "${park.name} 가족 나들이길",
-          details:
-              "온 가족이 함께 즐거운 시간을 보낼 수 있는 ${park.name}의 평탄한 코스입니다. 다양한 편의시설이 있습니다.",
-          imagePath: 'assets/images/course_placeholder_3.png',
-          isFavorite: _favoriteCourseIds.contains(course3Id),
+          id: course1Id,
+          isFavorite: _favoriteCourseIds.contains(course1Id),
+          details: StepModel(
+            steps: 100,
+            duration: '100',
+            distance: '100',
+            stopTime: '12:00',
+            courseName: 'test',
+            imageUrl: 'assets/images/course_placeholder_1.png',
+            parkId: park.id,
+            parkName: park.name,
+            route: [
+              LatLng(37.40020, 126.93613),
+              LatLng(37.400120, 126.93657),
+              LatLng(37.39948, 126.93656),
+              LatLng(37.39948, 126.93656),
+              LatLng(37.399476, 126.937293),
+
+              LatLng(37.39953, 126.93780),
+              LatLng(37.400076, 126.938185),
+              LatLng(37.400675, 126.93859),
+              LatLng(37.40129, 126.93866),
+              LatLng(37.401855, 126.938573),
+              LatLng(37.40216, 126.93897),
+            ],
+          ),
         ),
       );
     }
@@ -249,7 +304,7 @@ class ParkDataProvider extends ChangeNotifier {
 
     // 5km 이내 공원에 속한 코스만 필터링
     return _allGeneratedRecommendedCourses
-        .where((course) => nearbyParkIds.contains(course.parkId))
+        .where((course) => nearbyParkIds.contains(course.details.parkId))
         .toList();
   }
 }

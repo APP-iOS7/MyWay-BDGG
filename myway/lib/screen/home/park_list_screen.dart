@@ -794,8 +794,8 @@ class _ParkListScreenState extends State<ParkListScreen>
                       top: Radius.circular(12.0),
                     ),
                     child: Image.asset(
-                      course.imagePath.isNotEmpty
-                          ? course.imagePath
+                      course.details.imageUrl.isNotEmpty
+                          ? course.details.imageUrl
                           : 'assets/images/default_course_image.png',
                       width: double.infinity,
                       fit: BoxFit.cover,
@@ -820,9 +820,6 @@ class _ParkListScreenState extends State<ParkListScreen>
                         'favorite_icon_list_action_${course.id}',
                       ), // Key 고유성 확보
                       onTap: () {
-                        print(
-                          "Heart tapped for (List Screen): ${course.title} (ID: ${course.id})",
-                        );
                         provider.toggleCourseFavorite(course.id);
                       },
                       borderRadius: BorderRadius.circular(20),
@@ -849,7 +846,7 @@ class _ParkListScreenState extends State<ParkListScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  course.title,
+                  course.details.parkName,
                   style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.bold,
@@ -858,10 +855,10 @@ class _ParkListScreenState extends State<ParkListScreen>
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                if (course.parkName != null && course.parkName!.isNotEmpty) ...[
+                if (course.details.parkName.isNotEmpty) ...[
                   const SizedBox(height: 2),
                   Text(
-                    course.parkName!,
+                    course.details.parkName,
                     style: const TextStyle(
                       fontSize: 11,
                       color: GRAYSCALE_LABEL_500,
@@ -872,7 +869,7 @@ class _ParkListScreenState extends State<ParkListScreen>
                 ],
                 const SizedBox(height: 4),
                 Text(
-                  course.details,
+                  course.details.distance,
                   style: const TextStyle(
                     fontSize: 12,
                     color: GRAYSCALE_LABEL_700,

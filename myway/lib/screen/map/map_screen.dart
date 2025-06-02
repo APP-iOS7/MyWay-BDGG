@@ -3,13 +3,13 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
+import 'package:myway/model/park_course_info.dart';
 import 'package:myway/screen/result/course_name_screen.dart';
 import 'package:provider/provider.dart';
 
 import '../../provider/step_provider.dart';
 import '/const/colors.dart';
 import '/screen/map/course_recommend_bottomsheet.dart';
-import '/model/course_model.dart';
 import '/provider/map_provider.dart';
 import 'start_tracking_bottomsheet.dart';
 
@@ -32,7 +32,7 @@ class _MapScreenState extends State<MapScreen>
   bool isLoading = true;
 
   TrackingStatus? _prevStatus;
-  Course? _prevCourse;
+  ParkCourseInfo? _prevCourse;
 
   @override
   void initState() {
@@ -352,7 +352,7 @@ class _MapScreenState extends State<MapScreen>
     }
   }
 
-  void drawRecommendPolylines(Course? selectedCourse) {
+  void drawRecommendPolylines(ParkCourseInfo? selectedCourse) {
     if (selectedCourse == null || selectedCourse == _prevCourse) return;
     _prevCourse = selectedCourse;
 
@@ -364,7 +364,7 @@ class _MapScreenState extends State<MapScreen>
       polylineId: const PolylineId('recommended'),
       color: BLUE_SECONDARY_600,
       width: 5,
-      points: selectedCourse.route,
+      points: selectedCourse.details.route,
     );
     polylines.add(recommendCourse);
   }

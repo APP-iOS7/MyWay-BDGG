@@ -5,13 +5,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:myway/const/colors.dart';
 import 'package:myway/model/step_model.dart';
 import 'package:myway/provider/step_provider.dart';
 import 'package:myway/screen/result/tracking_result_screen.dart';
 import 'package:provider/provider.dart';
+
+import '../../provider/map_provider.dart';
 
 class CourseNameScreen extends StatefulWidget {
   final StepModel stepModel;
@@ -59,6 +60,7 @@ class _CourseNameScreenState extends State<CourseNameScreen> {
   @override
   Widget build(BuildContext context) {
     final stepProvider = Provider.of<StepProvider>(context);
+    final mapProvider = Provider.of<MapProvider>(context);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -67,6 +69,7 @@ class _CourseNameScreenState extends State<CourseNameScreen> {
           onPressed: () {
             Navigator.popUntil(context, (route) => route.isFirst);
             stepProvider.resetTracking();
+            mapProvider.resetState();
           },
           icon: Icon(Icons.close_rounded, color: GRAYSCALE_LABEL_950),
         ),
@@ -313,16 +316,14 @@ class _CourseNameScreenState extends State<CourseNameScreen> {
                             alpha: 0.5,
                           ),
                           builder: (context) {
-                            return Scaffold(
-                              body: const Center(
-                                child: Column(
-                                  children: [
-                                    CircularProgressIndicator(
-                                      color: ORANGE_PRIMARY_500,
-                                    ),
-                                    Text('산책 데이터를 저장중입니다...'),
-                                  ],
-                                ),
+                            return const Center(
+                              child: Column(
+                                children: [
+                                  CircularProgressIndicator(
+                                    color: ORANGE_PRIMARY_500,
+                                  ),
+                                  Text('산책 데이터를 저장중입니다...'),
+                                ],
                               ),
                             );
                           },
@@ -372,6 +373,7 @@ class _CourseNameScreenState extends State<CourseNameScreen> {
                               ),
                             ),
                           );
+                          courseNameController.text = '';
                         } catch (e) {
                           print('Firestore 저장 오류: $e');
 

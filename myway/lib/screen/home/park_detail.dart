@@ -56,8 +56,8 @@ class _ParkDetailScreenState extends State<ParkDetailScreen> {
                       top: Radius.circular(12.0),
                     ),
                     child: Image.asset(
-                      course.imagePath.isNotEmpty
-                          ? course.imagePath
+                      course.details.imageUrl.isNotEmpty
+                          ? course.details.imageUrl
                           : 'assets/images/default_course_image.png',
                       width: double.infinity,
                       fit: BoxFit.cover,
@@ -81,9 +81,6 @@ class _ParkDetailScreenState extends State<ParkDetailScreen> {
                       // InkWell에도 고유한 Key를 부여하여 터치 이벤트 처리를 명확하게 합니다.
                       key: ValueKey('favorite_icon_detail_action_${course.id}'),
                       onTap: () {
-                        print(
-                          "Heart tapped for (Detail Screen): ${course.title} (ID: ${course.id})",
-                        );
                         provider.toggleCourseFavorite(course.id);
                       },
                       borderRadius: BorderRadius.circular(20),
@@ -110,7 +107,7 @@ class _ParkDetailScreenState extends State<ParkDetailScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  course.title,
+                  course.details.courseName,
                   style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.bold,
@@ -121,7 +118,16 @@ class _ParkDetailScreenState extends State<ParkDetailScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  course.details,
+                  course.details.distance,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: GRAYSCALE_LABEL_700,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Text(
+                  course.details.duration,
                   style: const TextStyle(
                     fontSize: 12,
                     color: GRAYSCALE_LABEL_700,
@@ -144,7 +150,7 @@ class _ParkDetailScreenState extends State<ParkDetailScreen> {
       builder: (context, parkDataProvider, child) {
         final coursesForThisPark =
             parkDataProvider.allGeneratedRecommendedCourses
-                .where((course) => course.parkId == _currentPark.id)
+                .where((course) => course.details.parkId == _currentPark.id)
                 .toList();
         bool isCurrentParkFavorite = parkDataProvider.isParkFavorite(
           _currentPark.id,

@@ -1,3 +1,5 @@
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+
 class StepModel {
   final int steps;
   final String duration;
@@ -5,6 +7,9 @@ class StepModel {
   final String stopTime;
   final String courseName;
   final String imageUrl;
+  final String parkId;
+  final String parkName;
+  final List<LatLng> route; // 경로 (LatLng 리스트)
 
   StepModel({
     required this.steps,
@@ -13,6 +18,9 @@ class StepModel {
     required this.stopTime,
     required this.courseName,
     required this.imageUrl,
+    required this.parkId,
+    required this.parkName,
+    required this.route,
   });
 
   Map<String, dynamic> toJson() {
@@ -23,6 +31,17 @@ class StepModel {
       '종료시간': stopTime,
       '코스이름': courseName,
       '이미지 Url': imageUrl,
+      '공원 ID': parkId,
+      '공원 이름': parkName,
+      '경로':
+          route
+              .map(
+                (latLng) => {
+                  'latitude': latLng.latitude,
+                  'longitude': latLng.longitude,
+                },
+              )
+              .toList(),
     };
   }
 
@@ -34,6 +53,12 @@ class StepModel {
       stopTime: json['종료시간'],
       courseName: json['코스이름'],
       imageUrl: json['이미지 Url'],
+      parkId: json['공원 ID'],
+      parkName: json['공원 이름'],
+      route:
+          (json['경로'] as List)
+              .map((latLng) => LatLng(latLng['latitude'], latLng['longitude']))
+              .toList(),
     );
   }
 }

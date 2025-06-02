@@ -4,9 +4,9 @@ import 'package:myway/screen/alert/countdown_diallog.dart';
 import 'package:myway/provider/step_provider.dart';
 import 'package:myway/provider/park_data_provider.dart';
 import 'package:myway/model/park_course_info.dart';
-import 'package:myway/model/course_model.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
+import '../../model/step_model.dart';
 import '/const/colors.dart';
 import '/provider/map_provider.dart';
 
@@ -21,10 +21,10 @@ class CourseRecommendBottomsheet extends StatefulWidget {
 class _CourseRecommendBottomsheetState
     extends State<CourseRecommendBottomsheet> {
   int? selectedIndex;
-  List<Course> _nearbyCourses = [];
+  List<ParkCourseInfo> _nearbyCourses = [];
 
   // ParkCourseInfo를 Course 모델로 변환하는 헬퍼 메서드
-  Course _convertToCourse(ParkCourseInfo parkCourse) {
+  ParkCourseInfo _convertToCourse(ParkCourseInfo parkCourse) {
     // 임시 더미 경로 데이터 (실제 앱에서는 API 등에서 가져오는 것이 좋음)
     List<LatLng> dummyRoute = [
       LatLng(37.40020, 126.93613),
@@ -34,18 +34,24 @@ class _CourseRecommendBottomsheetState
       LatLng(37.39953, 126.93780),
     ];
 
-    return Course(
-      title: parkCourse.title,
-      park: parkCourse.parkName ?? '정보 없음',
-      date: DateTime.now(),
-      distance: 2.0, // 임시값, 실제로는 계산된 값 사용
-      duration: '30분', // 임시값
-      steps: 3000, // 임시값
-      imageUrl:
-          parkCourse.imagePath.startsWith('http')
-              ? parkCourse.imagePath
-              : 'https://picsum.photos/250?image=9', // 이미지 경로가 URL이 아니면 임시 URL 사용
-      route: dummyRoute,
+    return ParkCourseInfo(
+      id: parkCourse.id,
+      isSelected: parkCourse.isSelected,
+      isFavorite: parkCourse.isFavorite,
+      details: StepModel(
+        steps: parkCourse.details.steps,
+        duration: parkCourse.details.duration,
+        distance: parkCourse.details.distance,
+        stopTime: parkCourse.details.stopTime,
+        courseName: parkCourse.details.courseName,
+        imageUrl:
+            parkCourse.details.imageUrl.startsWith('http')
+                ? parkCourse.details.imageUrl
+                : 'https://picsum.photos/250?image=9',
+        parkId: parkCourse.details.parkId,
+        parkName: parkCourse.details.parkName,
+        route: dummyRoute, // 임시 경로 데이터 사용
+      ),
     );
   }
 
@@ -187,7 +193,7 @@ class _CourseRecommendBottomsheetState
                               ),
                             ),
                             Text(
-                              _nearbyCourses[selectedIndex!].title,
+                              _nearbyCourses[selectedIndex!].details.courseName,
                               style: const TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w600,
@@ -195,7 +201,7 @@ class _CourseRecommendBottomsheetState
                             ),
                             SizedBox(width: 5),
                             Text(
-                              '${_nearbyCourses[selectedIndex!].distance}km',
+                              '${_nearbyCourses[selectedIndex!].details.distance}km',
                               style: TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w600,
@@ -278,7 +284,9 @@ class _CourseRecommendBottomsheetState
                                               topRight: Radius.circular(8),
                                             ),
                                             child: _buildCourseImage(
-                                              _nearbyCourses[index].imageUrl,
+                                              _nearbyCourses[index]
+                                                  .details
+                                                  .imageUrl,
                                               width: double.infinity,
                                               height: 120,
                                             ),
@@ -303,7 +311,8 @@ class _CourseRecommendBottomsheetState
                                                   children: [
                                                     Text(
                                                       _nearbyCourses[index]
-                                                          .title,
+                                                          .details
+                                                          .courseName,
                                                       style: const TextStyle(
                                                         fontSize: 14,
                                                         fontWeight:
@@ -325,7 +334,8 @@ class _CourseRecommendBottomsheetState
                                                         children: [
                                                           Text(
                                                             _nearbyCourses[index]
-                                                                .park,
+                                                                .details
+                                                                .parkName,
                                                             style: const TextStyle(
                                                               fontSize: 14,
                                                               fontWeight:
@@ -336,7 +346,7 @@ class _CourseRecommendBottomsheetState
                                                             ),
                                                           ),
                                                           Text(
-                                                            '${_nearbyCourses[index].distance}km',
+                                                            '${_nearbyCourses[index].details.distance}km',
                                                             style: TextStyle(
                                                               fontSize: 14,
                                                               fontWeight:
@@ -430,7 +440,7 @@ class _CourseRecommendBottomsheetState
           CircularProgressIndicator(color: ORANGE_PRIMARY_500),
           SizedBox(height: 16),
           Text(
-            "주변 공원 정보를 불러오는 중...",
+            "주변 공원 정보를 불러오는 중입니다...",
             style: TextStyle(color: GRAYSCALE_LABEL_700, fontSize: 14),
           ),
         ],

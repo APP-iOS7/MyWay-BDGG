@@ -605,7 +605,7 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
                                   reservedSize: 40,
                                   getTitlesWidget: (value, meta) {
                                     return Text(
-                                      '${value.toStringAsFixed(1)}km',
+                                      value.toStringAsFixed(1),
                                       style: TextStyle(
                                         color: GRAYSCALE_LABEL_600,
                                         fontSize: 12,
@@ -707,7 +707,7 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
                                   reservedSize: 40,
                                   getTitlesWidget: (value, meta) {
                                     return Text(
-                                      '${value.toStringAsFixed(1)}km',
+                                      value.toStringAsFixed(1),
                                       style: TextStyle(
                                         color: GRAYSCALE_LABEL_600,
                                         fontSize: 12,

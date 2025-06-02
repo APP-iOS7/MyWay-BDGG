@@ -3,14 +3,13 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
-
-import '/model/course_model.dart';
+import 'package:myway/model/park_course_info.dart';
 
 class MapProvider with ChangeNotifier {
   bool _isCourseRecommendBottomSheetVisible = true;
   bool _isStartTrackingBottomSheetVisible = false;
   bool _isTracking = false;
-  Course? _selectedCourse;
+  ParkCourseInfo? _selectedCourse;
   Uint8List? _courseImage;
   bool _isMapLoading = true;
   bool _disposed = false; // dispose 상태 추적
@@ -20,7 +19,7 @@ class MapProvider with ChangeNotifier {
   bool get isStartTrackingBottomSheetVisible =>
       _isStartTrackingBottomSheetVisible;
   bool get isTracking => _isTracking;
-  Course? get selectedCourse => _selectedCourse;
+  ParkCourseInfo? get selectedCourse => _selectedCourse;
   Uint8List? get courseImage => _courseImage;
   bool get isMapLoading => _isMapLoading;
 
@@ -71,12 +70,12 @@ class MapProvider with ChangeNotifier {
     _safeNotifyListeners();
   }
 
-  void selectCourse(Course? course) {
+  void selectCourse(ParkCourseInfo? course) {
     if (_disposed) return;
 
     if (course != null) {
       _selectedCourse = course;
-      print('title: ${course.title}');
+      print('title: ${course.details.courseName}');
     }
     if (course == null) {
       print('null');
