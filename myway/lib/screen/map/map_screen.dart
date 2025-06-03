@@ -299,6 +299,7 @@ class _MapScreenState extends State<MapScreen>
 
       if (!context.mounted) return;
       print(stepProvider.currentStepModel);
+      print(stepProvider.route);
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Navigator.pop(context); // 현재 화면 닫기
         Navigator.push(

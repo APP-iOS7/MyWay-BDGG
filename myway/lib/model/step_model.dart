@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class StepModel {
@@ -35,12 +36,7 @@ class StepModel {
       '공원 이름': parkName,
       '경로':
           route
-              .map(
-                (latLng) => {
-                  'latitude': latLng.latitude,
-                  'longitude': latLng.longitude,
-                },
-              )
+              .map((latLng) => GeoPoint(latLng.latitude, latLng.longitude))
               .toList(),
     };
   }
@@ -56,9 +52,10 @@ class StepModel {
       parkId: json['공원 ID'],
       parkName: json['공원 이름'],
       route:
-          (json['경로'] as List)
-              .map((latLng) => LatLng(latLng['latitude'], latLng['longitude']))
-              .toList(),
+          (json['경로'] as List<dynamic>).map((point) {
+            final geo = point as GeoPoint;
+            return LatLng(geo.latitude, geo.longitude);
+          }).toList(),
     );
   }
 }

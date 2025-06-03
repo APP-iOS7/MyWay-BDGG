@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:myway/model/step_model.dart';
 import 'package:pedometer/pedometer.dart';
@@ -39,6 +40,9 @@ class StepProvider extends ChangeNotifier {
 
   TrackingStatus _status = TrackingStatus.running;
   TrackingStatus get status => _status;
+
+  final List<LatLng> _route = [];
+  List<LatLng> get route => _route;
 
   // 현재 저장된 데이터를 관리하는 변수
   StepModel? _currentStepModel;
@@ -90,7 +94,7 @@ class StepProvider extends ChangeNotifier {
     return StepModel(
       parkId: 'test_park_id', // 나중에 설정
       parkName: '테스트 공원', // 나중에 설정
-      route: [], // 나중에 설정
+      route: route,
       steps: steps,
       duration: formattedElapsed,
       distance: distanceKm,
@@ -105,11 +109,12 @@ class StepProvider extends ChangeNotifier {
   void resetTracking() {
     _subscription?.cancel();
     _timer?.cancel();
-
     _baseSteps = 0;
+    courseName.text = '';
     _currentSteps = 0;
     _elapsed = Duration.zero;
     _status = TrackingStatus.stopped;
+    _route.clear();
     print('stepProvider state reset');
 
     notifyListeners();

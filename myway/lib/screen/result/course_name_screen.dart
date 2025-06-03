@@ -61,7 +61,6 @@ class _CourseNameScreenState extends State<CourseNameScreen> {
   Widget build(BuildContext context) {
     final stepProvider = Provider.of<StepProvider>(context);
     final mapProvider = Provider.of<MapProvider>(context);
-
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -312,18 +311,36 @@ class _CourseNameScreenState extends State<CourseNameScreen> {
                         showDialog(
                           context: context,
                           barrierDismissible: false,
-                          barrierColor: GRAYSCALE_LABEL_950.withValues(
-                            alpha: 0.5,
-                          ),
+                          barrierColor: Colors.black.withOpacity(0.5),
                           builder: (context) {
-                            return const Center(
-                              child: Column(
-                                children: [
-                                  CircularProgressIndicator(
-                                    color: ORANGE_PRIMARY_500,
-                                  ),
-                                  Text('산책 데이터를 저장중입니다...'),
-                                ],
+                            return Dialog(
+                              backgroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              insetPadding: const EdgeInsets.symmetric(
+                                horizontal: 40,
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.all(24.0),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: const [
+                                    CircularProgressIndicator(
+                                      color: ORANGE_PRIMARY_500,
+                                    ),
+                                    SizedBox(height: 20),
+                                    Text(
+                                      '산책 데이터를 저장중입니다...',
+                                      style: TextStyle(
+                                        color: GRAYSCALE_LABEL_950,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ],
+                                ),
                               ),
                             );
                           },

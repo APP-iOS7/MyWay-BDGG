@@ -23,6 +23,7 @@ class _StartTrackingBottomsheetState extends State<StartTrackingBottomsheet> {
     final mapProvider = Provider.of<MapProvider>(context);
     print('StartTrackingBottomsheet build called');
     print('stepProvider status: ${stepProvider.status}');
+    print('route: ${stepProvider.route}');
     return DraggableScrollableSheet(
       initialChildSize: 0.5,
       minChildSize: 0.3,

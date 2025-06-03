@@ -50,7 +50,7 @@ class _CourseRecommendBottomsheetState
                 : 'https://picsum.photos/250?image=9',
         parkId: parkCourse.details.parkId,
         parkName: parkCourse.details.parkName,
-        route: dummyRoute, // 임시 경로 데이터 사용
+        route: parkCourse.details.route,
       ),
     );
   }

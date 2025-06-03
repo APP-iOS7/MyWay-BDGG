@@ -24,7 +24,7 @@ class MapProvider with ChangeNotifier {
   bool get isMapLoading => _isMapLoading;
 
   void resetState() {
-    if (_disposed) return; // dispose된 경우 early return
+    if (_disposed) return;
 
     _isCourseRecommendBottomSheetVisible = true;
     _isStartTrackingBottomSheetVisible = false;
