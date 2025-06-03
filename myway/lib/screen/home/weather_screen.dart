@@ -24,7 +24,10 @@ class WeatherScreen extends StatelessWidget {
       ),
       body:
           weatherProvider.isLoading
-              ? const Center(child: CircularProgressIndicator())
+              ? Padding(
+                padding: const EdgeInsets.only(top: 200.0),
+                child: CircularProgressIndicator(color: ORANGE_PRIMARY_500),
+              )
               : SafeArea(
                 child: Column(
                   children: [

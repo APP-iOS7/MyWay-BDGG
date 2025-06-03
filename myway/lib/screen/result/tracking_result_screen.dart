@@ -163,27 +163,24 @@ class _TrackingResultScreenState extends State<TrackingResultScreen> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20.0),
                       child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           SizedBox(height: 10),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                widget.courseName,
-                                style: TextStyle(
-                                  color: GRAYSCALE_LABEL_950,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              Text(
-                                stepProvider.formattedStopTime,
-                                style: TextStyle(
-                                  color: GRAYSCALE_LABEL_800,
-                                  fontSize: 13,
-                                ),
-                              ),
-                            ],
+                          Text(
+                            widget.courseName,
+                            style: TextStyle(
+                              color: GRAYSCALE_LABEL_950,
+                              fontSize: 20,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          Text(
+                            stepProvider.formattedStopTime,
+                            style: TextStyle(
+                              color: GRAYSCALE_LABEL_800,
+                              fontSize: 13,
+                            ),
                           ),
                           SizedBox(height: 10),
                           Row(

@@ -363,29 +363,34 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
                     }
                   },
 
-                  icon: Icon(
-                    Icons.keyboard_arrow_down_outlined,
-                    color: GRAYSCALE_LABEL_950,
-                  ),
                   selectedItemBuilder: (BuildContext context) {
                     return activityProvider.availableYearMonthCombinations.map((
                       String value,
                     ) {
-                      return Center(
-                        child: Text(
-                          value,
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
+                      return Row(
+                        children: [
+                          Center(
+                            child: Text(
+                              value,
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: GRAYSCALE_LABEL_950,
+                              ),
+                            ),
+                          ),
+                          Icon(
+                            Icons.keyboard_arrow_down_outlined,
                             color: GRAYSCALE_LABEL_950,
                           ),
-                        ),
+                        ],
                       );
                     }).toList();
                   },
+                  icon: SizedBox.shrink(),
                 ),
               ),
-              // SizedBox(width: 8),
+              SizedBox(width: 2),
               // 주차 선택 드롭다운
               DropdownButtonHideUnderline(
                 child: DropdownButton<String>(
@@ -405,24 +410,28 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
                       activityProvider.updateSelectedWeek(newValue);
                     }
                   },
-
-                  icon: Icon(
-                    Icons.keyboard_arrow_down_outlined,
-                    color: GRAYSCALE_LABEL_950,
-                  ),
+                  icon: SizedBox.shrink(),
                   selectedItemBuilder: (BuildContext context) {
                     return activityProvider.getWeekDropdownItems().map((
                       DropdownMenuItem<String> item,
                     ) {
-                      return Center(
-                        child: Text(
-                          item.value!,
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
+                      return Row(
+                        children: [
+                          Center(
+                            child: Text(
+                              item.value!,
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: GRAYSCALE_LABEL_950,
+                              ),
+                            ),
+                          ),
+                          Icon(
+                            Icons.keyboard_arrow_down_outlined,
                             color: GRAYSCALE_LABEL_950,
                           ),
-                        ),
+                        ],
                       );
                     }).toList();
                   },
@@ -463,10 +472,6 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
                 }
               },
 
-              icon: Icon(
-                Icons.keyboard_arrow_down_outlined,
-                color: GRAYSCALE_LABEL_950,
-              ),
               selectedItemBuilder: (BuildContext context) {
                 return activityProvider.availableYearMonthCombinations.map((
                   String value,
@@ -483,6 +488,10 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
                   );
                 }).toList();
               },
+              icon: Icon(
+                Icons.keyboard_arrow_down_outlined,
+                color: GRAYSCALE_LABEL_950,
+              ),
             ),
           ),
       ],
@@ -542,7 +551,7 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
     ActivityLogProvider activityProvider,
   ) {
     return Container(
-      height: 300,
+      height: 330,
       padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -559,6 +568,7 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(height: 16),
+          // 주간 기록
           Expanded(
             child:
                 activityProvider.selectedPeriod == ActivityPeriod.weekly
@@ -595,8 +605,42 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
                             ),
                           );
                         }
+
+                        final double maxYValue = snapshot.data!
+                            .map((e) => e.y)
+                            .reduce((a, b) => a > b ? a : b);
+
+                        final double roundedMaxY = (maxYValue).ceilToDouble();
+
                         return BarChart(
                           BarChartData(
+                            maxY: roundedMaxY,
+                            barTouchData: BarTouchData(
+                              touchTooltipData: BarTouchTooltipData(
+                                tooltipMargin: 5,
+                                tooltipPadding: EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 3,
+                                ),
+                                getTooltipColor:
+                                    (_) => Colors.black.withAlpha(90),
+                                getTooltipItem: (
+                                  group,
+                                  groupIndex,
+                                  rod,
+                                  rodIndex,
+                                ) {
+                                  return BarTooltipItem(
+                                    '${rod.toY.toStringAsFixed(1)}km',
+                                    TextStyle(
+                                      color: WHITE,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
                             gridData: FlGridData(show: false),
                             titlesData: FlTitlesData(
                               leftTitles: AxisTitles(
@@ -605,10 +649,10 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
                                   reservedSize: 40,
                                   getTitlesWidget: (value, meta) {
                                     return Text(
-                                      value.toStringAsFixed(1),
+                                      '${value.toInt()} km',
                                       style: TextStyle(
-                                        color: GRAYSCALE_LABEL_600,
-                                        fontSize: 12,
+                                        color: GRAYSCALE_LABEL_900,
+                                        fontSize: 13,
                                       ),
                                     );
                                   },
@@ -630,8 +674,8 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
                                     return Text(
                                       days[value.toInt()],
                                       style: TextStyle(
-                                        color: GRAYSCALE_LABEL_600,
-                                        fontSize: 12,
+                                        color: GRAYSCALE_LABEL_900,
+                                        fontSize: 13,
                                       ),
                                     );
                                   },
@@ -664,6 +708,7 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
                         );
                       },
                     )
+                    // 월간 기록
                     : FutureBuilder<List<BarChartGroupData>>(
                       future: activityProvider.monthlyChartData,
                       builder: (context, snapshot) {
@@ -697,48 +742,98 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
                             ),
                           );
                         }
-                        return BarChart(
-                          BarChartData(
-                            gridData: FlGridData(show: false),
-                            titlesData: FlTitlesData(
-                              leftTitles: AxisTitles(
-                                sideTitles: SideTitles(
-                                  showTitles: true,
-                                  reservedSize: 40,
-                                  getTitlesWidget: (value, meta) {
-                                    return Text(
-                                      value.toStringAsFixed(1),
-                                      style: TextStyle(
-                                        color: GRAYSCALE_LABEL_600,
-                                        fontSize: 12,
+                        double maxY = snapshot.data!
+                            .map((e) => e.barRods.first.toY)
+                            .fold<double>(
+                              0,
+                              (prev, curr) => curr > prev ? curr : prev,
+                            );
+
+                        maxY = ((maxY / 10).ceil() * 10);
+                        return SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: SizedBox(
+                            width: 12 * 40,
+                            height: 330,
+                            child: Padding(
+                              padding: const EdgeInsets.only(top: 5.0),
+                              child: BarChart(
+                                BarChartData(
+                                  maxY: maxY,
+                                  barTouchData: BarTouchData(
+                                    touchTooltipData: BarTouchTooltipData(
+                                      tooltipMargin: 5,
+                                      tooltipPadding: EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 3,
                                       ),
-                                    );
-                                  },
-                                ),
-                              ),
-                              bottomTitles: AxisTitles(
-                                sideTitles: SideTitles(
-                                  showTitles: true,
-                                  getTitlesWidget: (value, meta) {
-                                    return Text(
-                                      '${value.toInt()}월',
-                                      style: TextStyle(
-                                        color: GRAYSCALE_LABEL_600,
-                                        fontSize: 12,
+                                      getTooltipColor:
+                                          (_) => Colors.black.withAlpha(90),
+                                      getTooltipItem: (
+                                        group,
+                                        groupIndex,
+                                        rod,
+                                        rodIndex,
+                                      ) {
+                                        return BarTooltipItem(
+                                          '${rod.toY.toStringAsFixed(1)}km',
+                                          TextStyle(
+                                            color: WHITE,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 14,
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                  gridData: FlGridData(show: false),
+                                  titlesData: FlTitlesData(
+                                    leftTitles: AxisTitles(
+                                      sideTitles: SideTitles(
+                                        interval: 10,
+                                        showTitles: true,
+                                        reservedSize: 40,
+
+                                        getTitlesWidget: (value, meta) {
+                                          return Text(
+                                            '${value.toInt()} km',
+                                            style: TextStyle(
+                                              color: GRAYSCALE_LABEL_900,
+                                              fontSize: 13,
+                                            ),
+                                          );
+                                        },
                                       ),
-                                    );
-                                  },
+                                    ),
+                                    bottomTitles: AxisTitles(
+                                      sideTitles: SideTitles(
+                                        showTitles: true,
+                                        getTitlesWidget: (value, meta) {
+                                          return Text(
+                                            '${value.toInt()}월',
+                                            style: TextStyle(
+                                              color: GRAYSCALE_LABEL_900,
+                                              fontSize: 13,
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                    rightTitles: AxisTitles(
+                                      sideTitles: SideTitles(showTitles: false),
+                                    ),
+                                    topTitles: AxisTitles(
+                                      sideTitles: SideTitles(
+                                        showTitles: false,
+                                        reservedSize: 20,
+                                      ),
+                                    ),
+                                  ),
+                                  borderData: FlBorderData(show: false),
+                                  barGroups: snapshot.data ?? [],
                                 ),
-                              ),
-                              rightTitles: AxisTitles(
-                                sideTitles: SideTitles(showTitles: false),
-                              ),
-                              topTitles: AxisTitles(
-                                sideTitles: SideTitles(showTitles: false),
                               ),
                             ),
-                            borderData: FlBorderData(show: false),
-                            barGroups: snapshot.data ?? [],
                           ),
                         );
                       },
