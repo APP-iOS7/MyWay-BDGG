@@ -5,7 +5,6 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:myway/screen/result/course_name_screen.dart';
 import 'package:provider/provider.dart';
-
 import '../../provider/step_provider.dart';
 import '/const/colors.dart';
 import '/screen/map/course_recommend_bottomsheet.dart';
