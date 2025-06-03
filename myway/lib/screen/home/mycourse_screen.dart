@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:myway/const/colors.dart';
 
 import '../../const/custome_button.dart';
+import 'my_course_detail_screen.dart';
 
 class MycourseScreen extends StatefulWidget {
   const MycourseScreen({super.key});
@@ -179,101 +180,118 @@ class _MycourseScreenState extends State<MycourseScreen> {
                 final result = trackingResult[index];
                 final imageUrl = result['이미지 Url'] ?? '';
 
-                return Stack(
-                  children: [
-                    Card(
-                      color: WHITE,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          imageUrl.isNotEmpty
-                              ? ClipRRect(
-                                borderRadius: const BorderRadius.vertical(
-                                  top: Radius.circular(12),
-                                ),
-                                child: Image.network(
-                                  imageUrl,
-                                  width: double.infinity,
-                                  height: 100,
-                                  fit: BoxFit.cover,
-                                ),
-                              )
-                              : const SizedBox(
-                                width: double.infinity,
-                                height: 150,
-                                child: Icon(Icons.image_not_supported),
+                return InkWell(
+                  onTap:
+                      isEditing
+                          ? null
+                          : () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder:
+                                    (context) =>
+                                        MyCourseDetailScreen(data: result),
                               ),
-                          const SizedBox(height: 5),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 10),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  '${result['코스이름'] ?? ''}',
-                                  style: const TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  '${result['종료시간']}',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: GRAYSCALE_LABEL_800,
-                                  ),
-                                ),
-                                const SizedBox(height: 5),
-                                Text(
-                                  '${result['거리']} km',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: GRAYSCALE_LABEL_950,
-                                  ),
-                                ),
-                                Row(
-                                  children: [
-                                    const SizedBox(width: 10),
-                                    Text(
-                                      '${result['소요시간']}',
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color: GRAYSCALE_LABEL_950,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 10),
-                                    Text(
-                                      '${result['걸음수']}',
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color: GRAYSCALE_LABEL_950,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    if (isEditing)
-                      Positioned(
-                        top: 8,
-                        right: 8,
-                        child: Checkbox(
-                          value: _selected[index],
-                          activeColor: ORANGE_PRIMARY_500,
-                          onChanged: (val) {
-                            setState(() {
-                              _selected[index] = val!;
-                            });
+                            );
                           },
+                  child: Stack(
+                    children: [
+                      Card(
+                        color: WHITE,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            imageUrl.isNotEmpty
+                                ? ClipRRect(
+                                  borderRadius: const BorderRadius.vertical(
+                                    top: Radius.circular(12),
+                                  ),
+                                  child: Image.network(
+                                    imageUrl,
+                                    width: double.infinity,
+                                    height: 100,
+                                    fit: BoxFit.cover,
+                                  ),
+                                )
+                                : const SizedBox(
+                                  width: double.infinity,
+                                  height: 150,
+                                  child: Icon(Icons.image_not_supported),
+                                ),
+                            const SizedBox(height: 5),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    '${result['코스이름'] ?? ''}',
+                                    style: const TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    '${result['종료시간']}',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: GRAYSCALE_LABEL_800,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 5),
+                                  Text(
+                                    '${result['거리']} km',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: GRAYSCALE_LABEL_950,
+                                    ),
+                                  ),
+                                  Row(
+                                    children: [
+                                      const SizedBox(width: 10),
+                                      Text(
+                                        '${result['소요시간']}',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: GRAYSCALE_LABEL_950,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      Text(
+                                        '${result['걸음수']}',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: GRAYSCALE_LABEL_950,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                  ],
+                      if (isEditing)
+                        Positioned(
+                          top: 8,
+                          right: 8,
+                          child: Checkbox(
+                            value: _selected[index],
+                            activeColor: ORANGE_PRIMARY_500,
+                            onChanged: (val) {
+                              setState(() {
+                                _selected[index] = val!;
+                              });
+                            },
+                          ),
+                        ),
+                    ],
+                  ),
                 );
               },
             ),
