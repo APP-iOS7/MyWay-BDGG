@@ -169,7 +169,7 @@ class _MycourseScreenState extends State<MycourseScreen> {
             padding: const EdgeInsets.all(20),
             child: GridView.builder(
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                childAspectRatio: 0.7,
+                childAspectRatio: 0.8,
                 crossAxisCount: 2,
                 crossAxisSpacing: 10.0,
                 mainAxisSpacing: 10.0,
@@ -194,7 +194,7 @@ class _MycourseScreenState extends State<MycourseScreen> {
                                 child: Image.network(
                                   imageUrl,
                                   width: double.infinity,
-                                  height: 100,
+                                  height: 130,
                                   fit: BoxFit.cover,
                                 ),
                               )
@@ -211,48 +211,34 @@ class _MycourseScreenState extends State<MycourseScreen> {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Text(
-                                  '${result['코스이름'] ?? ''}',
+                                  result['코스이름'] ?? '',
                                   style: const TextStyle(
                                     fontSize: 15,
                                     fontWeight: FontWeight.bold,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
+                                  maxLines: 1,
                                 ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  '${result['종료시간']}',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: GRAYSCALE_LABEL_800,
-                                  ),
-                                ),
-                                const SizedBox(height: 5),
-                                Text(
-                                  '${result['거리']} km',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: GRAYSCALE_LABEL_950,
-                                  ),
-                                ),
+                                const SizedBox(height: 4),
+
                                 Row(
                                   children: [
-                                    const SizedBox(width: 10),
-                                    Text(
-                                      '${result['소요시간']}',
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color: GRAYSCALE_LABEL_950,
-                                      ),
+                                    const Icon(
+                                      Icons.access_time,
+                                      size: 14,
+                                      color: BLUE_SECONDARY_700,
                                     ),
-                                    const SizedBox(width: 10),
+                                    const SizedBox(width: 4),
                                     Text(
-                                      '${result['걸음수']}',
+                                      result['종료시간'] ?? '',
                                       style: TextStyle(
-                                        fontSize: 14,
-                                        color: GRAYSCALE_LABEL_950,
+                                        fontSize: 12,
+                                        color: GRAYSCALE_LABEL_800,
                                       ),
                                     ),
                                   ],
                                 ),
+                                const SizedBox(height: 6),
                               ],
                             ),
                           ),
