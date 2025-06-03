@@ -846,7 +846,7 @@ class _ParkListScreenState extends State<ParkListScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  course.details.parkName,
+                  course.details.parkName ?? '정보 없음',
                   style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.bold,
@@ -855,10 +855,10 @@ class _ParkListScreenState extends State<ParkListScreen>
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                if (course.details.parkName.isNotEmpty) ...[
+                if (course.details.parkName != null) ...[
                   const SizedBox(height: 2),
                   Text(
-                    course.details.parkName,
+                    course.details.parkName!,
                     style: const TextStyle(
                       fontSize: 11,
                       color: GRAYSCALE_LABEL_500,

@@ -108,6 +108,17 @@ class _CourseRecommendBottomsheetState
         if (_nearbyCourses.isEmpty &&
             !parkDataProvider.isLoadingParks &&
             !parkDataProvider.isLoadingLocation) {
+          print("DEBUG: 데이터 로딩 완료, 근처 2km 코스 확인 중...");
+          print("DEBUG: 현재 위치: ${parkDataProvider.currentPosition}");
+          print("DEBUG: 전체 공원 수: ${parkDataProvider.allFetchedParks.length}");
+          print("DEBUG: 2km 내 공원 수: ${parkDataProvider.nearbyParks2km.length}");
+          print(
+            "DEBUG: 전체 추천 코스 수: ${parkDataProvider.allGeneratedRecommendedCourses.length}",
+          );
+          print(
+            "DEBUG: 2km 내 추천 코스 수: ${parkDataProvider.nearbyRecommendedCourses2km.length}",
+          );
+
           _nearbyCourses =
               parkDataProvider.nearbyRecommendedCourses2km
                   .map(
@@ -118,6 +129,7 @@ class _CourseRecommendBottomsheetState
           _nearbyCourses.sort(
             (a, b) => a.details.distance.compareTo(b.details.distance),
           );
+          print("DEBUG: 최종 변환된 근처 코스 수: ${_nearbyCourses.length}");
         }
 
         return DraggableScrollableSheet(
@@ -495,7 +507,7 @@ class _CourseRecommendBottomsheetState
           Icon(Icons.location_off, size: 48, color: GRAYSCALE_LABEL_400),
           SizedBox(height: 16),
           Text(
-            "반경 5km 이내에 추천할 코스가 없습니다.",
+            "반경 2km 이내에 추천할 코스가 없습니다.",
             style: TextStyle(
               color: GRAYSCALE_LABEL_700,
               fontSize: 16,

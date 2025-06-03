@@ -169,6 +169,11 @@ class ParkDataProvider extends ChangeNotifier {
       String course1Id = "course_${park.id}_1";
       tempCourses.add(
         ParkCourseInfo(
+          title: 'test',
+          park: 'test',
+          date: DateTime.now(),
+          parkId: park.id,
+          parkName: park.name,
           id: course1Id,
           isFavorite: _favoriteCourseIds.contains(course1Id),
           details: StepModel(
@@ -201,8 +206,13 @@ class ParkDataProvider extends ChangeNotifier {
       String course2Id = "course_${park.id}_2";
       tempCourses.add(
         ParkCourseInfo(
-          id: course1Id,
-          isFavorite: _favoriteCourseIds.contains(course1Id),
+          title: 'test',
+          park: 'test',
+          date: DateTime.now(),
+          parkId: park.id,
+          parkName: park.name,
+          id: course2Id,
+          isFavorite: _favoriteCourseIds.contains(course2Id),
           details: StepModel(
             steps: 100,
             duration: '100',
@@ -232,8 +242,13 @@ class ParkDataProvider extends ChangeNotifier {
       String course3Id = "course_${park.id}_3";
       tempCourses.add(
         ParkCourseInfo(
-          id: course1Id,
-          isFavorite: _favoriteCourseIds.contains(course1Id),
+          title: 'test',
+          park: 'test',
+          date: DateTime.now(),
+          parkId: park.id,
+          parkName: park.name,
+          id: course3Id,
+          isFavorite: _favoriteCourseIds.contains(course3Id),
           details: StepModel(
             steps: 100,
             duration: '100',
@@ -331,7 +346,15 @@ class ParkDataProvider extends ChangeNotifier {
 
   // 반경 2km 이내 공원에 속한 추천 코스 목록을 반환하는 getter
   List<ParkCourseInfo> get nearbyRecommendedCourses2km {
+    print("DEBUG nearbyRecommendedCourses2km: 현재 위치 = $_currentPosition");
+    print(
+      "DEBUG nearbyRecommendedCourses2km: 전체 코스 수 = ${_allGeneratedRecommendedCourses.length}",
+    );
+
     if (_currentPosition == null || _allGeneratedRecommendedCourses.isEmpty) {
+      print(
+        "DEBUG nearbyRecommendedCourses2km: 빈 리스트 반환 - 위치=${_currentPosition != null}, 코스=${_allGeneratedRecommendedCourses.length}",
+      );
       return []; // 위치 정보가 없거나 코스 목록이 비어있으면 빈 리스트 반환
     }
 
@@ -341,9 +364,23 @@ class ParkDataProvider extends ChangeNotifier {
             .map((park) => park.id)
             .toSet();
 
+    print(
+      "DEBUG nearbyRecommendedCourses2km: 2km 내 공원 수 = ${nearbyParks2km.length}",
+    );
+    print("DEBUG nearbyRecommendedCourses2km: 2km 내 공원 IDs = $nearbyParkIds");
+
+    // 각 코스의 parkId 출력
+    for (var course in _allGeneratedRecommendedCourses) {
+      print("DEBUG course: ID=${course.id}, parkId=${course.details.parkId}");
+    }
+
     // 2km 이내 공원에 속한 코스만 필터링
-    return _allGeneratedRecommendedCourses
-        .where((course) => nearbyParkIds.contains(course.parkId))
-        .toList();
+    final result =
+        _allGeneratedRecommendedCourses
+            .where((course) => nearbyParkIds.contains(course.details.parkId))
+            .toList();
+
+    print("DEBUG nearbyRecommendedCourses2km: 필터링된 코스 수 = ${result.length}");
+    return result;
   }
 }

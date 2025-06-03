@@ -12,6 +12,11 @@ class CourseData {
 List<ParkCourseInfo> courses = [
   ParkCourseInfo(
     id: 'course1',
+    title: 'test',
+    park: 'test',
+    date: DateTime.now(),
+    parkId: 'park1',
+    parkName: '공원1',
     isFavorite: false,
     details: StepModel(
       steps: 100,
@@ -39,7 +44,12 @@ List<ParkCourseInfo> courses = [
     ),
   ),
   ParkCourseInfo(
-    id: 'course1',
+    id: 'course2',
+    title: 'test',
+    park: 'test',
+    date: DateTime.now(),
+    parkId: 'park1',
+    parkName: '공원1',
     isFavorite: false,
     details: StepModel(
       steps: 100,

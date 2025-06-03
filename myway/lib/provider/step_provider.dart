@@ -97,7 +97,6 @@ class StepProvider extends ChangeNotifier {
 
     return StepModel(
       parkId: 'test_park_id', // 나중에 설정
-      parkName: '테스트 공원', // 나중에 설정
       route: [], // 나중에 설정
       steps: steps,
       duration: formattedElapsed,
