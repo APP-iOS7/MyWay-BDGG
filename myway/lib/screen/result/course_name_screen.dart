@@ -7,7 +7,9 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:myway/const/colors.dart';
+import 'package:myway/model/park_course_info.dart';
 import 'package:myway/model/step_model.dart';
+import 'package:myway/provider/park_data_provider.dart';
 import 'package:myway/provider/step_provider.dart';
 import 'package:myway/screen/result/tracking_result_screen.dart';
 import 'package:provider/provider.dart';
@@ -34,9 +36,31 @@ class _CourseNameScreenState extends State<CourseNameScreen> {
   final repaintBoundary = GlobalKey();
   late Uint8List imageBytes;
 
+  // 추천 코스 관련 변수
+  ParkCourseInfo? selectedRecommendedCourse;
+  List<ParkCourseInfo> nearbyRecommendedCourses2km = [];
+  bool isLoadingRecommendedCourses = true;
+
   @override
   void initState() {
     super.initState();
+
+    // 컴포넌트가 초기화될 때 ParkDataProvider의 데이터 로드
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final parkDataProvider = Provider.of<ParkDataProvider>(
+        context,
+        listen: false,
+      );
+      parkDataProvider.fetchAllDataIfNeeded().then((_) {
+        if (mounted) {
+          setState(() {
+            nearbyRecommendedCourses2km =
+                parkDataProvider.nearbyRecommendedCourses2km;
+            isLoadingRecommendedCourses = false;
+          });
+        }
+      });
+    });
   }
 
   Future<String?> imageUpload() async {
@@ -176,16 +200,34 @@ class _CourseNameScreenState extends State<CourseNameScreen> {
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.start,
                                   children: [
-                                    Text(
-                                      '중앙공원',
-                                      style: TextStyle(
-                                        color: GRAYSCALE_LABEL_950,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 18,
-                                      ),
+   // 추천 코스 드롭다운 섹션
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Text(
+                                    '추천 코스 연결',
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 16,
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                  isLoadingRecommendedCourses
+                                      ? SizedBox(
+                                        width: 16,
+                                        height: 16,
+                                        child: CircularProgressIndicator(
+                                          color: ORANGE_PRIMARY_500,
+                                          strokeWidth: 2,
+                                        ),
+                                      )
+                                      : SizedBox.shrink(),
+                                ],
+                              ),
+                              _buildRecommendedCourseDropdown(),
+                            ],
+                          ),
                                 SizedBox(height: 10),
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.start,
@@ -275,15 +317,15 @@ class _CourseNameScreenState extends State<CourseNameScreen> {
                                 ),
                               ],
                             ),
-                          ),
+                          
                         ],
                       ),
                     ),
                   ],
                 ),
               ),
-            ),
-          ),
+            
+          
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20.0),
             child: GestureDetector(
@@ -335,13 +377,14 @@ class _CourseNameScreenState extends State<CourseNameScreen> {
                           final result = stepProvider.createStepModel(
                             imageUrl: imageUrl ?? '',
                           );
-
+                         // Firebase에 저장할 데이터 준비 (단순하게 StepModel에서 직접 가져오기)
+                            Map<String, dynamic> resultData = result.toJson();
                           await _firestore
                               .collection('trackingResult')
                               .doc(currentUser.uid)
                               .set({
                                 'TrackingResult': FieldValue.arrayUnion([
-                                  result.toJson(),
+                                  resultData,
                                 ]),
                               }, SetOptions(merge: true));
 
@@ -419,6 +462,7 @@ class _CourseNameScreenState extends State<CourseNameScreen> {
           SizedBox(height: 20),
         ],
       ),
+      
     );
   }
 
@@ -430,6 +474,102 @@ class _CourseNameScreenState extends State<CourseNameScreen> {
       builder: (BuildContext context) {
         return const Center(child: CircularProgressIndicator());
       },
+    );
+  }
+
+  // 추천 코스 드롭다운 위젯
+  Widget _buildRecommendedCourseDropdown() {
+    if (isLoadingRecommendedCourses) {
+      return Row(
+        children: [
+          Text(
+            '추천 코스 불러오는 중...',
+            style: TextStyle(color: GRAYSCALE_LABEL_600, fontSize: 14),
+          ),
+          Icon(Icons.arrow_drop_down, color: GRAYSCALE_LABEL_400),
+        ],
+      );
+    }
+
+    if (nearbyRecommendedCourses2km.isEmpty) {
+      return Row(
+        children: [
+          Icon(Icons.location_off, size: 16, color: GRAYSCALE_LABEL_600),
+          SizedBox(width: 8),
+          Text(
+            '반경 2km 이내 추천 코스가 없습니다',
+            style: TextStyle(color: GRAYSCALE_LABEL_600, fontSize: 14),
+          ),
+        ],
+      );
+    }
+
+    return DropdownButtonHideUnderline(
+      child: DropdownButton<ParkCourseInfo>(
+        value: selectedRecommendedCourse,
+        dropdownColor: BACKGROUND_COLOR,
+        isExpanded: true,
+        icon: SizedBox.shrink(),
+        hint: Text(
+          '반경 2km 이내 추천코스 선택',
+          style: TextStyle(color: GRAYSCALE_LABEL_600, fontSize: 14),
+        ),
+        selectedItemBuilder: (BuildContext context) {
+          return nearbyRecommendedCourses2km.map<Widget>((
+            ParkCourseInfo course,
+          ) {
+            return Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  course.parkName ?? '공원 정보 없음',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: GRAYSCALE_LABEL_700,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Icon(Icons.arrow_drop_down, color: ORANGE_PRIMARY_500),
+              ],
+            );
+          }).toList();
+        },
+        items:
+            nearbyRecommendedCourses2km.map((ParkCourseInfo course) {
+              return DropdownMenuItem<ParkCourseInfo>(
+                value: course,
+                child: Text(
+                  course.parkName ?? '공원 정보 없음',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: GRAYSCALE_LABEL_700,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              );
+            }).toList(),
+        onChanged: (ParkCourseInfo? newValue) {
+          setState(() {
+            selectedRecommendedCourse = newValue;
+
+            // stepProvider에 공원명 설정
+            final stepProvider = Provider.of<StepProvider>(
+              context,
+              listen: false,
+            );
+            stepProvider.setParkName(newValue?.parkName);
+
+            // 코스 이름이 비어있으면 선택한 추천 코스 이름으로 자동설정
+            if (newValue != null &&
+                (stepProvider.courseName.text.isEmpty ||
+                    stepProvider.courseName.text == '나의 코스')) {
+              stepProvider.courseName.text = newValue.title;
+            }
+          });
+        },
+      ),
     );
   }
 }

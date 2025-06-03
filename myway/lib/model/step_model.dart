@@ -8,8 +8,8 @@ class StepModel {
   final String courseName;
   final String imageUrl;
   final String parkId;
-  final String parkName;
   final List<LatLng> route; // 경로 (LatLng 리스트)
+  final String? parkName;
 
   StepModel({
     required this.steps,
@@ -19,8 +19,8 @@ class StepModel {
     required this.courseName,
     required this.imageUrl,
     required this.parkId,
-    required this.parkName,
     required this.route,
+    this.parkName,
   });
 
   Map<String, dynamic> toJson() {
@@ -32,7 +32,7 @@ class StepModel {
       '코스이름': courseName,
       '이미지 Url': imageUrl,
       '공원 ID': parkId,
-      '공원 이름': parkName,
+
       '경로':
           route
               .map(
@@ -42,6 +42,7 @@ class StepModel {
                 },
               )
               .toList(),
+      if (parkName != null) '공원명': parkName,
     };
   }
 
@@ -54,11 +55,11 @@ class StepModel {
       courseName: json['코스이름'],
       imageUrl: json['이미지 Url'],
       parkId: json['공원 ID'],
-      parkName: json['공원 이름'],
       route:
           (json['경로'] as List)
               .map((latLng) => LatLng(latLng['latitude'], latLng['longitude']))
               .toList(),
+      parkName: json['공원명'],
     );
   }
 }
