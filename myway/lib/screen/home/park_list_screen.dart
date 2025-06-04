@@ -869,7 +869,7 @@ class _ParkListScreenState extends State<ParkListScreen>
                 ],
                 const SizedBox(height: 4),
                 Text(
-                  course.details.distance,
+                  course.details.distance.toStringAsFixed(1),
                   style: const TextStyle(
                     fontSize: 12,
                     color: GRAYSCALE_LABEL_700,

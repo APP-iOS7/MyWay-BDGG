@@ -3,7 +3,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 class StepModel {
   final int steps;
   final String duration;
-  final String distance;
+  final double distance;
   final String stopTime;
   final String courseName;
   final String imageUrl;
