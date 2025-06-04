@@ -208,7 +208,7 @@ class _TrackingResultScreenState extends State<TrackingResultScreen> {
                                   Row(
                                     children: [
                                       Text(
-                                        widget.result.distance,
+                                        '${widget.result.distance}',
                                         style: TextStyle(
                                           color: GRAYSCALE_LABEL_950,
                                           fontSize: 25,
