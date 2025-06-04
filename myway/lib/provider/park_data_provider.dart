@@ -5,6 +5,7 @@ import 'package:myway/model/park_info.dart';
 import 'package:myway/model/park_course_info.dart';
 import 'package:myway/model/step_model.dart';
 import 'package:myway/services/park_api_service.dart'; // ParkApiService 경로 확인
+import 'dart:math';
 
 class ParkDataProvider extends ChangeNotifier {
   final ParkApiService _parkApiService = ParkApiService();
@@ -70,8 +71,10 @@ class ParkDataProvider extends ChangeNotifier {
       (c) => c.id == courseId,
     );
     if (courseIndex != -1) {
-      _allGeneratedRecommendedCourses[courseIndex].isFavorite =
-          newFavoriteState;
+      _allGeneratedRecommendedCourses[courseIndex] =
+          _allGeneratedRecommendedCourses[courseIndex].copyWith(
+            isFavorite: newFavoriteState,
+          );
     } else {}
     notifyListeners();
   }
@@ -166,102 +169,130 @@ class ParkDataProvider extends ChangeNotifier {
   void _generateAllRecommendedCoursesInternal() {
     List<ParkCourseInfo> tempCourses = [];
     for (var park in _allFetchedParks) {
+      // 공원의 실제 위치를 기반으로 코스 경로 생성
+      double parkLat = double.tryParse(park.latitude ?? '0') ?? 0;
+      double parkLon = double.tryParse(park.longitude ?? '0') ?? 0;
+
+      if (parkLat == 0 || parkLon == 0) continue;
+
+      // 코스 1: 짧은 코스 (0.5km)
       String course1Id = "course_${park.id}_1";
+      List<LatLng> shortRoute = _generateRoute(parkLat, parkLon, 0.5);
       tempCourses.add(
         ParkCourseInfo(
+          title: park.name,
+          park: park.name,
+          date: DateTime.now(),
+          parkId: park.id,
+          parkName: park.name,
           id: course1Id,
           isFavorite: _favoriteCourseIds.contains(course1Id),
           details: StepModel(
-            steps: 100,
-            duration: '100',
-            distance: '100',
+            steps: 600,
+            duration: '15',
+            distance: 0.5,
             stopTime: '12:00',
-            courseName: 'test',
-            imageUrl: 'assets/images/course_placeholder_1.png',
+            courseName: park.name,
+            imageUrl:
+                park.parkImage.isNotEmpty
+                    ? park.parkImage
+                    : 'assets/images/course_placeholder_1.png',
             parkId: park.id,
             parkName: park.name,
-            route: [
-              LatLng(37.40020, 126.93613),
-              LatLng(37.400120, 126.93657),
-              LatLng(37.39948, 126.93656),
-              LatLng(37.39948, 126.93656),
-              LatLng(37.399476, 126.937293),
-
-              LatLng(37.39953, 126.93780),
-              LatLng(37.400076, 126.938185),
-              LatLng(37.400675, 126.93859),
-              LatLng(37.40129, 126.93866),
-              LatLng(37.401855, 126.938573),
-              LatLng(37.40216, 126.93897),
-            ],
+            route: shortRoute,
           ),
         ),
       );
 
+      // 코스 2: 중간 코스 (1.0km)
       String course2Id = "course_${park.id}_2";
+      List<LatLng> mediumRoute = _generateRoute(parkLat, parkLon, 1.0);
       tempCourses.add(
         ParkCourseInfo(
-          id: course1Id,
-          isFavorite: _favoriteCourseIds.contains(course1Id),
+          title: park.name,
+          park: park.name,
+          date: DateTime.now(),
+          parkId: park.id,
+          parkName: park.name,
+          id: course2Id,
+          isFavorite: _favoriteCourseIds.contains(course2Id),
           details: StepModel(
-            steps: 100,
-            duration: '100',
-            distance: '100',
+            steps: 1200,
+            duration: '30',
+            distance: 1.0,
             stopTime: '12:00',
-            courseName: 'test',
-            imageUrl: 'assets/images/course_placeholder_1.png',
+            courseName: park.name,
+            imageUrl:
+                park.parkImage.isNotEmpty
+                    ? park.parkImage
+                    : 'assets/images/course_placeholder_1.png',
             parkId: park.id,
             parkName: park.name,
-            route: [
-              LatLng(37.40020, 126.93613),
-              LatLng(37.400120, 126.93657),
-              LatLng(37.39948, 126.93656),
-              LatLng(37.39948, 126.93656),
-              LatLng(37.399476, 126.937293),
-
-              LatLng(37.39953, 126.93780),
-              LatLng(37.400076, 126.938185),
-              LatLng(37.400675, 126.93859),
-              LatLng(37.40129, 126.93866),
-              LatLng(37.401855, 126.938573),
-              LatLng(37.40216, 126.93897),
-            ],
+            route: mediumRoute,
           ),
         ),
       );
+
+      // 코스 3: 긴 코스 (1.5km)
       String course3Id = "course_${park.id}_3";
+      List<LatLng> longRoute = _generateRoute(parkLat, parkLon, 1.5);
       tempCourses.add(
         ParkCourseInfo(
-          id: course1Id,
-          isFavorite: _favoriteCourseIds.contains(course1Id),
+          title: park.name,
+          park: park.name,
+          date: DateTime.now(),
+          parkId: park.id,
+          parkName: park.name,
+          id: course3Id,
+          isFavorite: _favoriteCourseIds.contains(course3Id),
           details: StepModel(
-            steps: 100,
-            duration: '100',
-            distance: '100',
+            steps: 1800,
+            duration: '45',
+            distance: 1.5,
             stopTime: '12:00',
-            courseName: 'test',
-            imageUrl: 'assets/images/course_placeholder_1.png',
+            courseName: park.name,
+            imageUrl:
+                park.parkImage.isNotEmpty
+                    ? park.parkImage
+                    : 'assets/images/course_placeholder_1.png',
             parkId: park.id,
             parkName: park.name,
-            route: [
-              LatLng(37.40020, 126.93613),
-              LatLng(37.400120, 126.93657),
-              LatLng(37.39948, 126.93656),
-              LatLng(37.39948, 126.93656),
-              LatLng(37.399476, 126.937293),
-
-              LatLng(37.39953, 126.93780),
-              LatLng(37.400076, 126.938185),
-              LatLng(37.400675, 126.93859),
-              LatLng(37.40129, 126.93866),
-              LatLng(37.401855, 126.938573),
-              LatLng(37.40216, 126.93897),
-            ],
+            route: longRoute,
           ),
         ),
       );
     }
     _allGeneratedRecommendedCourses = tempCourses;
+  }
+
+  // 주어진 중심점과 거리를 기반으로 경로 생성
+  List<LatLng> _generateRoute(
+    double centerLat,
+    double centerLon,
+    double distanceKm,
+  ) {
+    List<LatLng> route = [];
+    int points = 5; // 경로 포인트 수
+    double radius = distanceKm / 2; // 반경 (km)
+
+    // 중심점을 시작점으로 추가
+    route.add(LatLng(centerLat, centerLon));
+
+    // 원형 경로 생성
+    for (int i = 1; i <= points; i++) {
+      double angle = (i * 2 * 3.14159) / points;
+      double lat =
+          centerLat + (radius * cos(angle) / 111.32); // 1도 = 약 111.32km
+      double lon =
+          centerLon +
+          (radius * sin(angle) / (111.32 * cos(centerLat * 3.14159 / 180)));
+      route.add(LatLng(lat, lon));
+    }
+
+    // 시작점으로 돌아오기
+    route.add(LatLng(centerLat, centerLon));
+
+    return route;
   }
 
   Future<void> refreshData() async {
@@ -305,6 +336,45 @@ class ParkDataProvider extends ChangeNotifier {
     // 5km 이내 공원에 속한 코스만 필터링
     return _allGeneratedRecommendedCourses
         .where((course) => nearbyParkIds.contains(course.details.parkId))
+        .toList();
+  }
+
+  // 반경 2km 이내의 공원 목록을 반환하는 getter(course_recommended_bottom_sheet에 서 사용 )
+  List<ParkInfo> get nearbyParks2km {
+    const double nearbyFilterRadiusKm = 2.0; // 반경 2km 기준
+    if (_currentPosition == null || _allFetchedParks.isEmpty) {
+      return []; // 위치 정보가 없거나 공원 목록이 비어있으면 빈 리스트 반환
+    }
+
+    // 현재 위치에서 반경 2km 이내의 공원만 필터링
+    final filteredParks2km =
+        _allFetchedParks
+            .where(
+              (park) => (park.distanceKm) < nearbyFilterRadiusKm,
+            ) // distanceInKm 사용
+            .toList();
+
+    // 거리에 따라 정렬 (선택 사항)
+    filteredParks2km.sort((a, b) => (a.distanceKm).compareTo(b.distanceKm));
+
+    return filteredParks2km;
+  }
+
+  // 반경 2km 이내 공원에 속한 추천 코스 목록을 반환하는 getter
+  List<ParkCourseInfo> get nearbyRecommendedCourses2km {
+    if (_currentPosition == null || _allGeneratedRecommendedCourses.isEmpty) {
+      return []; // 위치 정보가 없거나 코스 목록이 비어있으면 빈 리스트 반환
+    }
+
+    // 2km 이내 공원의 ID 목록
+    final nearbyParkIds2km =
+        nearbyParks2km // 위에서 정의한 nearbyParks getter 사용
+            .map((park) => park.id)
+            .toSet();
+
+    // 2km 이내 공원에 속한 코스만 필터링
+    return _allGeneratedRecommendedCourses
+        .where((course) => nearbyParkIds2km.contains(course.details.parkId))
         .toList();
   }
 }

@@ -187,7 +187,7 @@ class _TrackingResultScreenState extends State<TrackingResultScreen> {
                             mainAxisAlignment: MainAxisAlignment.start,
                             children: [
                               Text(
-                                '중앙공원',
+                                stepProvider.parkName ?? '정보 없음',
                                 style: TextStyle(
                                   color: GRAYSCALE_LABEL_950,
                                   fontSize: 16,
@@ -205,7 +205,7 @@ class _TrackingResultScreenState extends State<TrackingResultScreen> {
                                   Row(
                                     children: [
                                       Text(
-                                        widget.result.distance,
+                                        '${widget.result.distance}',
                                         style: TextStyle(
                                           color: GRAYSCALE_LABEL_950,
                                           fontSize: 25,

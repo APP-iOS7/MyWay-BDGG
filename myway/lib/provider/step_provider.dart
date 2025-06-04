@@ -9,6 +9,14 @@ enum TrackingStatus { running, paused, stopped }
 
 class StepProvider extends ChangeNotifier {
   final TextEditingController courseName = TextEditingController();
+  String? _parkName;
+  String? get parkName => _parkName;
+
+  void setParkName(String? parkName) {
+    _parkName = parkName;
+    notifyListeners();
+  }
+
   int _baseSteps = 0;
   int _currentSteps = 0;
   int get steps => _currentSteps;
@@ -93,14 +101,14 @@ class StepProvider extends ChangeNotifier {
 
     return StepModel(
       parkId: 'test_park_id', // 나중에 설정
-      parkName: '테스트 공원', // 나중에 설정
-      route: route,
+      route: route, // 나중에 설정
       steps: steps,
       duration: formattedElapsed,
-      distance: distanceKm,
+      distance: double.parse(distanceKm),
       stopTime: formattedStopTime,
       courseName: courseName.text,
       imageUrl: imageUrl,
+      parkName: _parkName,
     );
   }
 
@@ -114,6 +122,7 @@ class StepProvider extends ChangeNotifier {
     _currentSteps = 0;
     _elapsed = Duration.zero;
     _status = TrackingStatus.stopped;
+    _parkName = null;
     _route.clear();
     print('stepProvider state reset');
 
@@ -127,27 +136,6 @@ class StepProvider extends ChangeNotifier {
     _currentStepModel = createStepModel();
     notifyListeners();
   }
-
-  // StepModel stopTracking(String imageUrl) {
-  //   _subscription?.cancel();
-  //   _timer?.cancel();
-
-  //   final result = createStepModel(imageUrl: imageUrl);
-
-  //   // 상태 초기화 (동기적으로 실행)
-  //   _baseSteps = 0;
-  //   _currentSteps = 0;
-  //   _elapsed = Duration.zero;
-  //   _status = TrackingStatus.stopped;
-
-  //   try {
-  //     notifyListeners();
-  //   } catch (e) {
-  //     print('StepProvider stopTracking notifyListeners 오류: $e');
-  //   }
-
-  //   return result;
-  // }
 
   void pause() {
     _subscription?.cancel();

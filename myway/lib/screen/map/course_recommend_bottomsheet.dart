@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:myway/model/park_info.dart';
 import 'package:myway/screen/alert/countdown_diallog.dart';
 import 'package:myway/provider/step_provider.dart';
 import 'package:myway/provider/park_data_provider.dart';
@@ -24,7 +25,10 @@ class _CourseRecommendBottomsheetState
   List<ParkCourseInfo> _nearbyCourses = [];
 
   // ParkCourseInfo를 Course 모델로 변환하는 헬퍼 메서드
-  ParkCourseInfo _convertToCourse(ParkCourseInfo parkCourse) {
+  ParkCourseInfo _convertToCourse(
+    ParkCourseInfo parkCourse,
+    ParkDataProvider parkDataProvider,
+  ) {
     // 임시 더미 경로 데이터 (실제 앱에서는 API 등에서 가져오는 것이 좋음)
     List<LatLng> dummyRoute = [
       LatLng(37.40020, 126.93613),
@@ -34,23 +38,51 @@ class _CourseRecommendBottomsheetState
       LatLng(37.39953, 126.93780),
     ];
 
+    double actualDistance = 2.0;
+
+    ParkInfo? parkInfo;
+    try {
+      parkInfo = parkDataProvider.nearbyParks2km.firstWhere(
+        (park) => park.id == parkCourse.parkId,
+      );
+      actualDistance = parkInfo.distanceKm;
+    } catch (e) {
+      try {
+        final fallbackParkInfo = parkDataProvider.allFetchedParks.firstWhere(
+          (park) => park.id == parkCourse.parkId,
+        );
+        if (fallbackParkInfo.distanceKm <= 2.0) {
+          actualDistance = fallbackParkInfo.distanceKm;
+        }
+      } catch (e2) {
+        // 공원을 찾지 못한 경우 기본값 사용
+      }
+    }
+
+    // 최종 안전 장치: 어떤 경우든 2km를 초과하는 경우 2km 제한
+    if (actualDistance > 2.0) {
+      actualDistance = 2.0;
+    }
     return ParkCourseInfo(
       id: parkCourse.id,
       isSelected: parkCourse.isSelected,
       isFavorite: parkCourse.isFavorite,
+      parkId: parkCourse.parkId,
+      title: parkCourse.title,
+      park: parkCourse.parkName ?? '정보 없음',
+      date: DateTime.now(),
       details: StepModel(
         steps: parkCourse.details.steps,
         duration: parkCourse.details.duration,
         distance: parkCourse.details.distance,
         stopTime: parkCourse.details.stopTime,
         courseName: parkCourse.details.courseName,
+        parkId: parkCourse.parkId,
+        route: dummyRoute,
         imageUrl:
             parkCourse.details.imageUrl.startsWith('http')
                 ? parkCourse.details.imageUrl
-                : 'https://picsum.photos/250?image=9',
-        parkId: parkCourse.details.parkId,
-        parkName: parkCourse.details.parkName,
-        route: parkCourse.details.route,
+                : 'https://picsum.photos/250?image=9', //이미지 경로가 URL이 아니면 임시 URL 사용
       ),
     );
   }
@@ -60,8 +92,11 @@ class _CourseRecommendBottomsheetState
     super.initState();
     // 컴포넌트가 초기화될 때 ParkDataProvider의 데이터 로드
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final provider = Provider.of<ParkDataProvider>(context, listen: false);
-      provider.fetchAllDataIfNeeded();
+      final parkDataProvider = Provider.of<ParkDataProvider>(
+        context,
+        listen: false,
+      );
+      parkDataProvider.fetchAllDataIfNeeded();
     });
   }
 
@@ -69,11 +104,22 @@ class _CourseRecommendBottomsheetState
   Widget build(BuildContext context) {
     return Consumer3<MapProvider, StepProvider, ParkDataProvider>(
       builder: (context, mapProvider, stepProvider, parkDataProvider, child) {
-        // 반경 5km 이내의 추천 코스 변환
-        _nearbyCourses =
-            parkDataProvider.nearbyRecommendedCourses
-                .map((parkCourse) => _convertToCourse(parkCourse))
-                .toList();
+        // _nearbyCourses 계산을 최적화
+        if (_nearbyCourses.isEmpty &&
+            !parkDataProvider.isLoadingParks &&
+            !parkDataProvider.isLoadingLocation) {
+          _nearbyCourses =
+              parkDataProvider.nearbyRecommendedCourses2km
+                  .map(
+                    (parkCourse) =>
+                        _convertToCourse(parkCourse, parkDataProvider),
+                  )
+                  .toList();
+          _nearbyCourses.sort(
+            (a, b) => a.details.distance.compareTo(b.details.distance),
+          );
+        }
+
         return DraggableScrollableSheet(
           initialChildSize: 0.5,
           minChildSize: 0.4,
@@ -110,14 +156,14 @@ class _CourseRecommendBottomsheetState
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    '추천코스',
+                                    '내 주변 2km 내 추천코스',
                                     style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),
                                   Text(
-                                    '내 주변 5km 이내 공원의 추천 코스입니다.',
+                                    '내 주변 2km 이내 공원의 추천 코스입니다.',
                                     style: TextStyle(
                                       fontSize: 13,
                                       fontWeight: FontWeight.w400,
@@ -201,7 +247,7 @@ class _CourseRecommendBottomsheetState
                             ),
                             SizedBox(width: 5),
                             Text(
-                              '${_nearbyCourses[selectedIndex!].details.distance}km',
+                              '${_nearbyCourses[selectedIndex!].details.distance.toDouble().toStringAsFixed(1)}km',
                               style: TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w600,
@@ -309,19 +355,6 @@ class _CourseRecommendBottomsheetState
                                                   mainAxisAlignment:
                                                       MainAxisAlignment.start,
                                                   children: [
-                                                    Text(
-                                                      _nearbyCourses[index]
-                                                          .details
-                                                          .courseName,
-                                                      style: const TextStyle(
-                                                        fontSize: 14,
-                                                        fontWeight:
-                                                            FontWeight.w600,
-                                                      ),
-                                                      maxLines: 1,
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                    ),
                                                     Padding(
                                                       padding:
                                                           const EdgeInsets.only(
@@ -332,31 +365,34 @@ class _CourseRecommendBottomsheetState
                                                             MainAxisAlignment
                                                                 .spaceBetween,
                                                         children: [
+                                                          // 추후에는 사용자가 설정한 코스이름 넣어야 함
                                                           Text(
                                                             _nearbyCourses[index]
-                                                                .details
-                                                                .parkName,
+                                                                .title,
                                                             style: const TextStyle(
                                                               fontSize: 14,
                                                               fontWeight:
                                                                   FontWeight
                                                                       .w500,
                                                               color:
-                                                                  GRAYSCALE_LABEL_800,
+                                                                  GRAYSCALE_LABEL_900,
                                                             ),
-                                                          ),
-                                                          Text(
-                                                            '${_nearbyCourses[index].details.distance}km',
-                                                            style: TextStyle(
-                                                              fontSize: 14,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w500,
-                                                              color:
-                                                                  GRAYSCALE_LABEL_800,
-                                                            ),
+                                                            maxLines: 1,
+                                                            overflow:
+                                                                TextOverflow
+                                                                    .ellipsis,
                                                           ),
                                                         ],
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      '${_nearbyCourses[index].details.distance.toStringAsFixed(1)}km',
+                                                      style: TextStyle(
+                                                        fontSize: 14,
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                        color:
+                                                            GRAYSCALE_LABEL_800,
                                                       ),
                                                     ),
                                                   ],
@@ -457,7 +493,7 @@ class _CourseRecommendBottomsheetState
           Icon(Icons.location_off, size: 48, color: GRAYSCALE_LABEL_400),
           SizedBox(height: 16),
           Text(
-            "반경 5km 이내에 추천할 코스가 없습니다.",
+            "반경 2km 이내에 추천할 코스가 없습니다.",
             style: TextStyle(
               color: GRAYSCALE_LABEL_700,
               fontSize: 16,

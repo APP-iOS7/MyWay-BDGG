@@ -6,12 +6,12 @@ import 'package:location/location.dart';
 import 'package:myway/model/park_course_info.dart';
 import 'package:myway/screen/result/course_name_screen.dart';
 import 'package:provider/provider.dart';
-
 import '../../provider/step_provider.dart';
 import '/const/colors.dart';
 import '/screen/map/course_recommend_bottomsheet.dart';
 import '/provider/map_provider.dart';
 import 'start_tracking_bottomsheet.dart';
+import '/provider/park_data_provider.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -290,6 +290,10 @@ class _MapScreenState extends State<MapScreen>
     polylines.removeWhere((p) => p.polylineId.value == 'route');
     final Uint8List? imageBytes = await mapController?.takeSnapshot();
     final stepProvider = Provider.of<StepProvider>(context, listen: false);
+    final parkDataProvider = Provider.of<ParkDataProvider>(
+      context,
+      listen: false,
+    );
 
     stepProvider.stopTracking();
 
@@ -299,20 +303,23 @@ class _MapScreenState extends State<MapScreen>
 
       if (!context.mounted) return;
       print(stepProvider.currentStepModel);
-      print(stepProvider.route);
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        Navigator.pop(context); // 현재 화면 닫기
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder:
-                (context) => CourseNameScreen(
-                  courseImage: imageBytes,
-                  stepModel: stepProvider.currentStepModel!,
-                ),
-          ),
-        );
-      });
+
+      // ParkDataProvider의 데이터 로딩이 완료될 때까지 대기
+      await parkDataProvider.fetchAllDataIfNeeded();
+
+      if (!context.mounted) return;
+
+      Navigator.pop(context); // 현재 화면 닫기
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder:
+              (context) => CourseNameScreen(
+                courseImage: imageBytes,
+                stepModel: stepProvider.currentStepModel!,
+              ),
+        ),
+      );
     } else {
       ScaffoldMessenger.of(
         context,
