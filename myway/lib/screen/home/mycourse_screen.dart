@@ -18,12 +18,12 @@ class _MycourseScreenState extends State<MycourseScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   bool isEditing = false;
-  List<bool> _selected = [];
+  final ValueNotifier<List<bool>> _selectedNotifier = ValueNotifier([]);
 
   void toggleEditing(int count) {
     setState(() {
       isEditing = !isEditing;
-      _selected = List<bool>.filled(count, false);
+      _selectedNotifier.value = List<bool>.filled(count, false);
     });
   }
 
@@ -32,18 +32,24 @@ class _MycourseScreenState extends State<MycourseScreen> {
         .collection('trackingResult')
         .doc(_auth.currentUser?.uid);
 
+    final current = _selectedNotifier.value;
     final newList = <dynamic>[];
     for (int i = 0; i < trackingResult.length; i++) {
-      if (!_selected[i]) {
+      if (!current[i]) {
         newList.add(trackingResult[i]);
       }
     }
 
     await docRef.update({'TrackingResult': newList});
-
     setState(() {
       isEditing = false;
     });
+  }
+
+  @override
+  void dispose() {
+    _selectedNotifier.dispose();
+    super.dispose();
   }
 
   @override
@@ -109,14 +115,17 @@ class _MycourseScreenState extends State<MycourseScreen> {
           );
         }
 
+        if (_selectedNotifier.value.length != trackingResult.length) {
+          _selectedNotifier.value = List<bool>.filled(
+            trackingResult.length,
+            false,
+          );
+        }
+
         trackingResult.sort(
           (a, b) =>
               DateTime.parse(b['종료시간']).compareTo(DateTime.parse(a['종료시간'])),
         );
-
-        if (_selected.length != trackingResult.length) {
-          _selected = List<bool>.filled(trackingResult.length, false);
-        }
 
         return Scaffold(
           backgroundColor: Colors.white,
@@ -145,24 +154,16 @@ class _MycourseScreenState extends State<MycourseScreen> {
                         ),
                       ),
                       TextButton(
-                        onPressed: () {
-                          setState(() => isEditing = false);
-                        },
+                        onPressed: () => setState(() => isEditing = false),
                         style: customTextButtonStyle(),
-                        child: const Text(
-                          '취소',
-                          style: TextStyle(color: GRAYSCALE_LABEL_950),
-                        ),
+                        child: const Text('취소'),
                       ),
                     ]
                     : [
                       TextButton(
                         onPressed: () => toggleEditing(trackingResult.length),
                         style: customTextButtonStyle(),
-                        child: const Text(
-                          '편집',
-                          style: TextStyle(color: GRAYSCALE_LABEL_950),
-                        ),
+                        child: const Text('편집'),
                       ),
                     ],
           ),
@@ -237,7 +238,6 @@ class _MycourseScreenState extends State<MycourseScreen> {
                                     maxLines: 1,
                                   ),
                                   const SizedBox(height: 4),
-
                                   Row(
                                     children: [
                                       const Icon(
@@ -266,13 +266,17 @@ class _MycourseScreenState extends State<MycourseScreen> {
                         Positioned(
                           top: 8,
                           right: 8,
-                          child: Checkbox(
-                            value: _selected[index],
-                            activeColor: ORANGE_PRIMARY_500,
-                            onChanged: (val) {
-                              setState(() {
-                                _selected[index] = val!;
-                              });
+                          child: ValueListenableBuilder<List<bool>>(
+                            valueListenable: _selectedNotifier,
+                            builder: (context, selected, _) {
+                              return Checkbox(
+                                value: selected[index],
+                                onChanged: (val) {
+                                  final copy = List<bool>.from(selected);
+                                  copy[index] = val!;
+                                  _selectedNotifier.value = copy;
+                                },
+                              );
                             },
                           ),
                         ),
