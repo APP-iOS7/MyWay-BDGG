@@ -281,11 +281,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         : trackingResult;
 
                 return SizedBox(
-                  height: 450,
+                  height: 480,
                   child: CarouselSlider(
                     options: CarouselOptions(
                       scrollDirection: Axis.horizontal,
-                      height: 430,
+                      height: 450,
                       enableInfiniteScroll: trackingResult.length == 3,
                       padEnds: true,
                       viewportFraction: 0.8, // 화면에 보이는 아이템의 비율
@@ -350,14 +350,15 @@ class _HomeScreenState extends State<HomeScreen> {
                                                   style: TextStyle(
                                                     fontSize: 20,
                                                     fontWeight: FontWeight.w600,
+                                                    color: GRAYSCALE_LABEL_900,
                                                   ),
                                                 ),
-                                                SizedBox(height: 10),
                                                 Text(
-                                                  '${result['공원명']}',
+                                                  '${result['공원명'] ?? '공원명 없음'}',
                                                   style: TextStyle(
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.w600,
+                                                    fontSize: 15,
+                                                    fontWeight: FontWeight.w500,
+                                                    color: GRAYSCALE_LABEL_900,
                                                   ),
                                                 ),
                                                 SizedBox(height: 10),
@@ -435,38 +436,32 @@ class _HomeScreenState extends State<HomeScreen> {
                                                           ],
                                                         ),
                                                         SizedBox(width: 20),
-                                                        Row(
+                                                        Column(
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .start,
                                                           children: [
-                                                            Column(
-                                                              crossAxisAlignment:
-                                                                  CrossAxisAlignment
-                                                                      .start,
-                                                              children: [
-                                                                Text(
-                                                                  '${result['걸음수']}',
-                                                                  style: TextStyle(
-                                                                    fontSize:
-                                                                        25,
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w600,
-                                                                    color:
-                                                                        GRAYSCALE_LABEL_800,
-                                                                  ),
-                                                                ),
-                                                                Text(
-                                                                  '걸음수',
-                                                                  style: TextStyle(
-                                                                    color:
-                                                                        GRAYSCALE_LABEL_500,
-                                                                    fontSize:
-                                                                        12,
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w500,
-                                                                  ),
-                                                                ),
-                                                              ],
+                                                            Text(
+                                                              '${result['걸음수']}',
+                                                              style: TextStyle(
+                                                                fontSize: 25,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w600,
+                                                                color:
+                                                                    GRAYSCALE_LABEL_800,
+                                                              ),
+                                                            ),
+                                                            Text(
+                                                              '걸음수',
+                                                              style: TextStyle(
+                                                                color:
+                                                                    GRAYSCALE_LABEL_500,
+                                                                fontSize: 12,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w500,
+                                                              ),
                                                             ),
                                                           ],
                                                         ),
