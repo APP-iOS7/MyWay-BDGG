@@ -281,11 +281,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         : trackingResult;
 
                 return SizedBox(
-                  height: 480,
+                  height: 450,
                   child: CarouselSlider(
                     options: CarouselOptions(
                       scrollDirection: Axis.horizontal,
-                      height: 450,
+                      height: 430,
                       enableInfiniteScroll: trackingResult.length == 3,
                       padEnds: true,
                       viewportFraction: 0.8, // 화면에 보이는 아이템의 비율
@@ -350,15 +350,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                                   style: TextStyle(
                                                     fontSize: 20,
                                                     fontWeight: FontWeight.w600,
-                                                    color: GRAYSCALE_LABEL_900,
-                                                  ),
-                                                ),
-                                                Text(
-                                                  '${result['공원명'] ?? '공원명 없음'}',
-                                                  style: TextStyle(
-                                                    fontSize: 15,
-                                                    fontWeight: FontWeight.w500,
-                                                    color: GRAYSCALE_LABEL_900,
                                                   ),
                                                 ),
                                                 SizedBox(height: 10),
