@@ -354,6 +354,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 ),
                                                 SizedBox(height: 10),
                                                 Text(
+                                                  '${result['공원명']}',
+                                                  style: TextStyle(
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
+                                                SizedBox(height: 10),
+                                                Text(
                                                   '${result['종료시간']}',
                                                   style: TextStyle(
                                                     fontSize: 13,
@@ -427,32 +435,38 @@ class _HomeScreenState extends State<HomeScreen> {
                                                           ],
                                                         ),
                                                         SizedBox(width: 20),
-                                                        Column(
-                                                          crossAxisAlignment:
-                                                              CrossAxisAlignment
-                                                                  .start,
+                                                        Row(
                                                           children: [
-                                                            Text(
-                                                              '${result['걸음수']}',
-                                                              style: TextStyle(
-                                                                fontSize: 25,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w600,
-                                                                color:
-                                                                    GRAYSCALE_LABEL_800,
-                                                              ),
-                                                            ),
-                                                            Text(
-                                                              '걸음수',
-                                                              style: TextStyle(
-                                                                color:
-                                                                    GRAYSCALE_LABEL_500,
-                                                                fontSize: 12,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w500,
-                                                              ),
+                                                            Column(
+                                                              crossAxisAlignment:
+                                                                  CrossAxisAlignment
+                                                                      .start,
+                                                              children: [
+                                                                Text(
+                                                                  '${result['걸음수']}',
+                                                                  style: TextStyle(
+                                                                    fontSize:
+                                                                        25,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w600,
+                                                                    color:
+                                                                        GRAYSCALE_LABEL_800,
+                                                                  ),
+                                                                ),
+                                                                Text(
+                                                                  '걸음수',
+                                                                  style: TextStyle(
+                                                                    color:
+                                                                        GRAYSCALE_LABEL_500,
+                                                                    fontSize:
+                                                                        12,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w500,
+                                                                  ),
+                                                                ),
+                                                              ],
                                                             ),
                                                           ],
                                                         ),

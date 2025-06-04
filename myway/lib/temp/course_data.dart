@@ -21,7 +21,7 @@ List<ParkCourseInfo> courses = [
     details: StepModel(
       steps: 100,
       duration: '100',
-      distance: '100',
+      distance: 100,
       stopTime: '12:00',
       courseName: 'test',
       imageUrl: 'assets/images/course_placeholder_1.png',
@@ -54,7 +54,7 @@ List<ParkCourseInfo> courses = [
     details: StepModel(
       steps: 100,
       duration: '100',
-      distance: '100',
+      distance: 100,
       stopTime: '12:00',
       courseName: 'test',
       imageUrl: 'assets/images/course_placeholder_1.png',
