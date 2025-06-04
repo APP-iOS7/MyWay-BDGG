@@ -156,25 +156,39 @@ class _MycourseScreenState extends State<MycourseScreen> {
                       TextButton(
                         onPressed: () => setState(() => isEditing = false),
                         style: customTextButtonStyle(),
-                        child: const Text('취소'),
+                        child: const Text(
+                          '취소',
+                          style: TextStyle(
+                            color: GRAYSCALE_LABEL_900,
+                            fontWeight: FontWeight.w500,
+                            fontSize: 15,
+                          ),
+                        ),
                       ),
                     ]
                     : [
                       TextButton(
                         onPressed: () => toggleEditing(trackingResult.length),
                         style: customTextButtonStyle(),
-                        child: const Text('편집'),
+                        child: const Text(
+                          '편집',
+                          style: TextStyle(
+                            color: GRAYSCALE_LABEL_900,
+                            fontWeight: FontWeight.w500,
+                            fontSize: 15,
+                          ),
+                        ),
                       ),
                     ],
           ),
           body: Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
             child: GridView.builder(
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                childAspectRatio: 0.8,
+                childAspectRatio: 0.9,
                 crossAxisCount: 2,
-                crossAxisSpacing: 10.0,
-                mainAxisSpacing: 10.0,
+                crossAxisSpacing: 5.0,
+                mainAxisSpacing: 5,
               ),
               itemCount: trackingResult.length,
               itemBuilder: (context, index) {
@@ -182,6 +196,9 @@ class _MycourseScreenState extends State<MycourseScreen> {
                 final imageUrl = result['이미지 Url'] ?? '';
 
                 return InkWell(
+                  focusColor: WHITE,
+                  hoverColor: WHITE,
+                  highlightColor: WHITE,
                   onTap:
                       isEditing
                           ? null
@@ -232,7 +249,7 @@ class _MycourseScreenState extends State<MycourseScreen> {
                                     result['코스이름'] ?? '',
                                     style: const TextStyle(
                                       fontSize: 15,
-                                      fontWeight: FontWeight.bold,
+                                      fontWeight: FontWeight.w600,
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                     maxLines: 1,
@@ -264,12 +281,19 @@ class _MycourseScreenState extends State<MycourseScreen> {
                       ),
                       if (isEditing)
                         Positioned(
-                          top: 8,
-                          right: 8,
+                          top: 1,
+                          right: 1,
                           child: ValueListenableBuilder<List<bool>>(
                             valueListenable: _selectedNotifier,
                             builder: (context, selected, _) {
                               return Checkbox(
+                                activeColor: ORANGE_PRIMARY_500,
+                                focusColor: Colors.transparent,
+                                hoverColor: Colors.transparent,
+                                checkColor: Colors.white,
+                                overlayColor: WidgetStateProperty.all(
+                                  Colors.transparent,
+                                ),
                                 value: selected[index],
                                 onChanged: (val) {
                                   final copy = List<bool>.from(selected);
