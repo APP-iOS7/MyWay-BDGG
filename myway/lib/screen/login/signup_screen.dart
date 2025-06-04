@@ -4,8 +4,7 @@ import 'package:myway/const/colors.dart';
 import 'package:myway/provider/user_provider.dart';
 import 'package:myway/screen/home/home_screen.dart';
 import 'package:provider/provider.dart';
-
-import '../../const/custome_button.dart';
+import 'package:toastification/toastification.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -508,13 +507,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                           ).hideCurrentSnackBar();
 
                                           if (success) {
-                                            ScaffoldMessenger.of(
-                                              context,
-                                            ).showSnackBar(
-                                              SnackBar(
-                                                content: Text(
-                                                  '회원가입 성공! 이름: ${userProvider.currentUser?.displayName}',
-                                                ),
+                                            toastification.show(
+                                              context: context,
+                                              type: ToastificationType.success,
+                                              style: ToastificationStyle.flat,
+                                              alignment: Alignment.bottomCenter,
+                                              autoCloseDuration: Duration(
+                                                seconds: 2,
+                                              ),
+                                              title: Text(
+                                                '회원가입 성공! 이름: ${userProvider.currentUser?.displayName}',
                                               ),
                                             );
                                             Navigator.pushReplacement(
@@ -525,13 +527,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                               ),
                                             );
                                           } else {
-                                            ScaffoldMessenger.of(
-                                              context,
-                                            ).showSnackBar(
-                                              SnackBar(
-                                                content: Text(
-                                                  '회원가입 실패! ${userProvider.errorMessage ?? '알 수 없는 오류'}',
-                                                ),
+                                            toastification.show(
+                                              context: context,
+                                              type: ToastificationType.error,
+                                              style: ToastificationStyle.flat,
+                                              alignment: Alignment.bottomCenter,
+                                              autoCloseDuration: Duration(
+                                                seconds: 2,
+                                              ),
+                                              title: Text(
+                                                '회원가입 실패! ${userProvider.errorMessage ?? '알 수 없는 오류'}',
                                               ),
                                             );
                                           }

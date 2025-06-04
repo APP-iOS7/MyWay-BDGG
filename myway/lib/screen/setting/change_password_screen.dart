@@ -1,5 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:myway/screen/login/signIn_screen.dart';
+import 'package:toastification/toastification.dart';
 
 import '../../const/colors.dart';
 
@@ -160,13 +162,20 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
           // 비밀번호 변경
           await user.updatePassword(newPassword);
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("비밀번호가 변경되었습니다. 다시 로그인해주세요.")),
-          );
-
           // 로그아웃
           await FirebaseAuth.instance.signOut();
-          Navigator.pop(context, true);
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => SigninScreen()),
+          );
+          toastification.show(
+            context: context,
+            type: ToastificationType.info,
+            style: ToastificationStyle.flat,
+            alignment: Alignment.bottomCenter,
+            autoCloseDuration: Duration(seconds: 2),
+            title: Text('비밀번호가 변경되었습니다. 다시 로그인해주세요.'),
+          );
         }
       } catch (e) {
         if (e is FirebaseAuthException) {

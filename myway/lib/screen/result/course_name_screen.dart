@@ -244,14 +244,13 @@ class _CourseNameScreenState extends State<CourseNameScreen> {
                         ? () async {
                           User? currentUser = _auth.currentUser;
                           if (currentUser == null) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  '코스이름을 지정하기 위해선 로그인이 필요합니다.',
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                                backgroundColor: Colors.red,
-                              ),
+                            toastification.show(
+                              context: context,
+                              type: ToastificationType.error,
+                              style: ToastificationStyle.flat,
+                              alignment: Alignment.bottomCenter,
+                              autoCloseDuration: Duration(seconds: 2),
+                              title: Text('코스이름을 지정하기 위해선 로그인이 필요합니다.'),
                             );
                             Navigator.pushNamedAndRemoveUntil(
                               context,
