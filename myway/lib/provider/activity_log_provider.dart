@@ -18,76 +18,8 @@ class ActivityLogProvider extends ChangeNotifier {
   DataStatus _currentDataStatus = DataStatus.hasData;
   DataStatus get currentDataStatus => _currentDataStatus;
 
-  // Firestore 데이터 처리
-  Future<Map<String, dynamic>> getWeeklyData(DateTime date) async {
-    final startOfWeek = date.subtract(Duration(days: date.weekday - 1));
-    final endOfWeek = startOfWeek.add(Duration(days: 6));
-
-    print('주간 데이터 조회 시작: $startOfWeek ~ $endOfWeek');
-
-    final snapshot =
-        await FirebaseFirestore.instance
-            .collection('trackingResult')
-            .doc(FirebaseAuth.instance.currentUser?.uid)
-            .get();
-
-    if (!snapshot.exists) {
-      print('문서가 존재하지 않습니다.');
-      _currentDataStatus = DataStatus.noDataAtAll;
-      return {
-        'distance': 0.0,
-        'duration': Duration.zero,
-        'steps': 0,
-        'count': 0,
-      };
-    }
-
-    final data = snapshot.data()?['TrackingResult'] as List<dynamic>? ?? [];
-    print('조회된 전체 데이터 수: ${data.length}');
-
-    // 전체 데이터가 없는 경우
-    if (data.isEmpty) {
-      print('전체 데이터가 없습니다.');
-      _currentDataStatus = DataStatus.noDataAtAll;
-      return {
-        'distance': 0.0,
-        'duration': Duration.zero,
-        'steps': 0,
-        'count': 0,
-      };
-    }
-
-    // 해당 주간의 데이터 필터링
-    final weeklyData =
-        data.where((item) {
-          final itemDate = DateTime.parse(item['종료시간']);
-          final isInRange =
-              itemDate.isAfter(startOfWeek) &&
-              itemDate.isBefore(endOfWeek.add(Duration(days: 1)));
-          print('데이터 확인: ${item['종료시간']} - 범위 내: $isInRange');
-          return isInRange;
-        }).toList();
-
-    print('주간 데이터 필터링 결과: ${weeklyData.length}개');
-
-    // 해당 주간에 데이터가 없는 경우 (하지만 전체 데이터는 존재)
-    if (weeklyData.isEmpty) {
-      print('선택한 주에 데이터가 없습니다.');
-      _currentDataStatus = DataStatus.noDataInPeriod;
-      return {
-        'distance': 0.0,
-        'duration': Duration.zero,
-        'steps': 0,
-        'count': 0,
-      };
-    }
-
-    // 데이터가 있는 경우
-    _currentDataStatus = DataStatus.hasData;
-    final result = _aggregateData(weeklyData);
-    updateStats(result);
-    return result;
-  }
+  String _selectedRange = '';
+  String get selectedRange => _selectedRange;
 
   Future<Map<String, dynamic>> getMonthlyData(int year, int month) async {
     final startOfMonth = DateTime(year, month, 1);
@@ -144,13 +76,100 @@ class ActivityLogProvider extends ChangeNotifier {
     return result;
   }
 
+  List<String> get availableWeeklyRanges {
+    final List<String> ranges = [];
+
+    // 기록 시작 시점과 오늘까지 기준 설정
+    final firstDate = DateTime(2024, 1, 1); // 실제로는 첫 기록일로 설정 추천
+    final today = DateTime.now();
+    DateTime current = firstDate;
+
+    while (current.isBefore(today)) {
+      final weekStart = current;
+      final weekEnd = current.add(Duration(days: 6));
+      final label =
+          '${weekStart.month}월 ${weekStart.day}일 ~ ${weekEnd.month}월 ${weekEnd.day}일';
+      ranges.add(label);
+      current = current.add(Duration(days: 7));
+    }
+
+    return ranges;
+  }
+
+  void updateSelectedRange(String range) async {
+    _selectedRange = range;
+
+    // 날짜 파싱
+    final parts = range.split(' ~ ');
+    final startParts = parts[0].split('월 ');
+    final endParts = parts[1].split('월 ');
+
+    final startDate = DateTime(
+      DateTime.now().year,
+      int.parse(startParts[0]),
+      int.parse(startParts[1].replaceAll('일', '')),
+    );
+    final endDate = DateTime(
+      DateTime.now().year,
+      int.parse(endParts[0]),
+      int.parse(endParts[1].replaceAll('일', '')),
+    );
+
+    _currentDate = startDate.add(Duration(days: 3)); // 주 중간값
+    await _fetchWeeklyDataFromFirestore(startDate, endDate);
+
+    notifyListeners();
+  }
+
+  Future<void> _fetchWeeklyDataFromFirestore(
+    DateTime start,
+    DateTime end,
+  ) async {
+    final snapshot =
+        await FirebaseFirestore.instance
+            .collection('trackingResult')
+            .doc(FirebaseAuth.instance.currentUser?.uid)
+            .get();
+
+    if (!snapshot.exists) {
+      _currentDataStatus = DataStatus.noDataAtAll;
+      updateStats({
+        'distance': 0.0,
+        'duration': Duration.zero,
+        'steps': 0,
+        'count': 0,
+      });
+      return;
+    }
+
+    final data = snapshot.data()?['TrackingResult'] as List<dynamic>? ?? [];
+
+    final weeklyData =
+        data.where((item) {
+          final itemDate = DateTime.parse(item['종료시간']);
+          return itemDate.isAfter(start.subtract(Duration(seconds: 1))) &&
+              itemDate.isBefore(end.add(Duration(days: 1)));
+        }).toList();
+
+    if (weeklyData.isEmpty) {
+      _currentDataStatus = DataStatus.noDataInPeriod;
+      updateStats({
+        'distance': 0.0,
+        'duration': Duration.zero,
+        'steps': 0,
+        'count': 0,
+      });
+      return;
+    }
+
+    final result = _aggregateData(weeklyData);
+    _currentDataStatus = DataStatus.hasData;
+    updateStats(result);
+  }
+
   Future<void> loadData() async {
     try {
-      if (_selectedPeriod == ActivityPeriod.weekly) {
-        final data = await getWeeklyData(_currentDate);
-        print('주간 데이터 로드 결과: $data');
-        updateStats(data);
-      } else {
+      if (_selectedPeriod == ActivityPeriod.monthly) {
         final data = await getMonthlyData(
           _currentDate.year,
           _currentDate.month,
@@ -651,24 +670,6 @@ class ActivityLogProvider extends ChangeNotifier {
   // 현재 선택된 년도와 월
   String get currentYearMonth {
     return '$currentYear년 $_selectedMonth';
-  }
-
-  // 주차 선택을 위한 드롭다운 아이템 생성
-  List<DropdownMenuItem<String>> getWeekDropdownItems() {
-    final weeks = getWeeksInMonth(_currentDate.year, _currentDate.month);
-    return weeks.map((week) {
-      return DropdownMenuItem<String>(
-        value: week,
-        child: Text(
-          week,
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w500,
-            color: GRAYSCALE_LABEL_950,
-          ),
-        ),
-      );
-    }).toList();
   }
 
   // 주간 차트 데이터
