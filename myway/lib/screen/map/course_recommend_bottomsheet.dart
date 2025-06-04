@@ -108,17 +108,6 @@ class _CourseRecommendBottomsheetState
         if (_nearbyCourses.isEmpty &&
             !parkDataProvider.isLoadingParks &&
             !parkDataProvider.isLoadingLocation) {
-          print("DEBUG: 데이터 로딩 완료, 근처 2km 코스 확인 중...");
-          print("DEBUG: 현재 위치: ${parkDataProvider.currentPosition}");
-          print("DEBUG: 전체 공원 수: ${parkDataProvider.allFetchedParks.length}");
-          print("DEBUG: 2km 내 공원 수: ${parkDataProvider.nearbyParks2km.length}");
-          print(
-            "DEBUG: 전체 추천 코스 수: ${parkDataProvider.allGeneratedRecommendedCourses.length}",
-          );
-          print(
-            "DEBUG: 2km 내 추천 코스 수: ${parkDataProvider.nearbyRecommendedCourses2km.length}",
-          );
-
           _nearbyCourses =
               parkDataProvider.nearbyRecommendedCourses2km
                   .map(
@@ -129,7 +118,6 @@ class _CourseRecommendBottomsheetState
           _nearbyCourses.sort(
             (a, b) => a.details.distance.compareTo(b.details.distance),
           );
-          print("DEBUG: 최종 변환된 근처 코스 수: ${_nearbyCourses.length}");
         }
 
         return DraggableScrollableSheet(
@@ -259,7 +247,7 @@ class _CourseRecommendBottomsheetState
                             ),
                             SizedBox(width: 5),
                             Text(
-                              '${_nearbyCourses[selectedIndex!].details.distance}km',
+                              '${_nearbyCourses[selectedIndex!].details.distance.toDouble().toStringAsFixed(1)}km',
                               style: TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w600,
@@ -380,8 +368,7 @@ class _CourseRecommendBottomsheetState
                                                           // 추후에는 사용자가 설정한 코스이름 넣어야 함
                                                           Text(
                                                             _nearbyCourses[index]
-                                                                    .parkName ??
-                                                                '정보 없음',
+                                                                .title,
                                                             style: const TextStyle(
                                                               fontSize: 14,
                                                               fontWeight:
@@ -395,18 +382,17 @@ class _CourseRecommendBottomsheetState
                                                                 TextOverflow
                                                                     .ellipsis,
                                                           ),
-                                                          Text(
-                                                            '${_nearbyCourses[index].details.distance}km',
-                                                            style: TextStyle(
-                                                              fontSize: 14,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w500,
-                                                              color:
-                                                                  GRAYSCALE_LABEL_800,
-                                                            ),
-                                                          ),
                                                         ],
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      '${_nearbyCourses[index].details.distance.toStringAsFixed(1)}km',
+                                                      style: TextStyle(
+                                                        fontSize: 14,
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                        color:
+                                                            GRAYSCALE_LABEL_800,
                                                       ),
                                                     ),
                                                   ],
