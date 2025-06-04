@@ -100,7 +100,7 @@ class StepProvider extends ChangeNotifier {
       route: [], // 나중에 설정
       steps: steps,
       duration: formattedElapsed,
-      distance: distanceKm,
+      distance: double.parse(distanceKm),
       stopTime: formattedStopTime,
       courseName: courseName.text,
       imageUrl: imageUrl,
