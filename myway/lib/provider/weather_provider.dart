@@ -141,12 +141,11 @@ class WeatherProvider extends ChangeNotifier {
 
   Future<void> _fetchCurrentWeather(String nx, String ny) async {
     final now = DateTime.now();
-    final baseDate = WeatherServiceHelper.formatDate(now);
-    final baseTime = WeatherServiceHelper.getSafeUltraSrtNcstBaseTime(now);
+    final dateTime = WeatherServiceHelper.getSafeUltraSrtNcstDateTime(now);
 
     final data = await _weatherApi.fetchCurrentWeather(
-      baseDate: baseDate,
-      baseTime: baseTime,
+      baseDate: dateTime['date']!,
+      baseTime: dateTime['time']!,
       nx: nx,
       ny: ny,
     );
@@ -172,37 +171,106 @@ class WeatherProvider extends ChangeNotifier {
 
   Future<void> _fetchSkyPty(String nx, String ny) async {
     final now = DateTime.now();
-    final baseDate = WeatherServiceHelper.formatDate(now);
-    final baseTime = WeatherServiceHelper.getSafeForecastBaseTime(now);
-    final fcstTime = WeatherServiceHelper.getFcstTargetTime(now);
+    final baseDateTime = WeatherServiceHelper.getSafeForecastDateTime(now);
+    final targetDateTime = WeatherServiceHelper.getFcstTargetDateTime(now);
 
     final data = await _weatherApi.fetchForecastWeather(
-      baseDate: baseDate,
-      baseTime: baseTime,
+      baseDate: baseDateTime['date']!,
+      baseTime: baseDateTime['time']!,
       nx: nx,
       ny: ny,
     );
 
     if (data != null) {
-      final items = data['response']['body']['items']['item'] as List<dynamic>;
-      final skyItem = items.firstWhere(
-        (e) => e['category'] == 'SKY' && e['fcstTime'] == fcstTime,
-        orElse: () => null,
-      );
-      final ptyItem = items.firstWhere(
-        (e) => e['category'] == 'PTY' && e['fcstTime'] == fcstTime,
-        orElse: () => null,
-      );
+      try {
+        final items =
+            data['response']['body']['items']['item'] as List<dynamic>;
 
-      if (skyItem != null && ptyItem != null) {
-        final sky = skyItem['fcstValue'];
-        final pty = ptyItem['fcstValue'];
-        weatherStatus = _getWeatherStatus(sky, pty);
-        weatherIconPath = _getWeatherIconPath(
-          weatherStatus,
-          WeatherServiceHelper.isNightTime(now),
+        final skyItem = items.firstWhere(
+          (e) =>
+              e['category'] == 'SKY' &&
+              e['fcstTime'] == targetDateTime['time'] &&
+              e['fcstDate'] == targetDateTime['date'],
+          orElse: () => null,
         );
+
+        final ptyItem = items.firstWhere(
+          (e) =>
+              e['category'] == 'PTY' &&
+              e['fcstTime'] == targetDateTime['time'] &&
+              e['fcstDate'] == targetDateTime['date'],
+          orElse: () => null,
+        );
+
+        if (skyItem != null && ptyItem != null) {
+          final sky = skyItem['fcstValue'];
+          final pty = ptyItem['fcstValue'];
+          weatherStatus = _getWeatherStatus(sky, pty);
+          weatherIconPath = _getWeatherIconPath(
+            weatherStatus,
+            WeatherServiceHelper.isNightTime(now),
+          );
+        } else {
+          print('정확한 시간대 데이터 없음 - 가장 가까운 시간 찾기');
+          _findClosestTimeData(items, targetDateTime['time']!);
+        }
+      } catch (e) {
+        print('SKY/PTY 데이터 파싱 오류: $e');
+
+        weatherStatus = '정보 없음';
+        weatherIconPath = 'assets/icons/weather_cloud.svg';
       }
+    }
+  }
+
+  void _findClosestTimeData(List<dynamic> items, String targetTime) {
+    final targetHour = int.parse(targetTime.substring(0, 2));
+
+    final Map<int, Map<String, String>> timeData = {};
+
+    for (var item in items) {
+      if (item['category'] == 'SKY' || item['category'] == 'PTY') {
+        final timeStr = item['fcstTime'] as String;
+        final hour = int.parse(timeStr.substring(0, 2));
+
+        timeData.putIfAbsent(hour, () => {});
+        timeData[hour]![item['category']] = item['fcstValue'];
+      }
+    }
+
+    int? closestHour;
+    int minDiff = 24;
+
+    for (final hour in timeData.keys) {
+      int diff;
+      if (hour >= targetHour) {
+        diff = hour - targetHour;
+      } else {
+        diff = (24 - targetHour) + hour;
+      }
+
+      if (diff < minDiff &&
+          timeData[hour]!.containsKey('SKY') &&
+          timeData[hour]!.containsKey('PTY')) {
+        minDiff = diff;
+        closestHour = hour;
+      }
+    }
+
+    if (closestHour != null) {
+      final sky = timeData[closestHour]!['SKY']!;
+      final pty = timeData[closestHour]!['PTY']!;
+      weatherStatus = _getWeatherStatus(sky, pty);
+      weatherIconPath = _getWeatherIconPath(
+        weatherStatus,
+        WeatherServiceHelper.isNightTime(DateTime.now()),
+      );
+      print('폴백: ${closestHour}시 데이터 사용 (목표: ${targetHour}시)');
+    } else {
+      // 마지막 폴백
+      weatherStatus = '정보 없음';
+      weatherIconPath = 'assets/icons/weather_cloud.svg';
+      print('사용 가능한 날씨 데이터 없음');
     }
   }
 
@@ -220,47 +288,103 @@ class WeatherProvider extends ChangeNotifier {
 
   Future<void> _fetchHourlyForecast(String nx, String ny) async {
     final now = DateTime.now();
-    final baseDate = WeatherServiceHelper.formatDate(now);
-    final baseTime = WeatherServiceHelper.getSafeForecastBaseTime(now);
+    final baseDateTime = WeatherServiceHelper.getSafeForecastDateTime(now);
 
     final data = await _weatherApi.fetchForecastWeather(
-      baseDate: baseDate,
-      baseTime: baseTime,
+      baseDate: baseDateTime['date']!,
+      baseTime: baseDateTime['time']!,
       nx: nx,
       ny: ny,
     );
-
     if (data != null) {
-      final items = data['response']['body']['items']['item'] as List<dynamic>;
-      final forecastMap = <String, Map<String, String>>{};
+      try {
+        final items =
+            data['response']['body']['items']['item'] as List<dynamic>;
+        final forecastMap = <String, Map<String, String>>{};
 
-      for (var item in items) {
-        final time = item['fcstTime'];
-        if (!_isEvery3Hour(time)) continue;
+        final currentHour = now.hour;
+        final targetHours = <int>[];
 
-        forecastMap.putIfAbsent(time, () => {});
-        if (item['category'] == 'TMP')
-          forecastMap[time]!['temp'] = item['fcstValue'];
-        if (item['category'] == 'SKY')
-          forecastMap[time]!['sky'] = item['fcstValue'];
-        if (item['category'] == 'PTY')
-          forecastMap[time]!['pty'] = item['fcstValue'];
+        for (int i = 0; i < 8; i++) {
+          int hour = ((currentHour ~/ 3) * 3 + (i * 3)) % 24;
+          targetHours.add(hour);
+        }
+
+        for (var item in items) {
+          final fcstDate = item['fcstDate'] as String;
+          final fcstTime = item['fcstTime'] as String;
+          final hour = int.parse(fcstTime.substring(0, 2));
+
+          if (!targetHours.contains(hour)) continue;
+
+          final dateTimeKey = '${fcstDate}_${fcstTime}';
+
+          forecastMap.putIfAbsent(
+            dateTimeKey,
+            () => {'date': fcstDate, 'time': fcstTime},
+          );
+
+          switch (item['category']) {
+            case 'TMP':
+              forecastMap[dateTimeKey]!['temp'] = item['fcstValue'];
+              break;
+            case 'SKY':
+              forecastMap[dateTimeKey]!['sky'] = item['fcstValue'];
+              break;
+            case 'PTY':
+              forecastMap[dateTimeKey]!['pty'] = item['fcstValue'];
+              break;
+          }
+        }
+
+        final sortedEntries =
+            forecastMap.entries.toList()..sort((a, b) {
+              final aDateTime = DateTime.parse(
+                '${a.value['date']} ${a.value['time']?.substring(0, 2)}:00:00',
+              );
+              final bDateTime = DateTime.parse(
+                '${b.value['date']} ${b.value['time']?.substring(0, 2)}:00:00',
+              );
+              return aDateTime.compareTo(bDateTime);
+            });
+
+        hourlyForecast =
+            sortedEntries
+                .where(
+                  (entry) =>
+                      entry.value['temp'] != null &&
+                      entry.value['sky'] != null &&
+                      entry.value['pty'] != null,
+                )
+                .take(8)
+                .map((entry) {
+                  final time = entry.value['time']!;
+                  final timeLabel = '${time.substring(0, 2)}시';
+                  final status = _getWeatherStatus(
+                    entry.value['sky'] ?? '1',
+                    entry.value['pty'] ?? '0',
+                  );
+
+                  final hour = int.parse(time.substring(0, 2));
+                  final isNight = hour < 6 || hour >= 18;
+                  final iconPath = _getWeatherIconPath(status, isNight);
+
+                  return {
+                    'time': timeLabel,
+                    'temp': '${entry.value['temp']}\u00b0',
+                    'icon': iconPath,
+                  };
+                })
+                .toList();
+
+        print('시간별 예보 수집 완료: ${hourlyForecast.length}개');
+      } catch (e) {
+        print('시간별 예보 파싱 오류: $e');
+        hourlyForecast = [];
       }
-
-      hourlyForecast =
-          forecastMap.entries.map((e) {
-            final timeLabel = '${e.key.substring(0, 2)}시';
-            final status = _getWeatherStatus(
-              e.value['sky'] ?? '1',
-              e.value['pty'] ?? '0',
-            );
-            final iconPath = _getWeatherIconPath(status, false);
-            return {
-              'time': timeLabel,
-              'temp': '${e.value['temp']}\u00b0',
-              'icon': iconPath,
-            };
-          }).toList();
+    } else {
+      print('시간별 예보 데이터 없음');
+      hourlyForecast = [];
     }
   }
 
@@ -330,23 +454,65 @@ class WeatherServiceHelper {
     return '${date.year}${date.month.toString().padLeft(2, '0')}${date.day.toString().padLeft(2, '0')}';
   }
 
-  static String getSafeUltraSrtNcstBaseTime(DateTime now) {
-    final baseTime = (now.minute < 40) ? now.subtract(Duration(hours: 1)) : now;
-    return '${baseTime.hour.toString().padLeft(2, '0')}00';
+  static Map<String, String> getSafeUltraSrtNcstDateTime(DateTime now) {
+    DateTime baseDateTime =
+        now.minute < 40 ? now.subtract(Duration(hours: 1)) : now;
+
+    return {
+      'date': formatDate(baseDateTime),
+      'time': '${baseDateTime.hour.toString().padLeft(2, '0')}00',
+    };
   }
 
-  static String getSafeForecastBaseTime(DateTime now) {
+  static Map<String, String> getSafeForecastDateTime(DateTime now) {
     final times = [2, 5, 8, 11, 14, 17, 20, 23];
-    int selected = times.first;
+
+    int selectedHour = times.first;
     for (final t in times) {
-      if (now.hour >= t) selected = t;
+      if (now.hour >= t) {
+        selectedHour = t;
+      } else {
+        break;
+      }
     }
-    return '${selected.toString().padLeft(2, '0')}00';
+
+    DateTime baseDateTime;
+    if (now.hour < 2) {
+      baseDateTime = DateTime(now.year, now.month, now.day - 1, 23, 0);
+      selectedHour = 23;
+    } else {
+      baseDateTime = DateTime(now.year, now.month, now.day, selectedHour, 0);
+    }
+
+    return {
+      'date': formatDate(baseDateTime),
+      'time': '${selectedHour.toString().padLeft(2, '0')}00',
+    };
   }
 
   static String getFcstTargetTime(DateTime now) {
-    final targetHour = now.minute >= 45 ? now.hour + 1 : now.hour;
+    int targetHour = now.minute >= 45 ? now.hour + 1 : now.hour;
+
+    if (targetHour >= 24) {
+      targetHour = 0;
+    }
+
     return '${targetHour.toString().padLeft(2, '0')}00';
+  }
+
+  static Map<String, String> getFcstTargetDateTime(DateTime now) {
+    DateTime targetDateTime;
+
+    if (now.minute >= 45) {
+      targetDateTime = DateTime(now.year, now.month, now.day, now.hour + 1, 0);
+    } else {
+      targetDateTime = DateTime(now.year, now.month, now.day, now.hour, 0);
+    }
+
+    return {
+      'date': formatDate(targetDateTime),
+      'time': '${targetDateTime.hour.toString().padLeft(2, '0')}00',
+    };
   }
 
   static bool isNightTime(DateTime now) {
