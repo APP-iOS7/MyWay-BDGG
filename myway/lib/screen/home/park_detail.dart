@@ -26,12 +26,12 @@ class _ParkDetailScreenState extends State<ParkDetailScreen> {
     ParkDataProvider provider,
   ) {
     // ★★★ 각 카드를 그릴 때 Provider로부터 최신 즐겨찾기 상태를 가져옵니다. ★★★
-    bool isFavoriteNow = provider.isCourseFavorite(course.id);
+    bool isFavoriteNow = provider.isCourseFavorite(course.details.id);
     // print("Detail Build Card: ${course.title} (ID: ${course.id}), isFavorite from Provider: $isFavoriteNow");
 
     return Container(
       // 이 Container에 ValueKey를 주어 GridView.builder가 아이템을 명확히 식별하도록 함
-      key: ValueKey('detail_course_item_container_${course.id}'),
+      key: ValueKey(course.details.id),
       decoration: BoxDecoration(
         color: BACKGROUND_COLOR,
         borderRadius: BorderRadius.circular(12.0),
@@ -79,9 +79,9 @@ class _ParkDetailScreenState extends State<ParkDetailScreen> {
                     color: Colors.transparent,
                     child: InkWell(
                       // InkWell에도 고유한 Key를 부여하여 터치 이벤트 처리를 명확하게 합니다.
-                      key: ValueKey('favorite_icon_detail_action_${course.id}'),
+                      key: ValueKey(course.details.id),
                       onTap: () {
-                        provider.toggleCourseFavorite(course.id);
+                        provider.toggleCourseFavorite(course.details.id);
                       },
                       borderRadius: BorderRadius.circular(20),
                       child: Padding(

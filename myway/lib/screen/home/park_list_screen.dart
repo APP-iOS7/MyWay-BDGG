@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:myway/model/park_info.dart';
 import 'package:myway/model/park_course_info.dart';
 import 'package:provider/provider.dart';
+import 'package:toastification/toastification.dart';
 import '../../provider/park_data_provider.dart';
 import '../../const/colors.dart';
 import 'park_detail.dart';
@@ -176,11 +177,13 @@ class _ParkListScreenState extends State<ParkListScreen>
           if (mounted && !provider.isLoadingLocation) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text("현재 위치를 가져올 수 없어 '내 주변' 필터를 사용할 수 없습니다."),
-                    backgroundColor: YELLOW_INFO_BASE_30,
-                  ),
+                toastification.show(
+                  context: context,
+                  type: ToastificationType.error,
+                  style: ToastificationStyle.flat,
+                  alignment: Alignment.bottomCenter,
+                  autoCloseDuration: Duration(seconds: 2),
+                  title: Text("현재 위치를 가져올 수 없어 '내 주변' 필터를 사용할 수 없습니다."),
                 );
               }
             });
@@ -259,7 +262,7 @@ class _ParkListScreenState extends State<ParkListScreen>
       if (_currentCourseFilter == ParkFilterType.favorites) {
         tempFilteredList =
             tempFilteredList
-                .where((course) => provider.isCourseFavorite(course.id))
+                .where((course) => provider.isCourseFavorite(course.details.id))
                 .toList();
       } else {
         /* 정렬 로직 */
@@ -529,12 +532,14 @@ class _ParkListScreenState extends State<ParkListScreen>
                 provider.currentPosition == null &&
                 !provider.isLoadingLocation) {
               if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                      "현재 위치를 가져올 수 없어 '내 주변' 필터를 사용할 수 없습니다. 위치 권한을 확인해주세요.",
-                    ),
-                    backgroundColor: YELLOW_INFO_BASE_30,
+                toastification.show(
+                  context: context,
+                  type: ToastificationType.error,
+                  style: ToastificationStyle.flat,
+                  alignment: Alignment.bottomCenter,
+                  autoCloseDuration: Duration(seconds: 2),
+                  title: Text(
+                    "현재 위치를 가져올 수 없어 '내 주변' 필터를 사용할 수 없습니다. 위치 권한을 확인해주세요.",
                   ),
                 );
               }
@@ -764,12 +769,12 @@ class _ParkListScreenState extends State<ParkListScreen>
     ParkCourseInfo course,
     ParkDataProvider provider,
   ) {
-    bool isFavoriteNow = provider.isCourseFavorite(course.id);
+    bool isFavoriteNow = provider.isCourseFavorite(course.details.id);
     // print("List Screen Build Card: ${course.title} (ID: ${course.id}), isFavorite: $isFavoriteNow");
 
     return Container(
       // 카드 전체를 감싸는 Container에 Key를 부여합니다.
-      key: ValueKey('course_list_item_container_${course.id}'),
+      key: ValueKey(course.details.id),
       decoration: BoxDecoration(
         color: BACKGROUND_COLOR,
         borderRadius: BorderRadius.circular(12.0),
@@ -816,11 +821,9 @@ class _ParkListScreenState extends State<ParkListScreen>
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
-                      key: ValueKey(
-                        'favorite_icon_list_action_${course.id}',
-                      ), // Key 고유성 확보
+                      key: ValueKey(course.details.id), // Key 고유성 확보
                       onTap: () {
-                        provider.toggleCourseFavorite(course.id);
+                        provider.toggleCourseFavorite(course.details.id);
                       },
                       borderRadius: BorderRadius.circular(20),
                       child: Padding(

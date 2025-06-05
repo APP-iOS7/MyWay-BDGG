@@ -29,15 +29,6 @@ class _CourseRecommendBottomsheetState
     ParkCourseInfo parkCourse,
     ParkDataProvider parkDataProvider,
   ) {
-    // 임시 더미 경로 데이터 (실제 앱에서는 API 등에서 가져오는 것이 좋음)
-    List<LatLng> dummyRoute = [
-      LatLng(37.40020, 126.93613),
-      LatLng(37.400120, 126.93657),
-      LatLng(37.39948, 126.93656),
-      LatLng(37.399476, 126.937293),
-      LatLng(37.39953, 126.93780),
-    ];
-
     double actualDistance = 2.0;
 
     ParkInfo? parkInfo;
@@ -64,7 +55,6 @@ class _CourseRecommendBottomsheetState
       actualDistance = 2.0;
     }
     return ParkCourseInfo(
-      id: parkCourse.id,
       isSelected: parkCourse.isSelected,
       isFavorite: parkCourse.isFavorite,
       parkId: parkCourse.parkId,
@@ -72,13 +62,14 @@ class _CourseRecommendBottomsheetState
       park: parkCourse.parkName ?? '정보 없음',
       date: DateTime.now(),
       details: StepModel(
+        id: parkCourse.details.id,
         steps: parkCourse.details.steps,
         duration: parkCourse.details.duration,
         distance: parkCourse.details.distance,
         stopTime: parkCourse.details.stopTime,
         courseName: parkCourse.details.courseName,
         parkId: parkCourse.parkId,
-        route: dummyRoute,
+        route: parkCourse.details.route,
         imageUrl:
             parkCourse.details.imageUrl.startsWith('http')
                 ? parkCourse.details.imageUrl
@@ -156,7 +147,7 @@ class _CourseRecommendBottomsheetState
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    '내 주변 2km 내 추천코스',
+                                    '내 주변 추천코스',
                                     style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.w600,

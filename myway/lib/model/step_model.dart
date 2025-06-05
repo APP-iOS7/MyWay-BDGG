@@ -2,30 +2,33 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class StepModel {
+  final String id;
   final int steps;
   final String duration;
   final double distance;
   final String stopTime;
   final String courseName;
   final String imageUrl;
-  final String parkId;
+  final String? parkId;
   final List<LatLng> route; // 경로 (LatLng 리스트)
   final String? parkName;
 
   StepModel({
+    required this.id,
     required this.steps,
     required this.duration,
     required this.distance,
     required this.stopTime,
     required this.courseName,
     required this.imageUrl,
-    required this.parkId,
+    this.parkId,
     required this.route,
     this.parkName,
   });
 
   Map<String, dynamic> toJson() {
     return {
+      'id': id,
       '걸음수': steps,
       '소요시간': duration,
       '거리': distance,
@@ -44,6 +47,7 @@ class StepModel {
 
   factory StepModel.fromJson(Map<String, dynamic> json) {
     return StepModel(
+      id: json['id'] ?? '',
       steps: json['걸음수'],
       duration: json['소요시간'],
       distance: json['거리'],

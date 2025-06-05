@@ -4,6 +4,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:myway/model/step_model.dart';
 import 'package:pedometer/pedometer.dart';
+import 'package:uuid/uuid.dart';
 
 enum TrackingStatus { running, paused, stopped }
 
@@ -11,9 +12,16 @@ class StepProvider extends ChangeNotifier {
   final TextEditingController courseName = TextEditingController();
   String? _parkName;
   String? get parkName => _parkName;
+  String? _parkId;
+  String? get parkId => _parkId;
 
   void setParkName(String? parkName) {
     _parkName = parkName;
+    notifyListeners();
+  }
+
+  void setParkId(String? parkId) {
+    _parkId = parkId;
     notifyListeners();
   }
 
@@ -100,7 +108,7 @@ class StepProvider extends ChangeNotifier {
     _formattedStopTime = DateFormat('yyyy-MM-dd HH:mm').format(_stopTime!);
 
     return StepModel(
-      parkId: 'test_park_id', // 나중에 설정
+      id: const Uuid().v4(),
       route: route, // 나중에 설정
       steps: steps,
       duration: formattedElapsed,
@@ -109,6 +117,7 @@ class StepProvider extends ChangeNotifier {
       courseName: courseName.text,
       imageUrl: imageUrl,
       parkName: _parkName,
+      parkId: _parkId,
     );
   }
 
@@ -123,6 +132,7 @@ class StepProvider extends ChangeNotifier {
     _elapsed = Duration.zero;
     _status = TrackingStatus.stopped;
     _parkName = null;
+    _parkId = null;
     _route.clear();
     print('stepProvider state reset');
 
