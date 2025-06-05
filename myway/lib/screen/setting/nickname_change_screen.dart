@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:myway/screen/alert/dialog.dart';
 import 'package:provider/provider.dart';
+import 'package:toastification/toastification.dart';
 
 import '../../provider/user_provider.dart';
 import '/const/colors.dart';
@@ -83,17 +84,24 @@ class _NicknameChangeScreenState extends State<NicknameChangeScreen> {
         });
       }
       Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("닉네임이 변경되었습니다."),
-          duration: Duration(seconds: 1),
-        ),
+      toastification.show(
+        context: context,
+        type: ToastificationType.success,
+        style: ToastificationStyle.flat,
+        alignment: Alignment.bottomCenter,
+        autoCloseDuration: Duration(seconds: 2),
+        title: Text('닉네임이 변경되었습니다.'),
       );
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text("닉네임 변경 실패: ${e.toString()}")));
+        toastification.show(
+          context: context,
+          type: ToastificationType.error,
+          style: ToastificationStyle.flat,
+          alignment: Alignment.bottomCenter,
+          autoCloseDuration: Duration(seconds: 2),
+          title: Text('닉네임 변경 실패: ${e.toString()}'),
+        );
       }
       print("닉네임 변경 실패: $e");
     }

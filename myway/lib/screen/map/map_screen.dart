@@ -6,6 +6,7 @@ import 'package:location/location.dart';
 import 'package:myway/model/park_course_info.dart';
 import 'package:myway/screen/result/course_name_screen.dart';
 import 'package:provider/provider.dart';
+import 'package:toastification/toastification.dart';
 import '../../provider/step_provider.dart';
 import '/const/colors.dart';
 import '/screen/map/course_recommend_bottomsheet.dart';
@@ -321,9 +322,14 @@ class _MapScreenState extends State<MapScreen>
         ),
       );
     } else {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('지도 캡처에 실패했습니다')));
+      toastification.show(
+        context: context,
+        type: ToastificationType.error,
+        style: ToastificationStyle.flat,
+        alignment: Alignment.bottomCenter,
+        autoCloseDuration: Duration(seconds: 2),
+        title: Text('지도 캡처에 실패했습니다'),
+      );
     }
   }
 

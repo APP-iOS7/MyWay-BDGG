@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:myway/const/colors.dart';
+import 'package:toastification/toastification.dart';
 
 class NoticeEditScreen extends StatefulWidget {
   final String? initialTitle;
@@ -39,11 +40,13 @@ class _NoticeEditScreenState extends State<NoticeEditScreen> {
 
   void _completeWriting() {
     if (_titleController.text.isEmpty || _contentController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("제목과 내용을 모두 입력해주세요."),
-          backgroundColor: RED_DANGER_TEXT_50,
-        ),
+      toastification.show(
+        context: context,
+        type: ToastificationType.error,
+        style: ToastificationStyle.flat,
+        alignment: Alignment.bottomCenter,
+        autoCloseDuration: Duration(seconds: 2),
+        title: Text('제목과 내용을 모두 입력해주세요.'),
       );
       return;
     }

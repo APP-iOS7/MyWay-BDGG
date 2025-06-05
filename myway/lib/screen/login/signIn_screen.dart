@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:myway/const/colors.dart';
 import 'package:myway/screen/home/home_screen.dart';
+import 'package:toastification/toastification.dart';
 
 import '../../const/custome_button.dart';
 
@@ -18,6 +19,30 @@ class SigninScreen extends StatefulWidget {
 class _SigninScreenState extends State<SigninScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+
+  bool _isButtonEnabled = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _emailController.addListener(_checkFields);
+    _passwordController.addListener(_checkFields);
+  }
+
+  @override
+  void dispose() {
+    _emailController.removeListener(_checkFields);
+    _passwordController.removeListener(_checkFields);
+    super.dispose();
+  }
+
+  void _checkFields() {
+    setState(() {
+      _isButtonEnabled =
+          _emailController.text.isNotEmpty &&
+          _passwordController.text.isNotEmpty;
+    });
+  }
 
   // 로그인 함수
   Future<void> _signIn() async {
@@ -35,10 +60,14 @@ class _SigninScreenState extends State<SigninScreen> {
       );
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('로그인 실패: ${e.toString()}')));
-        debugPrint('로그인 실패: ${e.toString()}');
+        toastification.show(
+          context: context,
+          type: ToastificationType.error,
+          style: ToastificationStyle.flat,
+          alignment: Alignment.bottomCenter,
+          autoCloseDuration: Duration(seconds: 2),
+          title: Text("로그인 실패 $e"),
+        );
       }
     }
   }
@@ -114,14 +143,17 @@ class _SigninScreenState extends State<SigninScreen> {
                   ),
                   SizedBox(height: 20),
                   GestureDetector(
-                    onTap: _signIn,
+                    onTap: _isButtonEnabled ? _signIn : null,
 
                     child: Container(
                       alignment: Alignment.center,
                       width: double.infinity,
                       height: 56,
                       decoration: BoxDecoration(
-                        color: ORANGE_PRIMARY_500,
+                        color:
+                            _isButtonEnabled
+                                ? ORANGE_PRIMARY_500
+                                : GRAYSCALE_LABEL_300,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(

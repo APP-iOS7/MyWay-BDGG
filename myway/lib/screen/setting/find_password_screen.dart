@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:toastification/toastification.dart';
 
 import '/const/colors.dart';
 
@@ -32,15 +33,25 @@ class _FindPasswordScreenState extends State<FindPasswordScreen> {
     try {
       await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text("비밀번호 재설정 이메일이 전송되었습니다.")));
+        toastification.show(
+          context: context,
+          type: ToastificationType.success,
+          style: ToastificationStyle.flat,
+          alignment: Alignment.bottomCenter,
+          autoCloseDuration: Duration(seconds: 2),
+          title: Text('비밀번호 재설정 이메일이 전송되었습니다.'),
+        );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text("이메일 전송 실패: ${e.toString()}")));
+        toastification.show(
+          context: context,
+          type: ToastificationType.error,
+          style: ToastificationStyle.flat,
+          alignment: Alignment.bottomCenter,
+          autoCloseDuration: Duration(seconds: 2),
+          title: Text('이메일 전송 실패: ${e.toString()}'),
+        );
       }
     }
   }
