@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:myway/const/key.dart';
 
 class WeatherApiService {
-  final String _rawApiKey =
-      '6uNs/cNMeEpn9W2R9ffJaV3u6Wba2Z2GIS20vcJVsgyQG59gzIIzQFJhgnnyveDsBFFOaZ+O2k9Xb0YxzGCUpQ==';
+  final String _rawApiKey = weather_api_key;
 
   // 실황 날씨 API
   Future<Map<String, dynamic>?> fetchCurrentWeather({
@@ -93,6 +93,6 @@ class WeatherApiService {
     for (final h in baseHours) {
       if (adjustedNow.hour >= h) selected = h;
     }
-    return selected.toString().padLeft(2, '0') + '00';
+    return '${selected.toString().padLeft(2, '0')}00';
   }
 }
