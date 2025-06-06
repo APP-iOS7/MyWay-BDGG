@@ -303,13 +303,45 @@ class _MapScreenState extends State<MapScreen>
       debugPrint('PNG signature: ${imageBytes.sublist(0, 8)}');
 
       if (!context.mounted) return;
-      print(stepProvider.currentStepModel);
 
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        barrierColor: Colors.black.withValues(alpha: 0.5),
+        builder: (context) {
+          return Dialog(
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            insetPadding: const EdgeInsets.symmetric(horizontal: 40),
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: const [
+                  CircularProgressIndicator(color: ORANGE_PRIMARY_500),
+                  SizedBox(height: 20),
+                  Text(
+                    '산책 경로를 캡처 중...',
+                    style: TextStyle(
+                      color: GRAYSCALE_LABEL_950,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
       // ParkDataProvider의 데이터 로딩이 완료될 때까지 대기
       await parkDataProvider.fetchAllDataIfNeeded();
 
       if (!context.mounted) return;
-
+      Navigator.pop(context); // 현재 화면 닫기
       Navigator.pop(context); // 현재 화면 닫기
       Navigator.push(
         context,
