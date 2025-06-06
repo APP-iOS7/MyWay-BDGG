@@ -50,7 +50,10 @@ class StepModel {
       id: json['id'] ?? '',
       steps: json['걸음수'],
       duration: json['소요시간'],
-      distance: (json['거리'] is String) ? double.tryParse(json['거리']) ?? 0.0 : json['거리'],
+      distance:
+          (json['거리'] is String)
+              ? double.tryParse(json['거리']) ?? 0.0
+              : json['거리'],
       stopTime: json['종료시간'],
       courseName: json['코스이름'],
       imageUrl: json['이미지 Url'],
