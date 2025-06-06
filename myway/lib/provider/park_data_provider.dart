@@ -7,6 +7,8 @@ import 'package:myway/model/step_model.dart';
 import 'package:myway/services/park_api_service.dart'; // ParkApiService 경로 확인
 import 'dart:math';
 
+import 'package:uuid/uuid.dart';
+
 class ParkDataProvider extends ChangeNotifier {
   final ParkApiService _parkApiService = ParkApiService();
 
@@ -68,7 +70,7 @@ class ParkDataProvider extends ChangeNotifier {
     }
 
     final courseIndex = _allGeneratedRecommendedCourses.indexWhere(
-      (c) => c.id == courseId,
+      (c) => c.details.id == courseId,
     );
     if (courseIndex != -1) {
       _allGeneratedRecommendedCourses[courseIndex] =
@@ -89,7 +91,9 @@ class ParkDataProvider extends ChangeNotifier {
       bool coursesUpdated = false;
       List<ParkCourseInfo> updatedCourses =
           _allGeneratedRecommendedCourses.map((course) {
-            bool currentFavStatusInSet = _favoriteCourseIds.contains(course.id);
+            bool currentFavStatusInSet = _favoriteCourseIds.contains(
+              course.details.id,
+            );
             if (course.isFavorite != currentFavStatusInSet) {
               coursesUpdated = true;
               return course.copyWith(isFavorite: currentFavStatusInSet);
@@ -122,9 +126,11 @@ class ParkDataProvider extends ChangeNotifier {
 
       _allFetchedParks = await _parkApiService.fetchAllParks();
       if (_allFetchedParks.isNotEmpty && _currentPosition != null) {
-        for (var park in _allFetchedParks) {
-          await park.calculateDistance(_currentPosition!);
-        }
+        await Future.wait(
+          _allFetchedParks.map(
+            (park) => park.calculateDistance(_currentPosition!),
+          ),
+        );
       }
 
       if (_allFetchedParks.isNotEmpty) {
@@ -185,9 +191,10 @@ class ParkDataProvider extends ChangeNotifier {
           date: DateTime.now(),
           parkId: park.id,
           parkName: park.name,
-          id: course1Id,
           isFavorite: _favoriteCourseIds.contains(course1Id),
           details: StepModel(
+            id: Uuid().v4(),
+
             steps: 600,
             duration: '15',
             distance: 0.5,
@@ -214,9 +221,9 @@ class ParkDataProvider extends ChangeNotifier {
           date: DateTime.now(),
           parkId: park.id,
           parkName: park.name,
-          id: course2Id,
           isFavorite: _favoriteCourseIds.contains(course2Id),
           details: StepModel(
+            id: Uuid().v4(),
             steps: 1200,
             duration: '30',
             distance: 1.0,
@@ -243,9 +250,10 @@ class ParkDataProvider extends ChangeNotifier {
           date: DateTime.now(),
           parkId: park.id,
           parkName: park.name,
-          id: course3Id,
           isFavorite: _favoriteCourseIds.contains(course3Id),
           details: StepModel(
+            id: Uuid().v4(),
+
             steps: 1800,
             duration: '45',
             distance: 1.5,
@@ -353,6 +361,7 @@ class ParkDataProvider extends ChangeNotifier {
               (park) => (park.distanceKm) < nearbyFilterRadiusKm,
             ) // distanceInKm 사용
             .toList();
+    print('filteredParks2km: ${filteredParks2km.length}');
 
     // 거리에 따라 정렬 (선택 사항)
     filteredParks2km.sort((a, b) => (a.distanceKm).compareTo(b.distanceKm));

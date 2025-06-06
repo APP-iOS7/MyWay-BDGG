@@ -332,7 +332,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                             : Container(
                                               width: double.infinity,
                                               height: 282,
-                                              color: Colors.grey[200],
+                                              color: GRAYSCALE_LABEL_200,
                                               child: Icon(
                                                 Icons.image_not_supported,
                                               ),
@@ -377,7 +377,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                                     FontWeight
                                                                         .w600,
                                                                 color:
-                                                                    GRAYSCALE_LABEL_800,
+                                                                    GRAYSCALE_LABEL_900,
                                                               ),
                                                             ),
                                                           ],
@@ -410,7 +410,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                                     FontWeight
                                                                         .w600,
                                                                 color:
-                                                                    GRAYSCALE_LABEL_800,
+                                                                    GRAYSCALE_LABEL_900,
                                                               ),
                                                             ),
                                                             Text(
@@ -440,7 +440,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                                     FontWeight
                                                                         .w600,
                                                                 color:
-                                                                    GRAYSCALE_LABEL_800,
+                                                                    GRAYSCALE_LABEL_900,
                                                               ),
                                                             ),
                                                             Text(

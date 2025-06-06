@@ -1,9 +1,10 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
+import '../const/key.dart';
+
 class AirQualityService {
-  final String _apiKey =
-      '6uNs%2FcNMeEpn9W2R9ffJaV3u6Wba2Z2GIS20vcJVsgyQG59gzIIzQFJhgnnyveDsBFFOaZ%2BO2k9Xb0YxzGCUpQ%3D%3D';
+  final String _apiKey = airquality_api_key;
 
   Future<Map<String, dynamic>?> fetchAirQuality(String sido) async {
     final uri = Uri.parse(

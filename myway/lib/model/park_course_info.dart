@@ -3,7 +3,6 @@ import 'package:equatable/equatable.dart';
 import 'step_model.dart';
 
 class ParkCourseInfo extends Equatable {
-  final String id; // 이 ID는 전체 앱에서 고유해야 함
   final String parkId;
   final String? parkName;
   final String title;
@@ -15,7 +14,6 @@ class ParkCourseInfo extends Equatable {
 
   const ParkCourseInfo({
     // isFavorite가 non-final이므로 생성자는 const가 아님
-    required this.id,
     required this.parkId,
     this.parkName,
     required this.title,
@@ -28,7 +26,7 @@ class ParkCourseInfo extends Equatable {
   });
 
   @override
-  List<Object?> get props => [id, details, isSelected, isFavorite];
+  List<Object?> get props => [details, isSelected, isFavorite];
 
   ParkCourseInfo copyWith({
     String? id,
@@ -42,7 +40,6 @@ class ParkCourseInfo extends Equatable {
     bool? isFavorite,
   }) {
     return ParkCourseInfo(
-      id: id ?? this.id,
       parkId: parkId ?? this.parkId,
       parkName: parkName ?? this.parkName,
       title: title ?? this.title,

@@ -125,111 +125,125 @@ class _CourseNameScreenState extends State<CourseNameScreen> {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20.0),
-          child: Column(
-            children: [
-              Container(
-                width: double.infinity,
-                margin: EdgeInsets.only(top: 8),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: GRAYSCALE_LABEL_300,
-                      spreadRadius: 1,
-                      blurRadius: 8,
-                      offset: Offset(1, 1),
-                    ),
-                  ],
-                ),
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
                 child: Column(
                   children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.vertical(
-                        top: Radius.circular(20),
+                    Container(
+                      width: double.infinity,
+                      margin: EdgeInsets.only(top: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: GRAYSCALE_LABEL_300,
+                            spreadRadius: 1,
+                            blurRadius: 8,
+                            offset: Offset(1, 1),
+                          ),
+                        ],
                       ),
-                      child: AspectRatio(
-                        aspectRatio: 16 / 15,
-                        child: Image.memory(
-                          widget.courseImage,
-                          gaplessPlayback: true,
-                          fit: BoxFit.cover,
-                          errorBuilder:
-                              (_, __, ___) => const Text('이미지를 불러올 수 없습니다'),
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(20),
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          TextFormField(
-                            inputFormatters: [
-                              LengthLimitingTextInputFormatter(20),
-                            ],
-                            controller: stepProvider.courseName,
-                            cursorColor: ORANGE_PRIMARY_500,
-                            decoration: InputDecoration(
-                              labelText: '코스 이름',
-                              labelStyle: TextStyle(color: GRAYSCALE_LABEL_600),
-                              enabledBorder: UnderlineInputBorder(
-                                borderSide: BorderSide(
-                                  color: GRAYSCALE_LABEL_400,
-                                ),
-                              ),
-                              focusedBorder: UnderlineInputBorder(
-                                borderSide: BorderSide(
-                                  color: ORANGE_PRIMARY_500,
-                                ),
+                          ClipRRect(
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(20),
+                            ),
+                            child: AspectRatio(
+                              aspectRatio: 16 / 15,
+                              child: Image.memory(
+                                widget.courseImage,
+                                gaplessPlayback: true,
+                                fit: BoxFit.cover,
+                                errorBuilder:
+                                    (_, __, ___) =>
+                                        const Text('이미지를 불러올 수 없습니다'),
                               ),
                             ),
                           ),
-                          SizedBox(height: 10),
-                          Text(
-                            stepProvider.formattedStopTime,
-                            style: TextStyle(
-                              color: GRAYSCALE_LABEL_950,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 14,
-                            ),
-                          ),
-                          // SizedBox(height: 10),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  if (isLoadingRecommendedCourses)
-                                    SizedBox(
-                                      width: 16,
-                                      height: 16,
-                                      child: CircularProgressIndicator(
-                                        color: ORANGE_PRIMARY_500,
-                                        strokeWidth: 2,
+                          Padding(
+                            padding: const EdgeInsets.all(20),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                TextFormField(
+                                  inputFormatters: [
+                                    LengthLimitingTextInputFormatter(20),
+                                  ],
+                                  controller: stepProvider.courseName,
+                                  cursorColor: ORANGE_PRIMARY_500,
+                                  decoration: InputDecoration(
+                                    labelText: '코스 이름',
+                                    labelStyle: TextStyle(
+                                      color: GRAYSCALE_LABEL_600,
+                                    ),
+                                    enabledBorder: UnderlineInputBorder(
+                                      borderSide: BorderSide(
+                                        color: GRAYSCALE_LABEL_400,
                                       ),
                                     ),
-                                ],
-                              ),
-                              _buildRecommendedCourseDropdown(),
-                            ],
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              _buildInfoColumn(
-                                '${widget.stepModel.distance}',
-                                '거리(km)',
-                              ),
-                              _buildInfoColumn(
-                                '${widget.stepModel.steps}',
-                                '걸음수',
-                              ),
-                              _buildInfoColumn(widget.stepModel.duration, '시간'),
-                            ],
+                                    focusedBorder: UnderlineInputBorder(
+                                      borderSide: BorderSide(
+                                        color: ORANGE_PRIMARY_500,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(height: 10),
+                                Text(
+                                  stepProvider.formattedStopTime,
+                                  style: TextStyle(
+                                    color: GRAYSCALE_LABEL_800,
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                // SizedBox(height: 10),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        if (isLoadingRecommendedCourses)
+                                          SizedBox(
+                                            width: 16,
+                                            height: 16,
+                                            child: CircularProgressIndicator(
+                                              color: ORANGE_PRIMARY_500,
+                                              strokeWidth: 2,
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                    _buildRecommendedCourseDropdown(),
+                                  ],
+                                ),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    _buildInfoColumn(
+                                      '${widget.stepModel.distance}',
+                                      '거리(km)',
+                                    ),
+
+                                    _buildInfoColumn(
+                                      widget.stepModel.duration,
+                                      '시간',
+                                    ),
+                                    _buildInfoColumn(
+                                      '${widget.stepModel.steps}',
+                                      '걸음수',
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       ),
@@ -237,156 +251,158 @@ class _CourseNameScreenState extends State<CourseNameScreen> {
                   ],
                 ),
               ),
-              SizedBox(height: 20),
-              GestureDetector(
-                onTap:
-                    stepProvider.isCourseNameValid
-                        ? () async {
-                          User? currentUser = _auth.currentUser;
-                          if (currentUser == null) {
-                            toastification.show(
-                              context: context,
-                              type: ToastificationType.error,
-                              style: ToastificationStyle.flat,
-                              alignment: Alignment.bottomCenter,
-                              autoCloseDuration: Duration(seconds: 2),
-                              title: Text('코스이름을 지정하기 위해선 로그인이 필요합니다.'),
-                            );
-                            Navigator.pushNamedAndRemoveUntil(
-                              context,
-                              'signIn',
-                              (route) => false,
-                            );
-                            return;
-                          }
+            ),
+          ),
+          GestureDetector(
+            onTap:
+                stepProvider.isCourseNameValid
+                    ? () async {
+                      User? currentUser = _auth.currentUser;
+                      if (currentUser == null) {
+                        toastification.show(
+                          context: context,
+                          type: ToastificationType.error,
+                          style: ToastificationStyle.flat,
+                          alignment: Alignment.bottomCenter,
+                          autoCloseDuration: Duration(seconds: 2),
+                          title: Text('코스이름을 지정하기 위해선 로그인이 필요합니다.'),
+                        );
+                        Navigator.pushNamedAndRemoveUntil(
+                          context,
+                          'signIn',
+                          (route) => false,
+                        );
+                        return;
+                      }
 
-                          showDialog(
-                            context: context,
-                            barrierDismissible: false,
-                            barrierColor: Colors.black.withValues(alpha: 0.5),
-                            builder: (context) {
-                              return Dialog(
-                                backgroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                insetPadding: const EdgeInsets.symmetric(
-                                  horizontal: 40,
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(24.0),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: const [
-                                      CircularProgressIndicator(
-                                        color: ORANGE_PRIMARY_500,
-                                      ),
-                                      SizedBox(height: 20),
-                                      Text(
-                                        '산책 데이터를 저장중입니다...',
-                                        style: TextStyle(
-                                          color: GRAYSCALE_LABEL_950,
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                    ],
+                      showDialog(
+                        context: context,
+                        barrierDismissible: false,
+                        barrierColor: Colors.black.withValues(alpha: 0.5),
+                        builder: (context) {
+                          return Dialog(
+                            backgroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            insetPadding: const EdgeInsets.symmetric(
+                              horizontal: 40,
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(24.0),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: const [
+                                  CircularProgressIndicator(
+                                    color: ORANGE_PRIMARY_500,
                                   ),
-                                ),
-                              );
-                            },
+                                  SizedBox(height: 20),
+                                  Text(
+                                    '산책 데이터를 저장중입니다...',
+                                    style: TextStyle(
+                                      color: GRAYSCALE_LABEL_950,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ],
+                              ),
+                            ),
                           );
+                        },
+                      );
 
-                          try {
-                            final imageUrl = await imageUpload();
+                      try {
+                        final imageUrl = await imageUpload();
 
-                            final result = stepProvider.createStepModel(
-                              imageUrl: imageUrl ?? '',
-                            );
-                            // Firebase에 저장할 데이터 준비 (단순하게 StepModel에서 직접 가져오기)
-                            Map<String, dynamic> resultData = result.toJson();
-                            await _firestore
-                                .collection('trackingResult')
-                                .doc(currentUser.uid)
-                                .set({
-                                  'TrackingResult': FieldValue.arrayUnion([
-                                    resultData,
-                                  ]),
-                                }, SetOptions(merge: true));
+                        final result = stepProvider.createStepModel(
+                          imageUrl: imageUrl ?? '',
+                        );
+                        // Firebase에 저장할 데이터 준비 (단순하게 StepModel에서 직접 가져오기)
+                        Map<String, dynamic> resultData = result.toJson();
+                        await _firestore
+                            .collection('trackingResult')
+                            .doc(currentUser.uid)
+                            .set({
+                              'TrackingResult': FieldValue.arrayUnion([
+                                resultData,
+                              ]),
+                            }, SetOptions(merge: true));
 
-                            print('산책결과가 FireStore에 저장되었습니다.');
+                        print('산책결과가 FireStore에 저장되었습니다.');
 
-                            if (context.mounted) {
-                              Navigator.of(context).pop();
-                            }
-
-                            if (context.mounted) {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder:
-                                      (context) => TrackingResultScreen(
-                                        result: result,
-                                        courseName: result.courseName,
-                                        courseImage: widget.courseImage,
-                                      ),
-                                ),
-                              );
-                            }
-
-                            toastification.show(
-                              context: context,
-                              type: ToastificationType.success,
-                              style: ToastificationStyle.flat,
-                              autoCloseDuration: Duration(seconds: 2),
-                              alignment: Alignment.bottomCenter,
-                              title: Text('산책기록이 저장되었습니다.'),
-                            );
-                            courseNameController.text = '';
-                          } catch (e) {
-                            print('Firestore 저장 오류: $e');
-
-                            if (context.mounted) {
-                              Navigator.of(context).pop();
-                            }
-
-                            toastification.show(
-                              context: context,
-                              type: ToastificationType.error,
-                              style: ToastificationStyle.flat,
-                              autoCloseDuration: Duration(seconds: 2),
-                              alignment: Alignment.bottomCenter,
-                              title: Text('산책기록이 저장 중 오류가 발생했습니다.'),
-                            );
-                          }
+                        if (context.mounted) {
+                          Navigator.of(context).pop();
                         }
-                        : null,
-                child: Container(
-                  height: 56,
-                  alignment: Alignment.center,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color:
-                        stepProvider.isCourseNameValid
-                            ? ORANGE_PRIMARY_500
-                            : GRAYSCALE_LABEL_300,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    '저장 및 공유',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+
+                        if (context.mounted) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder:
+                                  (context) => TrackingResultScreen(
+                                    result: result,
+                                    courseName: result.courseName,
+                                    courseImage: widget.courseImage,
+                                  ),
+                            ),
+                          );
+                        }
+
+                        toastification.show(
+                          context: context,
+                          type: ToastificationType.success,
+                          style: ToastificationStyle.flat,
+                          autoCloseDuration: Duration(seconds: 2),
+                          alignment: Alignment.bottomCenter,
+                          title: Text('산책기록이 저장되었습니다.'),
+                        );
+                        courseNameController.text = '';
+                      } catch (e) {
+                        print('Firestore 저장 오류: $e');
+
+                        if (context.mounted) {
+                          Navigator.of(context).pop();
+                        }
+
+                        toastification.show(
+                          context: context,
+                          type: ToastificationType.error,
+                          style: ToastificationStyle.flat,
+                          autoCloseDuration: Duration(seconds: 2),
+                          alignment: Alignment.bottomCenter,
+                          title: Text('산책기록이 저장 중 오류가 발생했습니다.'),
+                        );
+                      }
+                    }
+                    : null,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: Container(
+                height: 56,
+                alignment: Alignment.center,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color:
+                      stepProvider.isCourseNameValid
+                          ? ORANGE_PRIMARY_500
+                          : GRAYSCALE_LABEL_300,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  '저장 및 공유',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
-              SizedBox(height: 20),
-            ],
+            ),
           ),
-        ),
+          SizedBox(height: 20),
+        ],
       ),
     );
   }
@@ -489,14 +505,24 @@ class _CourseNameScreenState extends State<CourseNameScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  '공원 선택',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: GRAYSCALE_LABEL_950,
-                  ),
+                Row(
+                  children: [
+                    Text(
+                      '공원 선택',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: GRAYSCALE_LABEL_950,
+                      ),
+                    ),
+                    Spacer(),
+                    IconButton(
+                      icon: Icon(Icons.close, color: GRAYSCALE_LABEL_600),
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                  ],
                 ),
+
                 SizedBox(height: 16),
                 Container(
                   constraints: BoxConstraints(
@@ -537,12 +563,7 @@ class _CourseNameScreenState extends State<CourseNameScreen> {
                                 listen: false,
                               );
                               stepProvider.setParkName(course.parkName);
-
-                              // 코스 이름이 비어있으면 선택한 추천 코스 이름으로 자동설정
-                              if (stepProvider.courseName.text.isEmpty ||
-                                  stepProvider.courseName.text == '나의 코스') {
-                                stepProvider.courseName.text = course.title;
-                              }
+                              stepProvider.setParkId(course.parkId);
                             });
                             Navigator.of(context).pop();
                           },
@@ -605,21 +626,6 @@ class _CourseNameScreenState extends State<CourseNameScreen> {
                       );
                     },
                   ),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: Text(
-                        '취소',
-                        style: TextStyle(
-                          color: GRAYSCALE_LABEL_600,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                  ],
                 ),
               ],
             ),

@@ -186,7 +186,6 @@ class WeatherProvider extends ChangeNotifier {
         final items =
             data['response']['body']['items']['item'] as List<dynamic>;
 
-        // 날짜와 시간 모두 매칭하여 찾기
         final skyItem = items.firstWhere(
           (e) =>
               e['category'] == 'SKY' &&
@@ -212,13 +211,12 @@ class WeatherProvider extends ChangeNotifier {
             WeatherServiceHelper.isNightTime(now),
           );
         } else {
-          // 정확한 시간대 데이터가 없을 경우 폴백 처리
           print('정확한 시간대 데이터 없음 - 가장 가까운 시간 찾기');
           _findClosestTimeData(items, targetDateTime['time']!);
         }
       } catch (e) {
         print('SKY/PTY 데이터 파싱 오류: $e');
-        // 기본값 설정
+
         weatherStatus = '정보 없음';
         weatherIconPath = 'assets/icons/weather_cloud.svg';
       }
@@ -228,7 +226,6 @@ class WeatherProvider extends ChangeNotifier {
   void _findClosestTimeData(List<dynamic> items, String targetTime) {
     final targetHour = int.parse(targetTime.substring(0, 2));
 
-    // SKY, PTY 데이터를 시간별로 그룹화
     final Map<int, Map<String, String>> timeData = {};
 
     for (var item in items) {
@@ -241,7 +238,6 @@ class WeatherProvider extends ChangeNotifier {
       }
     }
 
-    // 가장 가까운 시간 찾기 (현재 시간 이후 우선)
     int? closestHour;
     int minDiff = 24;
 
@@ -250,7 +246,7 @@ class WeatherProvider extends ChangeNotifier {
       if (hour >= targetHour) {
         diff = hour - targetHour;
       } else {
-        diff = (24 - targetHour) + hour; // 다음날로 넘어가는 경우
+        diff = (24 - targetHour) + hour;
       }
 
       if (diff < minDiff &&
@@ -306,11 +302,9 @@ class WeatherProvider extends ChangeNotifier {
             data['response']['body']['items']['item'] as List<dynamic>;
         final forecastMap = <String, Map<String, String>>{};
 
-        // 현재 시간 이후 24시간 동안의 데이터만 수집
         final currentHour = now.hour;
         final targetHours = <int>[];
 
-        // 3시간 간격으로 다음 8개 시간대 계산 (24시간)
         for (int i = 0; i < 8; i++) {
           int hour = ((currentHour ~/ 3) * 3 + (i * 3)) % 24;
           targetHours.add(hour);
@@ -321,10 +315,8 @@ class WeatherProvider extends ChangeNotifier {
           final fcstTime = item['fcstTime'] as String;
           final hour = int.parse(fcstTime.substring(0, 2));
 
-          // 3시간 간격 체크 및 대상 시간 체크
           if (!targetHours.contains(hour)) continue;
 
-          // 날짜-시간 키 생성 (자정 넘어가는 경우 고려)
           final dateTimeKey = '${fcstDate}_${fcstTime}';
 
           forecastMap.putIfAbsent(
@@ -345,7 +337,6 @@ class WeatherProvider extends ChangeNotifier {
           }
         }
 
-        // 시간순 정렬 및 UI 데이터 생성
         final sortedEntries =
             forecastMap.entries.toList()..sort((a, b) {
               final aDateTime = DateTime.parse(
@@ -365,7 +356,7 @@ class WeatherProvider extends ChangeNotifier {
                       entry.value['sky'] != null &&
                       entry.value['pty'] != null,
                 )
-                .take(8) // 최대 8개 시간대
+                .take(8)
                 .map((entry) {
                   final time = entry.value['time']!;
                   final timeLabel = '${time.substring(0, 2)}시';
@@ -373,7 +364,10 @@ class WeatherProvider extends ChangeNotifier {
                     entry.value['sky'] ?? '1',
                     entry.value['pty'] ?? '0',
                   );
-                  final iconPath = _getWeatherIconPath(status, false);
+
+                  final hour = int.parse(time.substring(0, 2));
+                  final isNight = hour < 6 || hour >= 18;
+                  final iconPath = _getWeatherIconPath(status, isNight);
 
                   return {
                     'time': timeLabel,
@@ -386,7 +380,7 @@ class WeatherProvider extends ChangeNotifier {
         print('시간별 예보 수집 완료: ${hourlyForecast.length}개');
       } catch (e) {
         print('시간별 예보 파싱 오류: $e');
-        hourlyForecast = []; // 빈 리스트로 초기화
+        hourlyForecast = [];
       }
     } else {
       print('시간별 예보 데이터 없음');
@@ -460,9 +454,7 @@ class WeatherServiceHelper {
     return '${date.year}${date.month.toString().padLeft(2, '0')}${date.day.toString().padLeft(2, '0')}';
   }
 
-  // 핵심 개선: 날짜와 시간을 함께 계산
   static Map<String, String> getSafeUltraSrtNcstDateTime(DateTime now) {
-    // 40분 기준으로 데이터 발표 시간 고려
     DateTime baseDateTime =
         now.minute < 40 ? now.subtract(Duration(hours: 1)) : now;
 
@@ -475,8 +467,7 @@ class WeatherServiceHelper {
   static Map<String, String> getSafeForecastDateTime(DateTime now) {
     final times = [2, 5, 8, 11, 14, 17, 20, 23];
 
-    // 현재 시간보다 작거나 같은 가장 최근 발표 시간 찾기
-    int selectedHour = times.first; // 기본값: 02시
+    int selectedHour = times.first;
     for (final t in times) {
       if (now.hour >= t) {
         selectedHour = t;
@@ -485,7 +476,6 @@ class WeatherServiceHelper {
       }
     }
 
-    // 만약 현재 시간이 02시 미만이면 전날 23시 데이터 사용
     DateTime baseDateTime;
     if (now.hour < 2) {
       baseDateTime = DateTime(now.year, now.month, now.day - 1, 23, 0);
@@ -501,10 +491,8 @@ class WeatherServiceHelper {
   }
 
   static String getFcstTargetTime(DateTime now) {
-    // 45분 기준으로 다음 시간 예측
     int targetHour = now.minute >= 45 ? now.hour + 1 : now.hour;
 
-    // 24시간 경계 처리
     if (targetHour >= 24) {
       targetHour = 0;
     }
@@ -512,15 +500,12 @@ class WeatherServiceHelper {
     return '${targetHour.toString().padLeft(2, '0')}00';
   }
 
-  // 예측 시간도 날짜 고려해서 계산
   static Map<String, String> getFcstTargetDateTime(DateTime now) {
     DateTime targetDateTime;
 
     if (now.minute >= 45) {
-      // 다음 시간으로 이동 (자정 넘어갈 수 있음)
       targetDateTime = DateTime(now.year, now.month, now.day, now.hour + 1, 0);
     } else {
-      // 현재 시간 유지
       targetDateTime = DateTime(now.year, now.month, now.day, now.hour, 0);
     }
 

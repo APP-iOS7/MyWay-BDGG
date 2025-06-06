@@ -4,9 +4,10 @@ import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'package:myway/model/park_info.dart';
 
+import '../const/key.dart';
+
 class ParkApiService {
-  final String _serviceKeyEncoded =
-      "N/UtwxZeXvM3HH2BDttOtVdYbgRKV4f8KdtTrvNgLBcioy57fv+2/WW6P5H5mWnCZYXnPi+6r70r9IWZRxLiCA==";
+  final String _serviceKeyEncoded = park_api_key;
   final String _baseUrl =
       "http://api.data.go.kr/openapi/tn_pubr_public_cty_park_info_api";
 
