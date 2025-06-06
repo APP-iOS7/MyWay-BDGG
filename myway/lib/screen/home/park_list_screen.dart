@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:myway/model/park_info.dart';
 import 'package:myway/model/park_course_info.dart';
 import 'package:provider/provider.dart';
-import 'package:toastification/toastification.dart';
 import '../../provider/park_data_provider.dart';
 import '../../const/colors.dart';
 import 'park_detail.dart';
@@ -22,7 +21,7 @@ class _ParkListScreenState extends State<ParkListScreen>
 
   List<ParkInfo> _filteredParks = [];
   List<ParkInfo> _parksToDisplayOnPage = [];
-  final double _nearbyFilterRadiusKm = 5.0; // 반경 5키로 변수 선언
+  final double _nearbyFilterRadiusKm = 2.0; // 반경 5키로 변수 선언
   ParkFilterType _currentParkFilter = ParkFilterType.all;
   final TextEditingController _searchController = TextEditingController();
   String _searchTerm = "";
@@ -177,13 +176,11 @@ class _ParkListScreenState extends State<ParkListScreen>
           if (mounted && !provider.isLoadingLocation) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (mounted) {
-                toastification.show(
-                  context: context,
-                  type: ToastificationType.error,
-                  style: ToastificationStyle.flat,
-                  alignment: Alignment.bottomCenter,
-                  autoCloseDuration: Duration(seconds: 2),
-                  title: Text("현재 위치를 가져올 수 없어 '내 주변' 필터를 사용할 수 없습니다."),
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text("현재 위치를 가져올 수 없어 '내 주변' 필터를 사용할 수 없습니다."),
+                    backgroundColor: YELLOW_INFO_BASE_30,
+                  ),
                 );
               }
             });
@@ -532,14 +529,12 @@ class _ParkListScreenState extends State<ParkListScreen>
                 provider.currentPosition == null &&
                 !provider.isLoadingLocation) {
               if (mounted) {
-                toastification.show(
-                  context: context,
-                  type: ToastificationType.error,
-                  style: ToastificationStyle.flat,
-                  alignment: Alignment.bottomCenter,
-                  autoCloseDuration: Duration(seconds: 2),
-                  title: Text(
-                    "현재 위치를 가져올 수 없어 '내 주변' 필터를 사용할 수 없습니다. 위치 권한을 확인해주세요.",
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                      "현재 위치를 가져올 수 없어 '내 주변' 필터를 사용할 수 없습니다. 위치 권한을 확인해주세요.",
+                    ),
+                    backgroundColor: YELLOW_INFO_BASE_30,
                   ),
                 );
               }
@@ -821,7 +816,9 @@ class _ParkListScreenState extends State<ParkListScreen>
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
-                      key: ValueKey(course.details.id), // Key 고유성 확보
+                      key: ValueKey(
+                        course.details.id,
+                      ), // Key 고유성 확보
                       onTap: () {
                         provider.toggleCourseFavorite(course.details.id);
                       },
@@ -1128,3 +1125,4 @@ class _ParkListScreenState extends State<ParkListScreen>
     );
   }
 }
+
