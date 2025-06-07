@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 
+import '../../provider/user_provider.dart';
 import '/const/colors.dart';
 import 'mycourse_screen.dart';
 import 'park_list_screen.dart';
@@ -21,7 +22,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  User? user = FirebaseAuth.instance.currentUser;
   List<String> imageUrls = [];
   bool isLoading = true;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -30,6 +30,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    context.read<UserProvider>().loadNickname();
     fetchImages();
   }
 
@@ -52,8 +53,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    User? user = FirebaseAuth.instance.currentUser;
     final weatherProvider = Provider.of<WeatherProvider>(context);
+    final userProvider = context.watch<UserProvider>();
+    final nickname =
+        userProvider.nickname ?? userProvider.currentUser?.displayName ?? '사용자';
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -137,7 +140,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   Text.rich(
                     TextSpan(
-                      text: user?.displayName,
+                      text: nickname,
                       style: TextStyle(
                         color: BLUE_SECONDARY_600,
                         fontSize: 20,

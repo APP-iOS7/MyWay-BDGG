@@ -74,6 +74,7 @@ class _NicknameChangeScreenState extends State<NicknameChangeScreen> {
     try {
       final newNickname = _nicknameController.text.trim();
       await context.read<UserProvider>().updateNickname(newNickname);
+      await FirebaseAuth.instance.currentUser?.updateDisplayName(newNickname);
       if (!mounted) return;
 
       if (mounted) {
