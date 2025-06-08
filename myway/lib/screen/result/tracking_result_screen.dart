@@ -149,137 +149,146 @@ class _TrackingResultScreenState extends State<TrackingResultScreen> {
                         borderRadius: BorderRadius.vertical(
                           top: Radius.circular(12),
                         ),
-                        child: Image.memory(
-                          widget.courseImage,
-                          gaplessPlayback: true,
-                          width: double.infinity,
-                          height: 364,
-                          fit: BoxFit.cover,
-                          errorBuilder:
-                              (_, __, ___) => const Text('이미지를 불러올 수 없습니다'),
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          SizedBox(height: 10),
-                          Text(
-                            widget.courseName,
-                            style: TextStyle(
-                              color: GRAYSCALE_LABEL_950,
-                              fontSize: 20,
-                              fontWeight: FontWeight.w600,
+                        child: Column(
+                          children: [
+                            Image.memory(
+                              widget.courseImage,
+                              gaplessPlayback: true,
+                              width: double.infinity,
+                              height: 364,
+                              fit: BoxFit.cover,
+                              errorBuilder:
+                                  (_, __, ___) => const Text('이미지를 불러올 수 없습니다'),
                             ),
-                          ),
-                          Text(
-                            stepProvider.formattedStopTime,
-                            style: TextStyle(
-                              color: GRAYSCALE_LABEL_800,
-                              fontSize: 13,
-                            ),
-                          ),
-                          SizedBox(height: 10),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              Text(
-                                stepProvider.parkName ?? '정보 없음',
-                                style: TextStyle(
-                                  color: GRAYSCALE_LABEL_950,
-                                  fontSize: 16,
-                                ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20.0,
                               ),
-                            ],
-                          ),
-                          SizedBox(height: 10),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              Column(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.start,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
+                                  SizedBox(height: 10),
+                                  Text(
+                                    widget.courseName,
+                                    style: TextStyle(
+                                      color: GRAYSCALE_LABEL_950,
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  Text(
+                                    stepProvider.formattedStopTime,
+                                    style: TextStyle(
+                                      color: GRAYSCALE_LABEL_800,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                  SizedBox(height: 10),
                                   Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
                                     children: [
                                       Text(
-                                        '${widget.result.distance}',
+                                        stepProvider.parkName ?? '정보 없음',
                                         style: TextStyle(
                                           color: GRAYSCALE_LABEL_950,
-                                          fontSize: 25,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  Row(
-                                    children: [
-                                      Text(
-                                        '거리(km)',
-                                        style: TextStyle(
-                                          color: GRAYSCALE_LABEL_500,
                                           fontSize: 16,
                                         ),
                                       ),
                                     ],
                                   ),
-                                ],
-                              ),
-                              SizedBox(width: 20),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
+                                  SizedBox(height: 10),
                                   Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
                                     children: [
-                                      Text(
-                                        widget.result.duration,
-                                        style: TextStyle(
-                                          color: GRAYSCALE_LABEL_950,
-                                          fontSize: 25,
-                                          fontWeight: FontWeight.bold,
-                                        ),
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Text(
+                                                '${widget.result.distance}',
+                                                style: TextStyle(
+                                                  color: GRAYSCALE_LABEL_950,
+                                                  fontSize: 25,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          Row(
+                                            children: [
+                                              Text(
+                                                '거리(km)',
+                                                style: TextStyle(
+                                                  color: GRAYSCALE_LABEL_500,
+                                                  fontSize: 16,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                      SizedBox(width: 20),
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Text(
+                                                widget.result.duration,
+                                                style: TextStyle(
+                                                  color: GRAYSCALE_LABEL_950,
+                                                  fontSize: 25,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          Text(
+                                            '시간',
+                                            style: TextStyle(
+                                              color: GRAYSCALE_LABEL_500,
+                                              fontSize: 16,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      SizedBox(width: 30),
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Text(
+                                                '${widget.result.steps}',
+                                                style: TextStyle(
+                                                  color: GRAYSCALE_LABEL_950,
+                                                  fontSize: 25,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          Text(
+                                            '걸음수',
+                                            style: TextStyle(
+                                              color: GRAYSCALE_LABEL_500,
+                                              fontSize: 16,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ],
                                   ),
-                                  Text(
-                                    '시간',
-                                    style: TextStyle(
-                                      color: GRAYSCALE_LABEL_500,
-                                      fontSize: 16,
-                                    ),
-                                  ),
                                 ],
                               ),
-                              SizedBox(width: 30),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Text(
-                                        '${widget.result.steps}',
-                                        style: TextStyle(
-                                          color: GRAYSCALE_LABEL_950,
-                                          fontSize: 25,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  Text(
-                                    '걸음수',
-                                    style: TextStyle(
-                                      color: GRAYSCALE_LABEL_500,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ],
