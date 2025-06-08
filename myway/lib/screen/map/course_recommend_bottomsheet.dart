@@ -1,15 +1,15 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:myway/model/park_info.dart';
+import 'package:myway/provider/park_data_provider.dart';
 import 'package:myway/screen/alert/countdown_diallog.dart';
 import 'package:myway/provider/step_provider.dart';
-import 'package:myway/provider/park_data_provider.dart';
-import 'package:myway/model/park_course_info.dart';
 import 'package:provider/provider.dart';
-import 'package:shimmer/shimmer.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../model/step_model.dart';
 import '/const/colors.dart';
 import '/provider/map_provider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class CourseRecommendBottomsheet extends StatefulWidget {
   const CourseRecommendBottomsheet({super.key});
@@ -22,59 +22,92 @@ class CourseRecommendBottomsheet extends StatefulWidget {
 class _CourseRecommendBottomsheetState
     extends State<CourseRecommendBottomsheet> {
   int? selectedIndex;
-  List<ParkCourseInfo> _nearbyCourses = [];
+  Map<String, List<StepModel>> _parkTrackingResults = {};
+  bool _isLoadingTrackingResults = false;
+  List<ParkInfo> _parksWithTrackingResults = [];
 
-  // ParkCourseInfo를 Course 모델로 변환하는 헬퍼 메서드
-  ParkCourseInfo _convertToCourse(
-    ParkCourseInfo parkCourse,
-    ParkDataProvider parkDataProvider,
-  ) {
-    double actualDistance = 2.0;
+  // Firestore에서 2km 이내 공원들의 TrackingResult를 가져오는 메서드
+  Future<void> _fetchTrackingResultsForNearbyParks(
+    List<String> nearbyParkIds,
+  ) async {
+    if (nearbyParkIds.isEmpty) return;
 
-    ParkInfo? parkInfo;
+    if (!mounted) return;
+
+    setState(() {
+      _isLoadingTrackingResults = true;
+    });
+
     try {
-      parkInfo = parkDataProvider.nearbyParks2km.firstWhere(
-        (park) => park.id == parkCourse.parkId,
-      );
-      actualDistance = parkInfo.distanceKm;
-    } catch (e) {
-      try {
-        final fallbackParkInfo = parkDataProvider.allFetchedParks.firstWhere(
-          (park) => park.id == parkCourse.parkId,
-        );
-        if (fallbackParkInfo.distanceKm <= 2.0) {
-          actualDistance = fallbackParkInfo.distanceKm;
+      final firestore = FirebaseFirestore.instance;
+      final trackingResultCollection = firestore.collection('trackingResult');
+      final querySnapshot = await trackingResultCollection.get();
+
+      Map<String, List<StepModel>> parkResults = {};
+
+      for (var userDoc in querySnapshot.docs) {
+        final userData = userDoc.data();
+        if (userData.containsKey('TrackingResult') &&
+            userData['TrackingResult'] is List) {
+          final List<dynamic> userTrackingResults = userData['TrackingResult'];
+
+          for (var recordData in userTrackingResults) {
+            if (recordData is Map<String, dynamic> &&
+                recordData['공원 ID'] != null &&
+                nearbyParkIds.contains(recordData['공원 ID'])) {
+              try {
+                final stepModel = StepModel.fromJson(recordData);
+                final parkId = recordData['공원 ID'] as String;
+
+                if (!parkResults.containsKey(parkId)) {
+                  parkResults[parkId] = [];
+                }
+                parkResults[parkId]!.add(stepModel);
+              } catch (e) {
+                print('운동 기록 데이터 변환 중 오류 발생: $e');
+              }
+            }
+          }
         }
-      } catch (e2) {
-        // 공원을 찾지 못한 경우 기본값 사용
+      }
+
+      // 각 공원별로 최신순으로 정렬
+      parkResults.forEach((parkId, results) {
+        results.sort((a, b) => b.stopTime.compareTo(a.stopTime));
+      });
+
+      if (mounted) {
+        setState(() {
+          _parkTrackingResults = parkResults;
+          _isLoadingTrackingResults = false;
+          _updateParksWithTrackingResults();
+        });
+      }
+    } catch (e) {
+      print('운동 기록 데이터를 가져오는 중 오류 발생: $e');
+      if (mounted) {
+        setState(() {
+          _isLoadingTrackingResults = false;
+        });
       }
     }
+  }
 
-    // 최종 안전 장치: 어떤 경우든 2km를 초과하는 경우 2km 제한
-    if (actualDistance > 2.0) {
-      actualDistance = 2.0;
-    }
-    return ParkCourseInfo(
-      isSelected: parkCourse.isSelected,
-      isFavorite: parkCourse.isFavorite,
-      parkId: parkCourse.parkId,
-      title: parkCourse.title,
-      park: parkCourse.parkName ?? '정보 없음',
-      date: DateTime.now(),
-      details: StepModel(
-        id: parkCourse.details.id,
-        steps: parkCourse.details.steps,
-        duration: parkCourse.details.duration,
-        distance: parkCourse.details.distance,
-        stopTime: parkCourse.details.stopTime,
-        courseName: parkCourse.details.courseName,
-        parkId: parkCourse.parkId,
-        route: parkCourse.details.route,
-        imageUrl:
-            parkCourse.details.imageUrl.startsWith('http')
-                ? parkCourse.details.imageUrl
-                : 'https://picsum.photos/250?image=9', //이미지 경로가 URL이 아니면 임시 URL 사용
-      ),
+  // TrackingResult가 있는 공원들만 필터링하는 메서드
+  void _updateParksWithTrackingResults() {
+    final parkDataProvider = Provider.of<ParkDataProvider>(
+      context,
+      listen: false,
+    );
+
+    _parksWithTrackingResults =
+        parkDataProvider.nearbyParks2km
+            .where((park) => _parkTrackingResults.containsKey(park.id))
+            .toList();
+
+    // 거리순으로 정렬
+    _parksWithTrackingResults.sort(
+      (a, b) => a.distanceKm.compareTo(b.distanceKm),
     );
   }
 
@@ -95,20 +128,19 @@ class _CourseRecommendBottomsheetState
   Widget build(BuildContext context) {
     return Consumer3<MapProvider, StepProvider, ParkDataProvider>(
       builder: (context, mapProvider, stepProvider, parkDataProvider, child) {
-        // _nearbyCourses 계산을 최적화
-        if (_nearbyCourses.isEmpty &&
-            !parkDataProvider.isLoadingParks &&
-            !parkDataProvider.isLoadingLocation) {
-          _nearbyCourses =
-              parkDataProvider.nearbyRecommendedCourses2km
-                  .map(
-                    (parkCourse) =>
-                        _convertToCourse(parkCourse, parkDataProvider),
-                  )
-                  .toList();
-          _nearbyCourses.sort(
-            (a, b) => a.details.distance.compareTo(b.details.distance),
-          );
+        // TrackingResult 로딩 최적화
+        if (!parkDataProvider.isLoadingParks &&
+            !parkDataProvider.isLoadingLocation &&
+            _parkTrackingResults.isEmpty &&
+            !_isLoadingTrackingResults) {
+          // 2km 이내 공원들의 TrackingResult 가져오기 (build 완료 후 실행)
+          final nearbyParkIds =
+              parkDataProvider.nearbyParks2km.map((park) => park.id).toList();
+          if (nearbyParkIds.isNotEmpty) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              _fetchTrackingResultsForNearbyParks(nearbyParkIds);
+            });
+          }
         }
 
         return DraggableScrollableSheet(
@@ -154,7 +186,7 @@ class _CourseRecommendBottomsheetState
                                     ),
                                   ),
                                   Text(
-                                    '내 주변 2km 이내 공원의 추천 코스입니다.',
+                                    '내 주변 2km 이내 공원의 추천 코스 입니다.',
                                     style: TextStyle(
                                       fontSize: 13,
                                       fontWeight: FontWeight.w400,
@@ -215,7 +247,8 @@ class _CourseRecommendBottomsheetState
                     ),
                   ),
                   const SizedBox(height: 5),
-                  if (selectedIndex != null && _nearbyCourses.isNotEmpty)
+                  if (selectedIndex != null &&
+                      _parksWithTrackingResults.isNotEmpty)
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20.0),
                       child: SizedBox(
@@ -230,7 +263,7 @@ class _CourseRecommendBottomsheetState
                               ),
                             ),
                             Text(
-                              _nearbyCourses[selectedIndex!].details.courseName,
+                              _parksWithTrackingResults[selectedIndex!].name,
                               style: const TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w600,
@@ -238,7 +271,7 @@ class _CourseRecommendBottomsheetState
                             ),
                             SizedBox(width: 5),
                             Text(
-                              '${_nearbyCourses[selectedIndex!].details.distance.toDouble().toStringAsFixed(1)}km',
+                              '${_parksWithTrackingResults[selectedIndex!].distanceKm.toStringAsFixed(1)}km',
                               style: TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w600,
@@ -253,146 +286,38 @@ class _CourseRecommendBottomsheetState
                     SizedBox(height: 20),
                   Divider(color: GRAYSCALE_LABEL_200, thickness: 1),
                   const SizedBox(height: 5),
-                  // 추천 코스 리스트
+
+                  // TrackingResult가 있는 공원 리스트
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20.0),
                       child:
                           parkDataProvider.isLoadingParks ||
-                                  parkDataProvider.isLoadingLocation
+                                  parkDataProvider.isLoadingLocation ||
+                                  _isLoadingTrackingResults
                               ? _buildLoadingIndicator()
-                              : _nearbyCourses.isEmpty
-                              ? _buildEmptyNearbyCoursesMessage()
+                              : _parksWithTrackingResults.isEmpty
+                              ? _buildEmptyParksWithTrackingMessage()
                               : GridView.builder(
                                 controller: scrollSheetController,
                                 gridDelegate:
                                     const SliverGridDelegateWithFixedCrossAxisCount(
                                       crossAxisCount: 2, // 2열
                                       crossAxisSpacing: 10,
-                                      mainAxisSpacing: 10,
+                                      childAspectRatio: 0.72, // 카드의 가로:세로 비율 조정
                                     ),
-                                itemCount: _nearbyCourses.length,
+                                itemCount: _parksWithTrackingResults.length,
                                 itemBuilder: (context, index) {
-                                  return GestureDetector(
-                                    onTap: () {
-                                      print("선택");
-                                      setState(() {
-                                        selectedIndex =
-                                            selectedIndex == index
-                                                ? null
-                                                : index;
-                                        if (selectedIndex != null) {
-                                          mapProvider.selectCourse(
-                                            _nearbyCourses[selectedIndex!],
-                                          );
-                                        } else {
-                                          mapProvider.selectCourse(null);
-                                        }
-                                      });
-                                      print('selectedIndex: $selectedIndex');
-                                      print(
-                                        'course; ${mapProvider.selectedCourse}',
-                                      );
-                                    },
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        color:
-                                            selectedIndex == index
-                                                ? ORANGE_PRIMARY_500
-                                                : WHITE,
-                                        borderRadius: BorderRadius.circular(8),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: GRAYSCALE_LABEL_200,
-                                            blurRadius: 2,
-                                            offset: const Offset(0, 1),
-                                          ),
-                                        ],
-                                      ),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.start,
-                                        children: [
-                                          ClipRRect(
-                                            borderRadius: BorderRadius.only(
-                                              topLeft: Radius.circular(8),
-                                              topRight: Radius.circular(8),
-                                            ),
-                                            child: _buildCourseImage(
-                                              _nearbyCourses[index]
-                                                  .details
-                                                  .imageUrl,
-                                              width: double.infinity,
-                                              height: 120,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 5),
-                                          Row(
-                                            children: [
-                                              Icon(
-                                                Icons.location_on,
-                                                size: 25,
-                                                color:
-                                                    selectedIndex == index
-                                                        ? WHITE
-                                                        : ORANGE_PRIMARY_500,
-                                              ),
-                                              Expanded(
-                                                child: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.start,
-                                                  children: [
-                                                    Padding(
-                                                      padding:
-                                                          const EdgeInsets.only(
-                                                            right: 10.0,
-                                                          ),
-                                                      child: Row(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .spaceBetween,
-                                                        children: [
-                                                          // 추후에는 사용자가 설정한 코스이름 넣어야 함
-                                                          Text(
-                                                            _nearbyCourses[index]
-                                                                .title,
-                                                            style: const TextStyle(
-                                                              fontSize: 14,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w500,
-                                                              color:
-                                                                  GRAYSCALE_LABEL_900,
-                                                            ),
-                                                            maxLines: 1,
-                                                            overflow:
-                                                                TextOverflow
-                                                                    .ellipsis,
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ),
-                                                    Text(
-                                                      '${_nearbyCourses[index].details.distance.toStringAsFixed(1)}km',
-                                                      style: TextStyle(
-                                                        fontSize: 14,
-                                                        fontWeight:
-                                                            FontWeight.w500,
-                                                        color:
-                                                            GRAYSCALE_LABEL_800,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
+                                  final park = _parksWithTrackingResults[index];
+                                  final trackingResults =
+                                      _parkTrackingResults[park.id]!;
+
+                                  return SizedBox(
+                                    height: 300, // 고정 높이 설정
+                                    child: _buildParkWithTrackingCard(
+                                      park,
+                                      trackingResults,
+                                      index,
                                     ),
                                   );
                                 },
@@ -406,56 +331,6 @@ class _CourseRecommendBottomsheetState
         );
       },
     );
-  }
-
-  // 코스 이미지를 표시하는 위젯
-  Widget _buildCourseImage(
-    String imagePath, {
-    required double width,
-    required double height,
-  }) {
-    // 이미지 경로가 http로 시작하면 네트워크 이미지, 아니면 에셋 이미지로 처리
-    if (imagePath.startsWith('http')) {
-      return Image.network(
-        imagePath,
-        fit: BoxFit.cover,
-        width: width,
-        height: height,
-        loadingBuilder: (context, child, loadingProgress) {
-          if (loadingProgress == null) {
-            return child;
-          }
-          return Shimmer.fromColors(
-            baseColor: Colors.grey[300]!,
-            highlightColor: Colors.grey[100]!,
-            child: Container(width: width, height: height, color: Colors.white),
-          );
-        },
-        errorBuilder: (context, error, stackTrace) {
-          return const Center(child: Text('이미지 로딩중 에러'));
-        },
-      );
-    } else {
-      return Image.asset(
-        imagePath,
-        fit: BoxFit.cover,
-        width: width,
-        height: height,
-        errorBuilder: (context, error, stackTrace) {
-          return Container(
-            width: width,
-            height: height,
-            color: GRAYSCALE_LABEL_200,
-            child: const Center(
-              child: Icon(
-                Icons.image_not_supported,
-                color: GRAYSCALE_LABEL_500,
-              ),
-            ),
-          );
-        },
-      );
-    }
   }
 
   // 로딩 인디케이터 위젯
@@ -476,7 +351,7 @@ class _CourseRecommendBottomsheetState
   }
 
   // 주변 코스가 없을 때 표시할 메시지 위젯
-  Widget _buildEmptyNearbyCoursesMessage() {
+  Widget _buildEmptyParksWithTrackingMessage() {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -499,6 +374,244 @@ class _CourseRecommendBottomsheetState
             textAlign: TextAlign.center,
           ),
         ],
+      ),
+    );
+  }
+
+  // TrackingResult가 있는 공원 카드를 빌드하는 메서드
+  Widget _buildParkWithTrackingCard(
+    ParkInfo park,
+    List<StepModel> trackingResults,
+    int index,
+  ) {
+    // TackingResult 뿌리기
+    final recentResults = trackingResults.toList();
+
+    return Container(
+      margin: EdgeInsets.only(bottom: 30),
+      decoration: BoxDecoration(
+        color: WHITE,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color:
+              selectedIndex == index ? ORANGE_PRIMARY_500 : GRAYSCALE_LABEL_200,
+          width: selectedIndex == index ? 2 : 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: GRAYSCALE_LABEL_200.withAlpha(128),
+            blurRadius: 4,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: GestureDetector(
+        onTap: () {
+          setState(() {
+            selectedIndex = selectedIndex == index ? null : index;
+          });
+        },
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 공원 이미지 추가
+            Container(
+              height: 100,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
+                color: GRAYSCALE_LABEL_200,
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
+                child:
+                    trackingResults.isNotEmpty &&
+                            trackingResults[0].imageUrl.isNotEmpty
+                        ? CachedNetworkImage(
+                          // 비동기 처리
+                          imageUrl: trackingResults[0].imageUrl,
+                          fit: BoxFit.cover,
+                          placeholder:
+                              (context, url) => Center(
+                                child: CircularProgressIndicator(
+                                  color: ORANGE_PRIMARY_500,
+                                ),
+                              ),
+                          errorWidget:
+                              (context, url, error) => _buildDefaultImage(),
+                        )
+                        : _buildDefaultImage(),
+              ),
+            ),
+            SizedBox(height: 8),
+            // 공원 기본 정보
+            Padding(
+              padding: const EdgeInsets.only(left: 5.0, right: 5.0),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Icon(
+                        Icons.location_on,
+                        color: ORANGE_PRIMARY_500,
+                        size: 24,
+                      ),
+                      Text(
+                        trackingResults[0].courseName,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: GRAYSCALE_LABEL_950,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(left: 10.0, right: 10.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    park.name,
+                    style: TextStyle(color: GRAYSCALE_LABEL_700, fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: 15),
+
+            ...recentResults.map((result) => _buildTrackingResultItem(result)),
+            if (trackingResults.length > 3)
+              Padding(
+                padding: EdgeInsets.only(top: 8),
+                child: Text(
+                  '외 ${trackingResults.length - 3}개의 기록이 더 있습니다.',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: GRAYSCALE_LABEL_500,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ),
+            // 최신 활동 기록들
+          ],
+        ),
+      ),
+    );
+  }
+
+  // 개별 TrackingResult 아이템을 빌드하는 메서드
+  Widget _buildTrackingResultItem(StepModel result) {
+    String formatDuration(String durationStr) {
+      final parts = durationStr.split(':');
+      if (parts.length == 3) {
+        int hours = int.tryParse(parts[0]) ?? 0;
+        int minutes = int.tryParse(parts[1]) ?? 0;
+        int seconds = int.tryParse(parts[2]) ?? 0;
+        if (hours > 0) {
+          return '$hours시간 $minutes분';
+        } else if (minutes > 0) {
+          return '$minutes분 $seconds초';
+        } else {
+          return '$seconds초';
+        }
+      }
+      return durationStr;
+    }
+
+    // String formatDate(String stopTimeStr) {
+    //   try {
+    //     DateTime dt = DateTime.parse(stopTimeStr);
+    //     final now = DateTime.now();
+    //     final difference = now.difference(dt);
+
+    //     if (difference.inDays == 0) {
+    //       return '오늘';
+    //     } else if (difference.inDays == 1) {
+    //       return '어제';
+    //     } else if (difference.inDays < 7) {
+    //       return '${difference.inDays}일 전';
+    //     } else {
+    //       return '${dt.month}/${dt.day}';
+    //     }
+    //   } catch (e) {
+    //     return stopTimeStr;
+    //   }
+    // }
+
+    String formatNumber(dynamic number) {
+      if (number >= 1000) {
+        return '${(number / 1000).toStringAsFixed(1)}k';
+      }
+      return number.toString();
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(left: 5.0, right: 5.0),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+        decoration: BoxDecoration(
+          color: GRAYSCALE_LABEL_100,
+          borderRadius: BorderRadius.circular(5),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.directions_walk, size: 16, color: Colors.green[600]),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                AutoSizeText(
+                  '${formatNumber(result.distance)}km',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: GRAYSCALE_LABEL_800,
+                  ),
+                  maxLines: 1,
+                ),
+                SizedBox(width: 4),
+                AutoSizeText(
+                  formatDuration(result.duration),
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: GRAYSCALE_LABEL_800,
+                  ),
+                  // overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // 기본 이미지 위젯
+  Widget _buildDefaultImage() {
+    return Container(
+      color: GRAYSCALE_LABEL_200,
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.image_not_supported,
+              color: GRAYSCALE_LABEL_400,
+              size: 32,
+            ),
+            SizedBox(height: 4),
+            Text(
+              '이미지 없음',
+              style: TextStyle(color: GRAYSCALE_LABEL_500, fontSize: 12),
+            ),
+          ],
+        ),
       ),
     );
   }
