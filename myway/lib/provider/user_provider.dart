@@ -54,6 +54,12 @@ class UserProvider extends ChangeNotifier {
     await FirebaseFirestore.instance.collection('users').doc(uid).update({
       'username': newNickname,
     });
+
+    await FirebaseAuth.instance.currentUser?.updateDisplayName(newNickname);
+    await FirebaseAuth.instance.currentUser?.reload();
+
+    _currentUser = FirebaseAuth.instance.currentUser;
+
     _nickname = newNickname;
     notifyListeners(); // 갱신 알림
   }
