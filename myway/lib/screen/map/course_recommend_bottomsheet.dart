@@ -1,4 +1,3 @@
-import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:myway/model/park_info.dart';
 import 'package:myway/provider/park_data_provider.dart';
@@ -22,9 +21,8 @@ class CourseRecommendBottomsheet extends StatefulWidget {
 class _CourseRecommendBottomsheetState
     extends State<CourseRecommendBottomsheet> {
   int? selectedIndex;
-  Map<String, List<StepModel>> _parkTrackingResults = {};
+  List<StepModel> _allTrackingResults = []; // 모든 TrackingResult 데이터
   bool _isLoadingTrackingResults = false;
-  List<ParkInfo> _parksWithTrackingResults = [];
 
   // Firestore에서 2km 이내 공원들의 TrackingResult를 가져오는 메서드
   Future<void> _fetchTrackingResultsForNearbyParks(
@@ -41,9 +39,11 @@ class _CourseRecommendBottomsheetState
     try {
       final firestore = FirebaseFirestore.instance;
       final trackingResultCollection = firestore.collection('trackingResult');
-      final querySnapshot = await trackingResultCollection.get();
+      final querySnapshot =
+          await trackingResultCollection
+              .get(); // Firestore에서 모든 사용자의 trackingResult 컬렉션을 가져옴
 
-      Map<String, List<StepModel>> parkResults = {};
+      List<StepModel> allResults = [];
 
       for (var userDoc in querySnapshot.docs) {
         final userData = userDoc.data();
@@ -52,17 +52,44 @@ class _CourseRecommendBottomsheetState
           final List<dynamic> userTrackingResults = userData['TrackingResult'];
 
           for (var recordData in userTrackingResults) {
-            if (recordData is Map<String, dynamic> &&
-                recordData['공원 ID'] != null &&
-                nearbyParkIds.contains(recordData['공원 ID'])) {
+            final parkIdFromRecord = recordData['공원 ID'];
+
+            print('원본 데이터: 코스이름=${recordData['코스이름']}, 공원ID=$parkIdFromRecord');
+
+            // 1단계: parkId가 완전히 비어있거나 null인 경우 완전 제외
+            if (parkIdFromRecord == null ||
+                parkIdFromRecord.toString().trim().isEmpty ||
+                parkIdFromRecord == 'null' ||
+                parkIdFromRecord.toString() == 'null') {
+              print('제외됨: parkId가 null/empty');
+              continue;
+            }
+
+            // 2단계: 근처 공원에 포함되지 않으면 제외
+            if (!nearbyParkIds.contains(parkIdFromRecord)) {
+              print('제외됨: 근처 공원에 포함되지 않음');
+              continue;
+            }
+
+            if (recordData is Map<String, dynamic>) {
               try {
                 final stepModel = StepModel.fromJson(recordData);
-                final parkId = recordData['공원 ID'] as String;
+                final parkId = parkIdFromRecord as String;
 
-                if (!parkResults.containsKey(parkId)) {
-                  parkResults[parkId] = [];
+                print(
+                  '데이터 확인: parkId=$parkId, stepModel.parkId=${stepModel.parkId}, courseName=${stepModel.courseName}',
+                );
+
+                // 3단계: stepModel에서도 다시 한번 확인
+                if (stepModel.parkId != null &&
+                    stepModel.parkId!.trim().isNotEmpty &&
+                    stepModel.parkId != 'null' &&
+                    stepModel.parkId == parkId) {
+                  allResults.add(stepModel);
+                  print('데이터 추가됨: $parkId - ${stepModel.courseName}');
+                } else {
+                  print('제외됨: stepModel parkId 검증 실패 (${stepModel.parkId})');
                 }
-                parkResults[parkId]!.add(stepModel);
               } catch (e) {
                 print('운동 기록 데이터 변환 중 오류 발생: $e');
               }
@@ -71,16 +98,40 @@ class _CourseRecommendBottomsheetState
         }
       }
 
-      // 각 공원별로 최신순으로 정렬
-      parkResults.forEach((parkId, results) {
-        results.sort((a, b) => b.stopTime.compareTo(a.stopTime));
-      });
+      // ID 기준으로 중복 제거 및 최신순 정렬
+      final unigueResults = <String, StepModel>{};
+      for (final result in allResults) {
+        final uniqueKey =
+            result.id.isNotEmpty
+                ? result.id
+                : '${result.courseName}_${result.stopTime}_${result.parkId}';
 
+        print(
+          '결과 처리: ID=${result.id}, courseName=${result.courseName}, key=$uniqueKey',
+        );
+
+        if (!unigueResults.containsKey(uniqueKey)) {
+          unigueResults[uniqueKey] = result;
+          print('추가: $uniqueKey');
+        } else {
+          print('중복 제외: $uniqueKey');
+        }
+      }
+      // 최신순으로 정렬 코드
+      final deuplicatedResults = unigueResults.values.toList();
+      deuplicatedResults.sort((a, b) => b.stopTime.compareTo(a.stopTime));
+
+      print('전체 최종 결과: ${deuplicatedResults.length}개');
+      for (int i = 0; i < deuplicatedResults.length; i++) {
+        final result = deuplicatedResults[i];
+        print(
+          '$i: ${result.courseName} - ${result.parkName} (${result.stopTime})',
+        );
+      }
       if (mounted) {
         setState(() {
-          _parkTrackingResults = parkResults;
+          _allTrackingResults = deuplicatedResults;
           _isLoadingTrackingResults = false;
-          _updateParksWithTrackingResults();
         });
       }
     } catch (e) {
@@ -93,22 +144,20 @@ class _CourseRecommendBottomsheetState
     }
   }
 
-  // TrackingResult가 있는 공원들만 필터링하는 메서드
-  void _updateParksWithTrackingResults() {
+  // 공원 정보를 가져오는 메서드
+  ParkInfo? _getParkInfo(String parkId) {
     final parkDataProvider = Provider.of<ParkDataProvider>(
       context,
       listen: false,
     );
 
-    _parksWithTrackingResults =
-        parkDataProvider.nearbyParks2km
-            .where((park) => _parkTrackingResults.containsKey(park.id))
-            .toList();
-
-    // 거리순으로 정렬
-    _parksWithTrackingResults.sort(
-      (a, b) => a.distanceKm.compareTo(b.distanceKm),
-    );
+    try {
+      return parkDataProvider.nearbyParks2km.firstWhere(
+        (park) => park.id == parkId,
+      );
+    } catch (e) {
+      return null;
+    }
   }
 
   @override
@@ -128,12 +177,12 @@ class _CourseRecommendBottomsheetState
   Widget build(BuildContext context) {
     return Consumer3<MapProvider, StepProvider, ParkDataProvider>(
       builder: (context, mapProvider, stepProvider, parkDataProvider, child) {
-        // TrackingResult 로딩 최적화
+        // 조건이 맞으면 자동으로 TrackingResult 가져오기
         if (!parkDataProvider.isLoadingParks &&
             !parkDataProvider.isLoadingLocation &&
-            _parkTrackingResults.isEmpty &&
+            _allTrackingResults.isEmpty &&
             !_isLoadingTrackingResults) {
-          // 2km 이내 공원들의 TrackingResult 가져오기 (build 완료 후 실행)
+          // 2km 이내 공원들의 TrackingResult 가져오기
           final nearbyParkIds =
               parkDataProvider.nearbyParks2km.map((park) => park.id).toList();
           if (nearbyParkIds.isNotEmpty) {
@@ -247,8 +296,7 @@ class _CourseRecommendBottomsheetState
                     ),
                   ),
                   const SizedBox(height: 5),
-                  if (selectedIndex != null &&
-                      _parksWithTrackingResults.isNotEmpty)
+                  if (selectedIndex != null && _allTrackingResults.isNotEmpty)
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20.0),
                       child: SizedBox(
@@ -263,7 +311,7 @@ class _CourseRecommendBottomsheetState
                               ),
                             ),
                             Text(
-                              _parksWithTrackingResults[selectedIndex!].name,
+                              _allTrackingResults[selectedIndex!].courseName,
                               style: const TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w600,
@@ -271,7 +319,7 @@ class _CourseRecommendBottomsheetState
                             ),
                             SizedBox(width: 5),
                             Text(
-                              '${_parksWithTrackingResults[selectedIndex!].distanceKm.toStringAsFixed(1)}km',
+                              '${_allTrackingResults[selectedIndex!].distance.toStringAsFixed(1)}km',
                               style: TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w600,
@@ -296,8 +344,8 @@ class _CourseRecommendBottomsheetState
                                   parkDataProvider.isLoadingLocation ||
                                   _isLoadingTrackingResults
                               ? _buildLoadingIndicator()
-                              : _parksWithTrackingResults.isEmpty
-                              ? _buildEmptyParksWithTrackingMessage()
+                              : _allTrackingResults.isEmpty
+                              ? _buildEmptyParksWithTrackingMessage() // 데이터가 없을때 표시되는 메시지 Widget
                               : GridView.builder(
                                 controller: scrollSheetController,
                                 gridDelegate:
@@ -306,17 +354,19 @@ class _CourseRecommendBottomsheetState
                                       crossAxisSpacing: 10,
                                       childAspectRatio: 0.72, // 카드의 가로:세로 비율 조정
                                     ),
-                                itemCount: _parksWithTrackingResults.length,
+                                itemCount: _allTrackingResults.length,
                                 itemBuilder: (context, index) {
-                                  final park = _parksWithTrackingResults[index];
-                                  final trackingResults =
-                                      _parkTrackingResults[park.id]!;
+                                  final trackingResult =
+                                      _allTrackingResults[index];
+                                  final parkInfo = _getParkInfo(
+                                    trackingResult.parkId!,
+                                  );
 
                                   return SizedBox(
-                                    height: 300, // 고정 높이 설정
-                                    child: _buildParkWithTrackingCard(
-                                      park,
-                                      trackingResults,
+                                    height: 350, // 고정 높이 설정
+                                    child: _buildTrackingCard(
+                                      trackingResult,
+                                      parkInfo,
                                       index,
                                     ),
                                   );
@@ -378,15 +428,12 @@ class _CourseRecommendBottomsheetState
     );
   }
 
-  // TrackingResult가 있는 공원 카드를 빌드하는 메서드
-  Widget _buildParkWithTrackingCard(
-    ParkInfo park,
-    List<StepModel> trackingResults,
+  // 개별 TrackingResult 카드를 빌드하는 메서드
+  Widget _buildTrackingCard(
+    StepModel trackingResult,
+    ParkInfo? parkInfo,
     int index,
   ) {
-    // TackingResult 뿌리기
-    final recentResults = trackingResults.toList();
-
     return Container(
       margin: EdgeInsets.only(bottom: 30),
       decoration: BoxDecoration(
@@ -414,7 +461,7 @@ class _CourseRecommendBottomsheetState
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 공원 이미지 추가
+            // 트래킹 결과 이미지
             Container(
               height: 100,
               width: double.infinity,
@@ -425,11 +472,9 @@ class _CourseRecommendBottomsheetState
               child: ClipRRect(
                 borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
                 child:
-                    trackingResults.isNotEmpty &&
-                            trackingResults[0].imageUrl.isNotEmpty
+                    trackingResult.imageUrl.isNotEmpty
                         ? CachedNetworkImage(
-                          // 비동기 처리
-                          imageUrl: trackingResults[0].imageUrl,
+                          imageUrl: trackingResult.imageUrl,
                           fit: BoxFit.cover,
                           placeholder:
                               (context, url) => Center(
@@ -444,39 +489,37 @@ class _CourseRecommendBottomsheetState
               ),
             ),
             SizedBox(height: 8),
-            // 공원 기본 정보
+            // 코스이름
             Padding(
               padding: const EdgeInsets.only(left: 5.0, right: 5.0),
-              child: Column(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Icon(
-                        Icons.location_on,
-                        color: ORANGE_PRIMARY_500,
-                        size: 24,
+                  Icon(Icons.location_on, color: ORANGE_PRIMARY_500, size: 24),
+                  SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      trackingResult.courseName,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: GRAYSCALE_LABEL_950,
                       ),
-                      Text(
-                        trackingResults[0].courseName,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: GRAYSCALE_LABEL_950,
-                        ),
-                      ),
-                    ],
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                 ],
               ),
             ),
+            // 공원이름
             Padding(
               padding: const EdgeInsets.only(left: 10.0, right: 10.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    park.name,
+                    trackingResult.parkName ?? parkInfo?.name ?? '공원 정보 없음',
                     style: TextStyle(color: GRAYSCALE_LABEL_700, fontSize: 12),
                   ),
                 ],
@@ -484,19 +527,11 @@ class _CourseRecommendBottomsheetState
             ),
             SizedBox(height: 15),
 
-            ...recentResults.map((result) => _buildTrackingResultItem(result)),
-            if (trackingResults.length > 3)
-              Padding(
-                padding: EdgeInsets.only(top: 8),
-                child: Text(
-                  '외 ${trackingResults.length - 3}개의 기록이 더 있습니다.',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: GRAYSCALE_LABEL_500,
-                    fontStyle: FontStyle.italic,
-                  ),
-                ),
-              ),
+            // 트레킹 상세 정보
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: _buildTrackingResultItem(trackingResult),
+            ),
             // 최신 활동 기록들
           ],
         ),
@@ -509,45 +544,25 @@ class _CourseRecommendBottomsheetState
     String formatDuration(String durationStr) {
       final parts = durationStr.split(':');
       if (parts.length == 3) {
-        int hours = int.tryParse(parts[0]) ?? 0;
-        int minutes = int.tryParse(parts[1]) ?? 0;
-        int seconds = int.tryParse(parts[2]) ?? 0;
+        int hours = int.tryParse(parts[0]) ?? 0; // 시
+        int minutes = int.tryParse(parts[1]) ?? 0; // 분
+        int seconds = int.tryParse(parts[2]) ?? 0; // 초
+
+        // 시간이 있는경우
         if (hours > 0) {
           return '$hours시간 $minutes분';
-        } else if (minutes > 0) {
+        }
+        // 분이 있는경우
+        else if (minutes > 0) {
           return '$minutes분 $seconds초';
-        } else {
+        }
+        // 초만 있는 경우
+        else {
           return '$seconds초';
         }
       }
+      // 잘못된 형식이면 원본 문자열 반환
       return durationStr;
-    }
-
-    // String formatDate(String stopTimeStr) {
-    //   try {
-    //     DateTime dt = DateTime.parse(stopTimeStr);
-    //     final now = DateTime.now();
-    //     final difference = now.difference(dt);
-
-    //     if (difference.inDays == 0) {
-    //       return '오늘';
-    //     } else if (difference.inDays == 1) {
-    //       return '어제';
-    //     } else if (difference.inDays < 7) {
-    //       return '${difference.inDays}일 전';
-    //     } else {
-    //       return '${dt.month}/${dt.day}';
-    //     }
-    //   } catch (e) {
-    //     return stopTimeStr;
-    //   }
-    // }
-
-    String formatNumber(dynamic number) {
-      if (number >= 1000) {
-        return '${(number / 1000).toStringAsFixed(1)}k';
-      }
-      return number.toString();
     }
 
     return Padding(
@@ -564,8 +579,8 @@ class _CourseRecommendBottomsheetState
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                AutoSizeText(
-                  '${formatNumber(result.distance)}km',
+                Text(
+                  '${result.distance}km',
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
@@ -574,7 +589,7 @@ class _CourseRecommendBottomsheetState
                   maxLines: 1,
                 ),
                 SizedBox(width: 4),
-                AutoSizeText(
+                Text(
                   formatDuration(result.duration),
                   style: TextStyle(
                     fontSize: 11,
