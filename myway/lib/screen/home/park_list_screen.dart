@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:myway/model/park_info.dart';
-import 'package:myway/model/park_course_info.dart';
+import 'package:myway/model/step_model.dart';
 import 'package:provider/provider.dart';
 import '../../provider/park_data_provider.dart';
 import '../../const/colors.dart';
@@ -19,9 +19,10 @@ class _ParkListScreenState extends State<ParkListScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
+  // 공원 탭 관련 상태 변수
   List<ParkInfo> _filteredParks = [];
   List<ParkInfo> _parksToDisplayOnPage = [];
-  final double _nearbyFilterRadiusKm = 2.0; // 반경 5키로 변수 선언
+  final double _nearbyFilterRadiusKm = 2.0;
   ParkFilterType _currentParkFilter = ParkFilterType.all;
   final TextEditingController _searchController = TextEditingController();
   String _searchTerm = "";
@@ -32,14 +33,12 @@ class _ParkListScreenState extends State<ParkListScreen>
 
   static const Color orangeIconColor = YELLOW_INFO_BASE_30;
 
-  List<ParkCourseInfo> _filteredRecommendedCourses = [];
-  List<ParkCourseInfo> _recommendedCoursesToDisplayOnPage = [];
-  final ScrollController _recommendedCourseScrollController =
-      ScrollController();
-  final int _coursesPerPage = 20;
-  int _currentRecommendedCoursePage = 1;
-  bool _isFetchingMoreRecommendedCourses = false;
-  ParkFilterType _currentCourseFilter = ParkFilterType.all;
+  // 사용자 활동 기록 관련 상태 변수
+  List<StepModel> _userRecordsToDisplayOnPage = [];
+  final ScrollController _userRecordsScrollController = ScrollController();
+  final int _userRecordsPerPage = 20;
+  int _currentUserRecordsPage = 1;
+  bool _isFetchingMoreUserRecords = false;
 
   @override
   void initState() {
@@ -57,18 +56,31 @@ class _ParkListScreenState extends State<ParkListScreen>
 
     _searchController.addListener(_onParkSearchChanged);
     _parkListScrollController.addListener(_onParkScroll);
-    _recommendedCourseScrollController.addListener(_onRecommendedCourseScroll);
+    _userRecordsScrollController.addListener(_onUserRecordsScroll);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         parkDataProvider.fetchAllDataIfNeeded().then((_) {
           if (mounted) {
             _applyParkFilterAndSearchAndPagination(parkDataProvider);
-            _applyRecommendedCourseFilterAndPagination(parkDataProvider);
+            _applyUserRecordsPagination(parkDataProvider);
           }
         });
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _tabController.removeListener(_handleTabSelection);
+    _tabController.dispose();
+    _searchController.removeListener(_onParkSearchChanged);
+    _searchController.dispose();
+    _parkListScrollController.removeListener(_onParkScroll);
+    _parkListScrollController.dispose();
+    _userRecordsScrollController.removeListener(_onUserRecordsScroll);
+    _userRecordsScrollController.dispose();
+    super.dispose();
   }
 
   void _handleTabSelection() {
@@ -85,38 +97,14 @@ class _ParkListScreenState extends State<ParkListScreen>
             }
             _applyParkFilterAndSearchAndPagination(parkDataProvider);
           } else if (_tabController.index == 1) {
-            if (_recommendedCourseScrollController.hasClients) {
-              _recommendedCourseScrollController.jumpTo(0);
+            if (_userRecordsScrollController.hasClients) {
+              _userRecordsScrollController.jumpTo(0);
             }
-            _applyRecommendedCourseFilterAndPagination(parkDataProvider);
-            if (parkDataProvider.allGeneratedRecommendedCourses.isEmpty &&
-                !parkDataProvider.isLoadingRecommendedCourses &&
-                !parkDataProvider.isLoadingParks) {
-              parkDataProvider.fetchAllDataIfNeeded().then((_) {
-                if (mounted) {
-                  _applyRecommendedCourseFilterAndPagination(parkDataProvider);
-                }
-              });
-            }
+            _applyUserRecordsPagination(parkDataProvider);
           }
         });
       }
     }
-  }
-
-  @override
-  void dispose() {
-    _tabController.removeListener(_handleTabSelection);
-    _tabController.dispose();
-    _searchController.removeListener(_onParkSearchChanged);
-    _searchController.dispose();
-    _parkListScrollController.removeListener(_onParkScroll);
-    _parkListScrollController.dispose();
-    _recommendedCourseScrollController.removeListener(
-      _onRecommendedCourseScroll,
-    );
-    _recommendedCourseScrollController.dispose();
-    super.dispose();
   }
 
   void _onParkSearchChanged() {
@@ -143,20 +131,21 @@ class _ParkListScreenState extends State<ParkListScreen>
     }
   }
 
-  void _onRecommendedCourseScroll() {
+  void _onUserRecordsScroll() {
     if (_tabController.index == 1 &&
-        _recommendedCourseScrollController.hasClients &&
-        _recommendedCourseScrollController.position.pixels >=
-            _recommendedCourseScrollController.position.maxScrollExtent - 200 &&
-        !_isFetchingMoreRecommendedCourses &&
-        _recommendedCoursesToDisplayOnPage.length <
-            _filteredRecommendedCourses.length) {
-      _fetchMoreRecommendedCoursesForPage();
+        _userRecordsScrollController.hasClients &&
+        _userRecordsScrollController.position.pixels >=
+            _userRecordsScrollController.position.maxScrollExtent - 200 &&
+        !_isFetchingMoreUserRecords) {
+      final provider = Provider.of<ParkDataProvider>(context, listen: false);
+      if (_userRecordsToDisplayOnPage.length <
+          provider.allUserCourseRecords.length) {
+        _fetchMoreUserRecordsForPage();
+      }
     }
   }
 
   void _applyParkFilterAndSearchAndPagination(ParkDataProvider provider) {
-    // 반경 5키로 지정 메소드
     if (!provider.isLoadingParks) {
       List<ParkInfo> tempFilteredList = List.from(provider.allFetchedParks);
       if (_currentParkFilter == ParkFilterType.favorites) {
@@ -169,22 +158,10 @@ class _ParkListScreenState extends State<ParkListScreen>
           tempFilteredList =
               tempFilteredList
                   .where((park) => park.distanceKm < _nearbyFilterRadiusKm)
-                  .toList(); //
+                  .toList();
           tempFilteredList.sort((a, b) => a.distanceKm.compareTo(b.distanceKm));
         } else {
           tempFilteredList = [];
-          if (mounted && !provider.isLoadingLocation) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text("현재 위치를 가져올 수 없어 '내 주변' 필터를 사용할 수 없습니다."),
-                    backgroundColor: YELLOW_INFO_BASE_30,
-                  ),
-                );
-              }
-            });
-          }
         }
       } else {
         tempFilteredList.sort((a, b) => a.name.compareTo(b.name));
@@ -235,10 +212,7 @@ class _ParkListScreenState extends State<ParkListScreen>
   }
 
   void _fetchMoreParksForPage() {
-    /* 이전과 동일 */
-    if (_isFetchingMoreParks) {
-      return;
-    }
+    if (_isFetchingMoreParks) return;
     if (mounted) {
       setState(() => _isFetchingMoreParks = true);
     }
@@ -250,71 +224,55 @@ class _ParkListScreenState extends State<ParkListScreen>
     });
   }
 
-  void _applyRecommendedCourseFilterAndPagination(ParkDataProvider provider) {
-    /* 이전과 동일 */
-    if (!provider.isLoadingRecommendedCourses) {
-      List<ParkCourseInfo> tempFilteredList = List.from(
-        provider.allGeneratedRecommendedCourses,
-      );
-      if (_currentCourseFilter == ParkFilterType.favorites) {
-        tempFilteredList =
-            tempFilteredList
-                .where((course) => provider.isCourseFavorite(course.details.id))
-                .toList();
-      } else {
-        /* 정렬 로직 */
-      }
-      if (mounted) {
-        setState(() {
-          _filteredRecommendedCourses = tempFilteredList;
-          _currentRecommendedCoursePage = 1;
-          _loadRecommendedCoursesForCurrentPage();
-        });
-      }
-    }
-  }
-
-  void _loadRecommendedCoursesForCurrentPage() {
-    /* 이전과 동일 */
-    final int startIndex =
-        (_currentRecommendedCoursePage - 1) * _coursesPerPage;
-    int endIndex = startIndex + _coursesPerPage;
-    if (endIndex > _filteredRecommendedCourses.length) {
-      endIndex = _filteredRecommendedCourses.length;
-    }
+  void _applyUserRecordsPagination(ParkDataProvider provider) {
     if (mounted) {
       setState(() {
-        if (_currentRecommendedCoursePage == 1) {
-          _recommendedCoursesToDisplayOnPage = _filteredRecommendedCourses
-              .sublist(startIndex, endIndex);
-        } else {
-          _recommendedCoursesToDisplayOnPage.addAll(
-            _filteredRecommendedCourses.sublist(startIndex, endIndex),
-          );
-        }
-        _isFetchingMoreRecommendedCourses = false;
+        _currentUserRecordsPage = 1;
+        _loadUserRecordsForCurrentPage(provider);
       });
     }
   }
 
-  void _fetchMoreRecommendedCoursesForPage() {
-    /* 이전과 동일 */
-    if (_isFetchingMoreRecommendedCourses) {
-      return;
+  void _loadUserRecordsForCurrentPage(ParkDataProvider provider) {
+    final allRecords = provider.allUserCourseRecords;
+    final int startIndex = (_currentUserRecordsPage - 1) * _userRecordsPerPage;
+    int endIndex = startIndex + _userRecordsPerPage;
+    if (endIndex > allRecords.length) {
+      endIndex = allRecords.length;
     }
+
     if (mounted) {
-      setState(() => _isFetchingMoreRecommendedCourses = true);
+      setState(() {
+        if (_currentUserRecordsPage == 1) {
+          _userRecordsToDisplayOnPage = allRecords.sublist(
+            startIndex,
+            endIndex,
+          );
+        } else {
+          _userRecordsToDisplayOnPage.addAll(
+            allRecords.sublist(startIndex, endIndex),
+          );
+        }
+        _isFetchingMoreUserRecords = false;
+      });
     }
-    _currentRecommendedCoursePage++;
+  }
+
+  void _fetchMoreUserRecordsForPage() {
+    if (_isFetchingMoreUserRecords) return;
+    if (mounted) {
+      setState(() => _isFetchingMoreUserRecords = true);
+    }
+    _currentUserRecordsPage++;
     Future.delayed(const Duration(milliseconds: 500), () {
       if (mounted) {
-        _loadRecommendedCoursesForCurrentPage();
+        final provider = Provider.of<ParkDataProvider>(context, listen: false);
+        _loadUserRecordsForCurrentPage(provider);
       }
     });
   }
 
   Widget _buildParkListItem(ParkInfo park) {
-    /* 이전과 동일 */
     String displayAddress = park.address.isNotEmpty ? park.address : "주소 정보 없음";
     return Container(
       margin: const EdgeInsets.only(bottom: 8.0),
@@ -402,7 +360,6 @@ class _ParkListScreenState extends State<ParkListScreen>
   }
 
   Widget _buildParkSearchBarAndFilters(ParkDataProvider provider) {
-    /* 이전과 동일 */
     return Padding(
       padding: const EdgeInsets.only(bottom: 12.0, top: 8.0),
       child: Column(
@@ -412,7 +369,6 @@ class _ParkListScreenState extends State<ParkListScreen>
             child: TextField(
               controller: _searchController,
               onChanged: (value) => _onParkSearchChanged(),
-
               cursorColor: ORANGE_PRIMARY_500,
               decoration: InputDecoration(
                 hintText: "공원 이름 또는 주소 검색",
@@ -474,7 +430,7 @@ class _ParkListScreenState extends State<ParkListScreen>
               const SizedBox(width: 8),
               _buildFilterChip(
                 ParkFilterType.nearby,
-                "내 주변 5km",
+                "내 주변 2km",
                 true,
                 provider,
               ),
@@ -492,33 +448,13 @@ class _ParkListScreenState extends State<ParkListScreen>
     );
   }
 
-  Widget _buildCourseFilterChips(ParkDataProvider provider) {
-    /* 이전과 동일 */
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12.0, top: 8.0),
-      child: Row(
-        children: [
-          _buildFilterChip(ParkFilterType.all, "전체", false, provider),
-          const SizedBox(width: 8),
-          _buildFilterChip(ParkFilterType.favorites, "찜 목록", false, provider),
-        ],
-      ),
-    );
-  }
-
   Widget _buildFilterChip(
     ParkFilterType filterType,
     String label,
     bool isParkTab,
     ParkDataProvider provider,
   ) {
-    /* 이전과 동일 */
-    bool isSelected;
-    if (isParkTab) {
-      isSelected = _currentParkFilter == filterType;
-    } else {
-      isSelected = _currentCourseFilter == filterType;
-    }
+    bool isSelected = isParkTab ? _currentParkFilter == filterType : false;
     return ChoiceChip(
       label: Text(label),
       selected: isSelected,
@@ -546,13 +482,6 @@ class _ParkListScreenState extends State<ParkListScreen>
                 _applyParkFilterAndSearchAndPagination(provider);
               });
             }
-          } else {
-            if (mounted) {
-              setState(() {
-                _currentCourseFilter = filterType;
-                _applyRecommendedCourseFilterAndPagination(provider);
-              });
-            }
           }
         }
       },
@@ -575,8 +504,7 @@ class _ParkListScreenState extends State<ParkListScreen>
     );
   }
 
-  Widget _buildParkTabContent(ParkDataProvider provider) {
-    /* 이전과 동일 */
+  Widget buildParkTabContent(ParkDataProvider provider) {
     const double horizontalPageMargin = 20.0;
     if (provider.isLoadingLocation &&
         provider.allFetchedParks.isEmpty &&
@@ -647,10 +575,12 @@ class _ParkListScreenState extends State<ParkListScreen>
                   "다시 시도",
                   style: TextStyle(color: BACKGROUND_COLOR),
                 ),
-                onPressed:
-                    () => provider.refreshData().then(
-                      (_) => _applyParkFilterAndSearchAndPagination(provider),
-                    ),
+                onPressed: () async {
+                  await provider.refreshData();
+                  if (mounted) {
+                    _applyParkFilterAndSearchAndPagination(provider);
+                  }
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: BLUE_SECONDARY_500,
                   padding: const EdgeInsets.symmetric(
@@ -673,18 +603,13 @@ class _ParkListScreenState extends State<ParkListScreen>
             ),
             child: _buildParkSearchBarAndFilters(provider),
           ),
-          Expanded(
+          const Expanded(
             child: Center(
               child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: horizontalPageMargin,
-                ),
+                padding: EdgeInsets.symmetric(horizontal: horizontalPageMargin),
                 child: Text(
                   "제공된 공원 정보가 없습니다.",
-                  style: const TextStyle(
-                    color: GRAYSCALE_LABEL_600,
-                    fontSize: 14,
-                  ),
+                  style: TextStyle(color: GRAYSCALE_LABEL_600, fontSize: 14),
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -760,16 +685,33 @@ class _ParkListScreenState extends State<ParkListScreen>
     );
   }
 
-  Widget _buildRecommendedCourseCardItem(
-    ParkCourseInfo course,
-    ParkDataProvider provider,
-  ) {
-    bool isFavoriteNow = provider.isCourseFavorite(course.details.id);
-    // print("List Screen Build Card: ${course.title} (ID: ${course.id}), isFavorite: $isFavoriteNow");
+  Widget _buildUserRecordCardItem(StepModel record) {
+    String formatDuration(String durationStr) {
+      final parts = durationStr.split(':');
+      if (parts.length == 3) {
+        int hours = int.tryParse(parts[0]) ?? 0;
+        int minutes = int.tryParse(parts[1]) ?? 0;
+        int seconds = int.tryParse(parts[2]) ?? 0;
+        String result = "";
+        if (hours > 0) result += "${hours}시간 ";
+        if (minutes > 0 || hours > 0) result += "${minutes}분 ";
+        result += "${seconds}초";
+        return result.trim().isEmpty ? "0초" : result.trim();
+      }
+      return durationStr;
+    }
+
+    String formatStopTime(String stopTimeStr) {
+      try {
+        DateTime dt = DateTime.parse(stopTimeStr);
+        return "${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')} ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}";
+      } catch (e) {
+        return stopTimeStr;
+      }
+    }
 
     return Container(
-      // 카드 전체를 감싸는 Container에 Key를 부여합니다.
-      key: ValueKey(course.details.id),
+      key: ValueKey('user_record_item_${record.id}'),
       decoration: BoxDecoration(
         color: BACKGROUND_COLOR,
         borderRadius: BorderRadius.circular(12.0),
@@ -786,79 +728,73 @@ class _ParkListScreenState extends State<ParkListScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
-            child: Stack(
-              children: [
-                Positioned.fill(
-                  child: ClipRRect(
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(12.0),
-                    ),
-                    child: Image.asset(
-                      course.details.imageUrl.isNotEmpty
-                          ? course.details.imageUrl
-                          : 'assets/images/default_course_image.png',
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                      errorBuilder:
-                          (context, error, stackTrace) => const Center(
-                            child: Icon(
-                              Icons.image_not_supported,
-                              color: GRAYSCALE_LABEL_400,
-                              size: 40,
+            child: ClipRRect(
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(12.0),
+              ),
+              child:
+                  record.imageUrl.isNotEmpty
+                      ? Image.network(
+                        record.imageUrl,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Center(
+                            child: CircularProgressIndicator(
+                              value:
+                                  loadingProgress.expectedTotalBytes != null
+                                      ? loadingProgress.cumulativeBytesLoaded /
+                                          loadingProgress.expectedTotalBytes!
+                                      : null,
+                              color: BLUE_SECONDARY_500,
                             ),
-                          ),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      key: ValueKey(
-                        course.details.id,
-                      ), // Key 고유성 확보
-                      onTap: () {
-                        provider.toggleCourseFavorite(course.details.id);
-                      },
-                      borderRadius: BorderRadius.circular(20),
-                      child: Padding(
-                        padding: const EdgeInsets.all(4.0),
-                        child: Icon(
-                          isFavoriteNow
-                              ? Icons.favorite
-                              : Icons.favorite_border,
-                          color:
-                              isFavoriteNow ? HEART_FILL : GRAYSCALE_LABEL_600,
-                          size: 24,
-                        ),
+                          );
+                        },
+                        errorBuilder:
+                            (context, error, stackTrace) => const Center(
+                              child: Icon(
+                                Icons.broken_image_outlined,
+                                color: GRAYSCALE_LABEL_400,
+                                size: 40,
+                              ),
+                            ),
+                      )
+                      : Image.asset(
+                        'assets/images/default_course_image.png',
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                        errorBuilder:
+                            (context, error, stackTrace) => const Center(
+                              child: Icon(
+                                Icons.image_not_supported,
+                                color: GRAYSCALE_LABEL_400,
+                                size: 40,
+                              ),
+                            ),
                       ),
-                    ),
-                  ),
-                ),
-              ],
             ),
           ),
           Padding(
             padding: const EdgeInsets.all(10.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  course.details.parkName ?? '정보 없음',
+                  record.courseName.isNotEmpty ? record.courseName : "코스 이름 없음",
                   style: const TextStyle(
-                    fontSize: 15,
+                    fontSize: 14,
                     fontWeight: FontWeight.bold,
                     color: GRAYSCALE_LABEL_950,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                if (course.details.parkName != null) ...[
-                  const SizedBox(height: 2),
+                if (record.parkName != null && record.parkName!.isNotEmpty) ...[
+                  const SizedBox(height: 1),
                   Text(
-                    course.details.parkName!,
+                    record.parkName!,
                     style: const TextStyle(
                       fontSize: 11,
                       color: GRAYSCALE_LABEL_500,
@@ -867,15 +803,34 @@ class _ParkListScreenState extends State<ParkListScreen>
                     overflow: TextOverflow.ellipsis,
                   ),
                 ],
-                const SizedBox(height: 4),
+                const SizedBox(height: 3),
                 Text(
-                  course.details.distance.toStringAsFixed(1),
+                  "거리: ${record.distance.toStringAsFixed(1)}km",
                   style: const TextStyle(
                     fontSize: 12,
                     color: GRAYSCALE_LABEL_700,
                   ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+                ),
+                Text(
+                  "시간: ${formatDuration(record.duration)}",
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: GRAYSCALE_LABEL_700,
+                  ),
+                ),
+                Text(
+                  "걸음: ${record.steps}보",
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: GRAYSCALE_LABEL_700,
+                  ),
+                ),
+                Text(
+                  formatStopTime(record.stopTime),
+                  style: const TextStyle(
+                    fontSize: 10,
+                    color: GRAYSCALE_LABEL_600,
+                  ),
                 ),
               ],
             ),
@@ -885,10 +840,11 @@ class _ParkListScreenState extends State<ParkListScreen>
     );
   }
 
-  Widget _buildRecommendedCoursesTabContent(ParkDataProvider provider) {
-    /* 이전과 동일 */
+  Widget buildUserRecordsTabContent(ParkDataProvider provider) {
     const double horizontalPageMargin = 20.0;
-    if (provider.isLoadingRecommendedCourses || provider.isLoadingParks) {
+
+    if (provider.isLoadingUserRecords &&
+        provider.allUserCourseRecords.isEmpty) {
       return const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -896,172 +852,67 @@ class _ParkListScreenState extends State<ParkListScreen>
             CircularProgressIndicator(color: BLUE_SECONDARY_700),
             SizedBox(height: 15),
             Text(
-              "추천 코스를 불러오는 중...",
+              "사용자 기록을 불러오는 중...",
               style: TextStyle(color: GRAYSCALE_LABEL_700),
             ),
           ],
         ),
       );
     }
-    if (provider.apiError.isNotEmpty &&
-        provider.allGeneratedRecommendedCourses.isEmpty &&
-        provider.allFetchedParks.isEmpty) {
+
+    if (provider.userRecordsError.isNotEmpty &&
+        provider.allUserCourseRecords.isEmpty) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(horizontalPageMargin),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(
-                Icons.error_outline,
-                color: RED_DANGER_TEXT_50,
-                size: 48,
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                "오류 발생",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: GRAYSCALE_LABEL_900,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                "코스 정보를 불러오는데 실패했습니다.\n${provider.apiError}",
-                style: const TextStyle(
-                  color: GRAYSCALE_LABEL_700,
-                  fontSize: 14,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton.icon(
-                icon: const Icon(Icons.refresh, color: BACKGROUND_COLOR),
-                label: const Text(
-                  "다시 시도",
-                  style: TextStyle(color: BACKGROUND_COLOR),
-                ),
-                onPressed:
-                    () => provider.refreshData().then(
-                      (_) =>
-                          _applyRecommendedCourseFilterAndPagination(provider),
-                    ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: BLUE_SECONDARY_500,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 10,
-                  ),
-                ),
-              ),
-            ],
+          child: Text(provider.userRecordsError, textAlign: TextAlign.center),
+        ),
+      );
+    }
+
+    if (provider.allUserCourseRecords.isEmpty &&
+        !provider.isLoadingUserRecords) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: horizontalPageMargin),
+          child: Text(
+            "사용자 활동 기록이 아직 없습니다.",
+            style: TextStyle(color: GRAYSCALE_LABEL_600, fontSize: 14),
+            textAlign: TextAlign.center,
           ),
         ),
       );
     }
-    if (_recommendedCoursesToDisplayOnPage.isEmpty &&
-        !provider.isLoadingRecommendedCourses &&
-        _currentCourseFilter != ParkFilterType.all) {
-      return Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: horizontalPageMargin,
-            ),
-            child: _buildCourseFilterChips(provider),
-          ),
-          Expanded(
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: horizontalPageMargin,
-                ),
-                child: Text(
-                  "선택한 조건에 맞는 추천 코스가 없습니다.",
-                  style: const TextStyle(
-                    color: GRAYSCALE_LABEL_600,
-                    fontSize: 14,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ),
-          ),
-        ],
-      );
-    }
-    if (provider.allGeneratedRecommendedCourses.isEmpty &&
-        !provider.isLoadingRecommendedCourses) {
-      return Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: horizontalPageMargin,
-            ),
-            child: _buildCourseFilterChips(provider),
-          ),
-          Expanded(
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: horizontalPageMargin,
-                ),
-                child: Text(
-                  "추천 코스가 아직 없습니다.",
-                  style: const TextStyle(
-                    color: GRAYSCALE_LABEL_600,
-                    fontSize: 14,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ),
-          ),
-        ],
-      );
-    }
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: horizontalPageMargin),
-          child: _buildCourseFilterChips(provider),
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: horizontalPageMargin,
+        vertical: 12.0,
+      ),
+      child: GridView.builder(
+        controller: _userRecordsScrollController,
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          crossAxisSpacing: 12.0,
+          mainAxisSpacing: 12.0,
+          childAspectRatio: 0.68,
         ),
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: horizontalPageMargin,
-            ),
-            child: GridView.builder(
-              controller: _recommendedCourseScrollController,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 12.0,
-                mainAxisSpacing: 12.0,
-                childAspectRatio: 0.70,
+        itemCount:
+            _userRecordsToDisplayOnPage.length +
+            (_isFetchingMoreUserRecords ? 1 : 0),
+        itemBuilder: (context, index) {
+          if (index == _userRecordsToDisplayOnPage.length) {
+            return const Padding(
+              padding: EdgeInsets.symmetric(vertical: 16.0),
+              child: Center(
+                child: CircularProgressIndicator(color: BLUE_SECONDARY_700),
               ),
-              itemCount:
-                  _recommendedCoursesToDisplayOnPage.length +
-                  (_isFetchingMoreRecommendedCourses ? 1 : 0),
-              itemBuilder: (context, index) {
-                if (index == _recommendedCoursesToDisplayOnPage.length) {
-                  return const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 16.0),
-                    child: Center(
-                      child: CircularProgressIndicator(
-                        color: BLUE_SECONDARY_700,
-                      ),
-                    ),
-                  );
-                }
-                final course = _recommendedCoursesToDisplayOnPage[index];
-                // GridView.builder의 itemBuilder에서 반환하는 각 카드 아이템에 ValueKey를 부여합니다.
-                return _buildRecommendedCourseCardItem(course, provider);
-              },
-            ),
-          ),
-        ),
-      ],
+            );
+          }
+          final record = _userRecordsToDisplayOnPage[index];
+          return _buildUserRecordCardItem(record);
+        },
+      ),
     );
   }
 
@@ -1087,7 +938,7 @@ class _ParkListScreenState extends State<ParkListScreen>
               },
             ),
             title: const Text(
-              "공원 및 코스 추천",
+              "공원 및 활동 기록",
               style: TextStyle(
                 color: GRAYSCALE_LABEL_950,
                 fontSize: 18,
@@ -1101,7 +952,7 @@ class _ParkListScreenState extends State<ParkListScreen>
               unselectedLabelColor: GRAYSCALE_LABEL_500,
               indicatorColor: BLUE_SECONDARY_700,
               indicatorWeight: 3.0,
-              overlayColor: WidgetStateProperty.all(Colors.transparent),
+              overlayColor: MaterialStateProperty.all(Colors.transparent),
               labelStyle: const TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
@@ -1116,8 +967,8 @@ class _ParkListScreenState extends State<ParkListScreen>
           body: TabBarView(
             controller: _tabController,
             children: [
-              _buildParkTabContent(parkDataProvider),
-              _buildRecommendedCoursesTabContent(parkDataProvider),
+              buildParkTabContent(parkDataProvider),
+              buildUserRecordsTabContent(parkDataProvider),
             ],
           ),
         );
@@ -1125,4 +976,3 @@ class _ParkListScreenState extends State<ParkListScreen>
     );
   }
 }
-
