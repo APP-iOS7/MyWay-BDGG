@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:myway/model/park_info.dart';
 import 'package:myway/model/step_model.dart';
 import 'package:provider/provider.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../provider/park_data_provider.dart'; 
+import '../../provider/park_data_provider.dart';
 import '../../const/colors.dart';
 
 class ParkDetailScreen extends StatefulWidget {
@@ -17,74 +16,12 @@ class ParkDetailScreen extends StatefulWidget {
 class _ParkDetailScreenState extends State<ParkDetailScreen> {
   late ParkInfo _currentPark;
 
-  List<StepModel> _userCourseRecords = [];
-  bool _isLoadingUserRecords = false;
-  String _userRecordsError = '';
-
   @override
   void initState() {
     super.initState();
     _currentPark = widget.park;
-    _fetchUserCourseRecords();
   }
 
-  Future<void> _fetchUserCourseRecords() async {
-    if (!mounted) return;
-    setState(() {
-      _isLoadingUserRecords = true;
-      _userRecordsError = '';
-      _userCourseRecords = [];
-    });
-
-    try {
-      final firestore = FirebaseFirestore.instance;
-      final trackingResultCollection = firestore.collection('trackingResult');
-      final querySnapshot = await trackingResultCollection.get();
-
-      List<StepModel> records = [];
-      for (var userDoc in querySnapshot.docs) {
-        final userData = userDoc.data();
-        if (userData.containsKey('TrackingResult') &&
-            userData['TrackingResult'] is List) {
-          final List<dynamic> userTrackingResults = userData['TrackingResult'];
-          for (var recordData in userTrackingResults) {
-            // 현재 공원의 ID와 일치하는 기록만 필터링
-            if (recordData is Map<String, dynamic> &&
-                recordData['공원 ID'] == _currentPark.id) {
-              try {
-                records.add(StepModel.fromJson(recordData));
-              } catch (e, s) {
-                print(
-                  "Error parsing StepModel from Firestore for park ${_currentPark.id}, record: $recordData, error: $e",
-                );
-                print("Stack trace: $s");
-              }
-            }
-          }
-        }
-      }
-      if (mounted) {
-        setState(() {
-          _userCourseRecords = records;
-          _userCourseRecords.sort(
-            (a, b) => b.stopTime.compareTo(a.stopTime),
-          ); // 최신순 정렬
-          _isLoadingUserRecords = false;
-        });
-      }
-    } catch (e, s) {
-      print("Error fetching user course records: $e");
-      print("Stack trace: $s");
-      if (mounted) {
-        setState(() {
-          _userRecordsError = "사용자 활동 기록을 불러오는 중 오류가 발생했습니다.";
-          _isLoadingUserRecords = false;
-        });
-      }
-    }
-  }
-
-  // 사용자 활동 기록 카드 아이템
   Widget _buildUserRecordCardItem(StepModel record) {
     String formatDuration(String durationStr) {
       final parts = durationStr.split(':');
@@ -111,9 +48,7 @@ class _ParkDetailScreenState extends State<ParkDetailScreen> {
     }
 
     return Container(
-      key: ValueKey(
-        'user_record_item_${record.parkId}_${record.stopTime}_${record.courseName}_${record.imageUrl}',
-      ), // Key 고유성 강화
+      key: ValueKey('user_record_item_${record.id}'),
       decoration: BoxDecoration(
         color: BACKGROUND_COLOR,
         borderRadius: BorderRadius.circular(12.0),
@@ -140,11 +75,7 @@ class _ParkDetailScreenState extends State<ParkDetailScreen> {
                         record.imageUrl,
                         width: double.infinity,
                         fit: BoxFit.cover,
-                        loadingBuilder: (
-                          BuildContext context,
-                          Widget child,
-                          ImageChunkEvent? loadingProgress,
-                        ) {
+                        loadingBuilder: (context, child, loadingProgress) {
                           if (loadingProgress == null) return child;
                           return Center(
                             child: CircularProgressIndicator(
@@ -167,7 +98,7 @@ class _ParkDetailScreenState extends State<ParkDetailScreen> {
                             ),
                       )
                       : Image.asset(
-                        'assets/images/default_course_image.png', // 기본 이미지 경로
+                        'assets/images/default_course_image.png',
                         width: double.infinity,
                         fit: BoxFit.cover,
                         errorBuilder:
@@ -246,9 +177,9 @@ class _ParkDetailScreenState extends State<ParkDetailScreen> {
     );
   }
 
-  // 사용자 활동 기록 섹션 UI
-  Widget _buildUserRecordsSection() {
-    if (_isLoadingUserRecords) {
+  Widget _buildUserRecordsSection(ParkDataProvider provider) {
+    if (provider.isLoadingUserRecords &&
+        provider.allUserCourseRecords.isEmpty) {
       return const Center(
         child: Padding(
           padding: EdgeInsets.symmetric(vertical: 20.0),
@@ -257,12 +188,13 @@ class _ParkDetailScreenState extends State<ParkDetailScreen> {
       );
     }
 
-    if (_userRecordsError.isNotEmpty) {
+    if (provider.userRecordsError.isNotEmpty &&
+        provider.allUserCourseRecords.isEmpty) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 20.0),
           child: Text(
-            _userRecordsError,
+            provider.userRecordsError,
             style: const TextStyle(color: RED_DANGER_TEXT_50, fontSize: 14),
             textAlign: TextAlign.center,
           ),
@@ -270,12 +202,17 @@ class _ParkDetailScreenState extends State<ParkDetailScreen> {
       );
     }
 
-    if (_userCourseRecords.isEmpty) {
+    final parkRecords =
+        provider.allUserCourseRecords
+            .where((record) => record.parkId == _currentPark.id)
+            .toList();
+
+    if (parkRecords.isEmpty) {
       return Container(
         alignment: Alignment.center,
         padding: const EdgeInsets.symmetric(vertical: 40.0),
         child: const Text(
-          "이 공원에 대한 다른 사용자들의 활동 기록이 아직 없습니다.",
+          "이 공원에 대한 사용자 활동 기록이 아직 없습니다.",
           style: TextStyle(color: GRAYSCALE_LABEL_600, fontSize: 14),
           textAlign: TextAlign.center,
         ),
@@ -291,9 +228,9 @@ class _ParkDetailScreenState extends State<ParkDetailScreen> {
         mainAxisSpacing: 12.0,
         childAspectRatio: 0.68,
       ),
-      itemCount: _userCourseRecords.length,
+      itemCount: parkRecords.length,
       itemBuilder: (context, index) {
-        final record = _userCourseRecords[index];
+        final record = parkRecords[index];
         return _buildUserRecordCardItem(record);
       },
     );
@@ -302,7 +239,6 @@ class _ParkDetailScreenState extends State<ParkDetailScreen> {
   @override
   Widget build(BuildContext context) {
     const double horizontalPageMargin = 20.0;
-    // ParkDataProvider는 공원 즐겨찾기 기능을 위해 Consumer로 감싸는 것을 유지합니다.
     return Consumer<ParkDataProvider>(
       builder: (context, parkDataProvider, child) {
         bool isCurrentParkFavorite = parkDataProvider.isParkFavorite(
@@ -343,7 +279,6 @@ class _ParkDetailScreenState extends State<ParkDetailScreen> {
                   size: 26,
                 ),
                 onPressed: () {
-                  // ParkDataProvider를 통해 공원 즐겨찾기 상태 토글
                   parkDataProvider.toggleParkFavorite(_currentPark.id);
                 },
               ),
@@ -360,7 +295,6 @@ class _ParkDetailScreenState extends State<ParkDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // 공원 기본 정보
                 if (_currentPark.type.isNotEmpty)
                   Text(
                     _currentPark.type,
@@ -380,8 +314,7 @@ class _ParkDetailScreenState extends State<ParkDetailScreen> {
                     ),
                   ),
                 if (_currentPark.distanceKm < 99999.0 &&
-                    parkDataProvider.currentPosition !=
-                        null) // 현재 위치가 있을 때만 거리 표시
+                    parkDataProvider.currentPosition != null)
                   Padding(
                     padding: const EdgeInsets.only(top: 6.0),
                     child: Text(
@@ -400,9 +333,6 @@ class _ParkDetailScreenState extends State<ParkDetailScreen> {
                   thickness: 1,
                 ),
 
-                // "추천 코스 목록" 섹션은 완전히 제거됨
-
-                // 사용자 활동 기록
                 const Padding(
                   padding: EdgeInsets.only(bottom: 12.0, top: 4.0),
                   child: Text(
@@ -414,7 +344,7 @@ class _ParkDetailScreenState extends State<ParkDetailScreen> {
                     ),
                   ),
                 ),
-                _buildUserRecordsSection(),
+                _buildUserRecordsSection(parkDataProvider),
               ],
             ),
           ),
@@ -423,4 +353,3 @@ class _ParkDetailScreenState extends State<ParkDetailScreen> {
     );
   }
 }
-
