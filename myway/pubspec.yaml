@@ -42,7 +42,6 @@ dependencies:
   google_maps_flutter: ^2.12.1
   location: ^8.0.0
   shimmer: ^3.0.0
-  health: ^12.2.0
   permission_handler: ^12.0.0+1
   intl: ^0.20.2
   pedometer: ^4.1.1
@@ -58,6 +57,7 @@ dependencies:
   geocoding: ^2.1.0
   rxdart: ^0.28.0
   uuid: ^4.5.1
+  cached_network_image: ^3.4.1
 
 dev_dependencies:
   flutter_test:
