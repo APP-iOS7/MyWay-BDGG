@@ -4,10 +4,10 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import '../../const/colors.dart';
 
-class MyCourseDetailScreen extends StatelessWidget {
+class CourseDetailScreen extends StatelessWidget {
   final Map<String, dynamic> data;
 
-  const MyCourseDetailScreen({super.key, required this.data});
+  const CourseDetailScreen({super.key, required this.data});
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +26,6 @@ class MyCourseDetailScreen extends StatelessWidget {
         [];
     return Scaffold(
       backgroundColor: WHITE,
-
       appBar: AppBar(
         elevation: 0,
         centerTitle: true,

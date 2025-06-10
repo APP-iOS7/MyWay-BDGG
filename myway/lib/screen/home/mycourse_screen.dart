@@ -5,7 +5,7 @@ import 'package:myway/const/colors.dart';
 import 'package:toastification/toastification.dart';
 
 import '../../const/custome_button.dart';
-import 'my_course_detail_screen.dart';
+import 'course_detail_screen.dart';
 
 class MycourseScreen extends StatefulWidget {
   const MycourseScreen({super.key});
@@ -253,7 +253,7 @@ class _MycourseScreenState extends State<MycourseScreen> {
                               MaterialPageRoute(
                                 builder:
                                     (context) =>
-                                        MyCourseDetailScreen(data: result),
+                                        CourseDetailScreen(data: result),
                               ),
                             );
                           },

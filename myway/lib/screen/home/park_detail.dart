@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:myway/model/park_info.dart';
 import 'package:myway/model/step_model.dart';
-import 'package:myway/screen/home/my_course_detail_screen.dart';
+import 'package:myway/screen/home/course_detail_screen.dart';
 import 'package:provider/provider.dart';
 import '../../provider/park_data_provider.dart';
 import '../../const/colors.dart';
@@ -54,7 +54,7 @@ class _ParkDetailScreenState extends State<ParkDetailScreen> {
           context,
           MaterialPageRoute(
             builder:
-                (context) => MyCourseDetailScreen(
+                (context) => CourseDetailScreen(
                   data: {
                     '이미지 Url': record.imageUrl,
                     '코스이름': record.courseName,
