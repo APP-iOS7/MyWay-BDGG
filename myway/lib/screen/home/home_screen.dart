@@ -7,6 +7,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 
 import '../../provider/user_provider.dart';
+import '../../temp/park_test_screen.dart';
 import '/const/colors.dart';
 import 'mycourse_screen.dart';
 import 'park_list_screen.dart';
@@ -134,7 +135,12 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             // username님의 코스
             Padding(
-              padding: const EdgeInsets.only(top: 0.0, left: 20, right: 20),
+              padding: const EdgeInsets.only(
+                top: 0.0,
+                left: 20,
+                right: 20,
+                bottom: 10,
+              ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -169,7 +175,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     },
                     child: Container(
                       decoration: BoxDecoration(
-                        color: ORANGE_PRIMARY_600,
+                        color: BLUE_SECONDARY_600,
                         borderRadius: BorderRadius.circular(8),
                       ),
 
@@ -355,7 +361,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                                     fontWeight: FontWeight.w600,
                                                   ),
                                                 ),
-                                                SizedBox(height: 10),
                                                 Text(
                                                   '${result['종료시간']}',
                                                   style: TextStyle(
@@ -364,7 +369,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                                     color: GRAYSCALE_LABEL_700,
                                                   ),
                                                 ),
-                                                SizedBox(height: 10),
+                                                SizedBox(height: 5),
+                                                Text(
+                                                  '${result['공원명']}' ?? " ",
+                                                  style: TextStyle(
+                                                    fontSize: 15,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
 
                                                 Row(
                                                   children: [
@@ -532,9 +544,8 @@ class _HomeScreenState extends State<HomeScreen> {
                               context,
                               MaterialPageRoute(
                                 builder:
-                                    (context) => const ParkListScreen(
-                                      initialTabIndex: 1,
-                                    ),
+                                    (context) =>
+                                        ParkListScreenTest(initialTabIndex: 0),
                               ),
                             );
                           },
@@ -555,7 +566,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               MaterialPageRoute(
                                 builder:
                                     (context) => const ParkListScreen(
-                                      initialTabIndex: 0,
+                                      initialTabIndex: 1,
                                     ),
                               ),
                             );

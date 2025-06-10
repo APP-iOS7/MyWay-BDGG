@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:myway/model/park_info.dart';
 import 'package:myway/model/step_model.dart';
+import 'package:myway/screen/home/my_course_detail_screen.dart';
 import 'package:provider/provider.dart';
 import '../../provider/park_data_provider.dart';
 import '../../const/colors.dart';
@@ -30,9 +31,9 @@ class _ParkDetailScreenState extends State<ParkDetailScreen> {
         int minutes = int.tryParse(parts[1]) ?? 0;
         int seconds = int.tryParse(parts[2]) ?? 0;
         String result = "";
-        if (hours > 0) result += "${hours}시간 ";
-        if (minutes > 0 || hours > 0) result += "${minutes}분 ";
-        result += "${seconds}초";
+        if (hours > 0) result += "$hours시간 ";
+        if (minutes > 0 || hours > 0) result += "$minutes분 ";
+        result += "$seconds초";
         return result.trim().isEmpty ? "0초" : result.trim();
       }
       return durationStr;
@@ -47,132 +48,157 @@ class _ParkDetailScreenState extends State<ParkDetailScreen> {
       }
     }
 
-    return Container(
-      key: ValueKey('user_record_item_${record.id}'),
-      decoration: BoxDecoration(
-        color: BACKGROUND_COLOR,
-        borderRadius: BorderRadius.circular(12.0),
-        boxShadow: const [
-          BoxShadow(
-            color: Color.fromRGBO(32, 32, 32, 0.08),
-            spreadRadius: 1,
-            blurRadius: 6,
-            offset: Offset(0, 1),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: ClipRRect(
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(12.0),
-              ),
-              child:
-                  record.imageUrl.isNotEmpty
-                      ? Image.network(
-                        record.imageUrl,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) return child;
-                          return Center(
-                            child: CircularProgressIndicator(
-                              value:
-                                  loadingProgress.expectedTotalBytes != null
-                                      ? loadingProgress.cumulativeBytesLoaded /
-                                          loadingProgress.expectedTotalBytes!
-                                      : null,
-                              color: BLUE_SECONDARY_500,
-                            ),
-                          );
-                        },
-                        errorBuilder:
-                            (context, error, stackTrace) => const Center(
-                              child: Icon(
-                                Icons.broken_image_outlined,
-                                color: GRAYSCALE_LABEL_400,
-                                size: 40,
-                              ),
-                            ),
-                      )
-                      : Image.asset(
-                        'assets/images/default_course_image.png',
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                        errorBuilder:
-                            (context, error, stackTrace) => const Center(
-                              child: Icon(
-                                Icons.image_not_supported,
-                                color: GRAYSCALE_LABEL_400,
-                                size: 40,
-                              ),
-                            ),
-                      ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  record.courseName.isNotEmpty ? record.courseName : "코스 이름 없음",
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: GRAYSCALE_LABEL_950,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder:
+                (context) => MyCourseDetailScreen(
+                  data: {
+                    '이미지 Url': record.imageUrl,
+                    '코스이름': record.courseName,
+                    '종료시간': record.stopTime,
+                    '거리': record.distance.toStringAsFixed(1),
+                    '걸음수': record.steps,
+                    '소요시간': formatDuration(record.duration),
+                    '경로': record.route,
+                  },
                 ),
-                if (record.parkName != null && record.parkName!.isNotEmpty) ...[
-                  const SizedBox(height: 1),
+          ),
+        );
+      },
+      child: Container(
+        key: ValueKey('user_record_item_${record.id}'),
+        decoration: BoxDecoration(
+          color: BACKGROUND_COLOR,
+          borderRadius: BorderRadius.circular(12.0),
+          boxShadow: const [
+            BoxShadow(
+              color: Color.fromRGBO(32, 32, 32, 0.08),
+              spreadRadius: 1,
+              blurRadius: 6,
+              offset: Offset(0, 1),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: ClipRRect(
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(12.0),
+                ),
+                child:
+                    record.imageUrl.isNotEmpty
+                        ? Image.network(
+                          record.imageUrl,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return Center(
+                              child: CircularProgressIndicator(
+                                value:
+                                    loadingProgress.expectedTotalBytes != null
+                                        ? loadingProgress
+                                                .cumulativeBytesLoaded /
+                                            loadingProgress.expectedTotalBytes!
+                                        : null,
+                                color: BLUE_SECONDARY_500,
+                              ),
+                            );
+                          },
+                          errorBuilder:
+                              (context, error, stackTrace) => const Center(
+                                child: Icon(
+                                  Icons.broken_image_outlined,
+                                  color: GRAYSCALE_LABEL_400,
+                                  size: 40,
+                                ),
+                              ),
+                        )
+                        : Image.asset(
+                          'assets/images/default_course_image.png',
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder:
+                              (context, error, stackTrace) => const Center(
+                                child: Icon(
+                                  Icons.image_not_supported,
+                                  color: GRAYSCALE_LABEL_400,
+                                  size: 40,
+                                ),
+                              ),
+                        ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
                   Text(
-                    record.parkName!,
+                    record.courseName.isNotEmpty
+                        ? record.courseName
+                        : "코스 이름 없음",
                     style: const TextStyle(
-                      fontSize: 11,
-                      color: GRAYSCALE_LABEL_500,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: GRAYSCALE_LABEL_950,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
+                  if (record.parkName != null &&
+                      record.parkName!.isNotEmpty) ...[
+                    const SizedBox(height: 1),
+                    Text(
+                      record.parkName!,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: GRAYSCALE_LABEL_500,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                  const SizedBox(height: 3),
+                  // Text(
+                  //   "거리: ${record.distance.toStringAsFixed(1)}km",
+                  //   style: const TextStyle(
+                  //     fontSize: 12,
+                  //     color: GRAYSCALE_LABEL_700,
+                  //   ),
+                  // ),
+                  // Text(
+                  //   "시간: ${formatDuration(record.duration)}",
+                  //   style: const TextStyle(
+                  //     fontSize: 12,
+                  //     color: GRAYSCALE_LABEL_700,
+                  //   ),
+                  // ),
+                  // Text(
+                  //   "걸음: ${record.steps}보",
+                  //   style: const TextStyle(
+                  //     fontSize: 12,
+                  //     color: GRAYSCALE_LABEL_700,
+                  //   ),
+                  // ),
+                  Text(
+                    formatStopTime(record.stopTime),
+                    style: const TextStyle(
+                      fontSize: 10,
+                      color: GRAYSCALE_LABEL_600,
+                    ),
+                  ),
                 ],
-                const SizedBox(height: 3),
-                Text(
-                  "거리: ${record.distance.toStringAsFixed(1)}km",
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: GRAYSCALE_LABEL_700,
-                  ),
-                ),
-                Text(
-                  "시간: ${formatDuration(record.duration)}",
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: GRAYSCALE_LABEL_700,
-                  ),
-                ),
-                Text(
-                  "걸음: ${record.steps}보",
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: GRAYSCALE_LABEL_700,
-                  ),
-                ),
-                Text(
-                  formatStopTime(record.stopTime),
-                  style: const TextStyle(
-                    fontSize: 10,
-                    color: GRAYSCALE_LABEL_600,
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -226,7 +252,7 @@ class _ParkDetailScreenState extends State<ParkDetailScreen> {
         crossAxisCount: 2,
         crossAxisSpacing: 12.0,
         mainAxisSpacing: 12.0,
-        childAspectRatio: 0.68,
+        childAspectRatio: 1.0,
       ),
       itemCount: parkRecords.length,
       itemBuilder: (context, index) {
@@ -238,7 +264,6 @@ class _ParkDetailScreenState extends State<ParkDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    const double horizontalPageMargin = 20.0;
     return Consumer<ParkDataProvider>(
       builder: (context, parkDataProvider, child) {
         bool isCurrentParkFavorite = parkDataProvider.isParkFavorite(
@@ -286,12 +311,7 @@ class _ParkDetailScreenState extends State<ParkDetailScreen> {
             ],
           ),
           body: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(
-              horizontalPageMargin,
-              horizontalPageMargin,
-              horizontalPageMargin,
-              20.0,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

@@ -499,7 +499,7 @@ class _ParkListScreenState extends State<ParkListScreen>
           width: 1,
         ),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
       showCheckmark: false,
     );
   }
@@ -693,9 +693,9 @@ class _ParkListScreenState extends State<ParkListScreen>
         int minutes = int.tryParse(parts[1]) ?? 0;
         int seconds = int.tryParse(parts[2]) ?? 0;
         String result = "";
-        if (hours > 0) result += "${hours}시간 ";
-        if (minutes > 0 || hours > 0) result += "${minutes}분 ";
-        result += "${seconds}초";
+        if (hours > 0) result += "$hours시간 ";
+        if (minutes > 0 || hours > 0) result += "$minutes분 ";
+        result += "$seconds초";
         return result.trim().isEmpty ? "0초" : result.trim();
       }
       return durationStr;
@@ -784,7 +784,7 @@ class _ParkListScreenState extends State<ParkListScreen>
                 Text(
                   record.courseName.isNotEmpty ? record.courseName : "코스 이름 없음",
                   style: const TextStyle(
-                    fontSize: 14,
+                    fontSize: 15,
                     fontWeight: FontWeight.bold,
                     color: GRAYSCALE_LABEL_950,
                   ),
@@ -796,40 +796,20 @@ class _ParkListScreenState extends State<ParkListScreen>
                   Text(
                     record.parkName!,
                     style: const TextStyle(
-                      fontSize: 11,
-                      color: GRAYSCALE_LABEL_500,
+                      fontSize: 14,
+                      color: GRAYSCALE_LABEL_800,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ],
                 const SizedBox(height: 3),
-                Text(
-                  "거리: ${record.distance.toStringAsFixed(1)}km",
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: GRAYSCALE_LABEL_700,
-                  ),
-                ),
-                Text(
-                  "시간: ${formatDuration(record.duration)}",
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: GRAYSCALE_LABEL_700,
-                  ),
-                ),
-                Text(
-                  "걸음: ${record.steps}보",
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: GRAYSCALE_LABEL_700,
-                  ),
-                ),
+
                 Text(
                   formatStopTime(record.stopTime),
                   style: const TextStyle(
-                    fontSize: 10,
-                    color: GRAYSCALE_LABEL_600,
+                    fontSize: 12,
+                    color: GRAYSCALE_LABEL_800,
                   ),
                 ),
               ],
@@ -938,7 +918,7 @@ class _ParkListScreenState extends State<ParkListScreen>
               },
             ),
             title: const Text(
-              "공원 및 활동 기록",
+              "공원 및 코스 추천",
               style: TextStyle(
                 color: GRAYSCALE_LABEL_950,
                 fontSize: 18,
@@ -952,7 +932,7 @@ class _ParkListScreenState extends State<ParkListScreen>
               unselectedLabelColor: GRAYSCALE_LABEL_500,
               indicatorColor: BLUE_SECONDARY_700,
               indicatorWeight: 3.0,
-              overlayColor: MaterialStateProperty.all(Colors.transparent),
+              overlayColor: WidgetStateProperty.all(Colors.transparent),
               labelStyle: const TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
@@ -961,14 +941,14 @@ class _ParkListScreenState extends State<ParkListScreen>
                 fontSize: 15,
                 fontWeight: FontWeight.w500,
               ),
-              tabs: const [Tab(text: "공원"), Tab(text: "추천 코스")],
+              tabs: const [Tab(text: "추천 코스"), Tab(text: "공원")],
             ),
           ),
           body: TabBarView(
             controller: _tabController,
             children: [
-              buildParkTabContent(parkDataProvider),
               buildUserRecordsTabContent(parkDataProvider),
+              buildParkTabContent(parkDataProvider),
             ],
           ),
         );

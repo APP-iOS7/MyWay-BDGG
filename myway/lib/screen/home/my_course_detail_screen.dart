@@ -17,6 +17,7 @@ class MyCourseDetailScreen extends StatelessWidget {
     final distance = data['거리'] ?? '';
     final steps = data['걸음수'] ?? '';
     final duration = data['소요시간'] ?? '';
+    final parkName = data['공원명'] ?? '공원 미지정';
     final List<LatLng> route =
         (data['경로'] as List<dynamic>?)
             ?.whereType<GeoPoint>()
@@ -69,7 +70,7 @@ class MyCourseDetailScreen extends StatelessWidget {
                 children: [
                   _buildDataList(
                     title: '공원 이름',
-                    content: "parkName",
+                    content: parkName,
                     iconTitle: Icons.description_outlined,
                   ),
                   _buildDataList(

@@ -1,9 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:myway/model/park_info.dart';
 import 'package:myway/services/park_api_service.dart';
 
+import '../model/step_model.dart';
 import 'park_api_service_test.dart';
 
 class ParkDataProviderTest extends ChangeNotifier {
@@ -34,6 +36,16 @@ class ParkDataProviderTest extends ChangeNotifier {
 
   bool _isLoadingNearbyParks = false;
   bool get isLoadingNearbyParks => _isLoadingNearbyParks;
+
+  bool _isLoadingUserRecords = false;
+  bool get isLoadingUserRecords => _isLoadingUserRecords;
+
+  List<StepModel> _allUserCourseRecords = [];
+  List<StepModel> get allUserCourseRecords =>
+      List.unmodifiable(_allUserCourseRecords);
+
+  String _userRecordsError = '';
+  String get userRecordsError => _userRecordsError;
 
   /// 초기 로딩 (1페이지)
   Future<void> loadInitialParkPage() async {
@@ -118,6 +130,49 @@ class ParkDataProviderTest extends ChangeNotifier {
       notifyListeners();
     } catch (e) {
       _apiError = '위치 정보 오류: $e';
+    }
+  }
+
+  Future<void> fetchUserCourseRecordsInternal() async {
+    _isLoadingUserRecords = true;
+    _userRecordsError = '';
+    try {
+      final firestore = FirebaseFirestore.instance;
+      final trackingResultCollection = firestore.collection('trackingResult');
+      final querySnapshot = await trackingResultCollection.get();
+
+      List<StepModel> records = [];
+      for (var userDoc in querySnapshot.docs) {
+        final userData = userDoc.data();
+        if (userData.containsKey('TrackingResult') &&
+            userData['TrackingResult'] is List) {
+          final List<dynamic> userTrackingResults = userData['TrackingResult'];
+          for (var recordData in userTrackingResults) {
+            if (recordData is Map<String, dynamic>) {
+              try {
+                records.add(StepModel.fromJson(recordData));
+              } catch (e, s) {
+                print(
+                  "Error parsing StepModel from Firestore, record: $recordData, error: $e, stack: $s",
+                );
+              }
+            }
+          }
+        }
+      }
+      _allUserCourseRecords = records;
+      _allUserCourseRecords.sort(
+        (a, b) => b.stopTime.compareTo(a.stopTime),
+      ); // 최신순 정렬
+    } catch (e, s) {
+      print("Error fetching all user course records: $e, stack: $s");
+      _userRecordsError = "사용자 활동 기록을 불러오는 중 오류가 발생했습니다.";
+      _allUserCourseRecords = [];
+    } finally {
+      print(_allUserCourseRecords.length);
+
+      _isLoadingUserRecords = false;
+      notifyListeners();
     }
   }
 

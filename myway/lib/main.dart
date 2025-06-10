@@ -24,6 +24,7 @@ import 'screen/setting/change_password_screen.dart';
 import 'screen/login/signIn_screen.dart';
 import 'screen/setting/customer_center_screen.dart';
 import 'screen/setting/setting_screen.dart';
+import 'temp/park_data_provider_test.dart';
 import 'temp/test_drawer.dart';
 import 'temp/test_map.dart';
 
@@ -41,6 +42,7 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (context) => MapProvider()),
         ChangeNotifierProvider(create: (context) => ActivityLogProvider()),
         ChangeNotifierProvider(create: (context) => ParkDataProvider()),
+        ChangeNotifierProvider(create: (context) => ParkDataProviderTest()),
       ],
       child: const MyApp(),
     ),
