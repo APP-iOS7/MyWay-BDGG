@@ -23,17 +23,35 @@ class _CourseRecommendBottomsheetState
   int? selectedIndex;
   List<StepModel> _allTrackingResults = []; // 모든 TrackingResult 데이터
   bool _isLoadingTrackingResults = false;
+  bool _hasAttemptedLoad = false; // 로드 시도 여부를 추적
 
   // Firestore에서 2km 이내 공원들의 TrackingResult를 가져오는 메서드
   Future<void> _fetchTrackingResultsForNearbyParks(
     List<String> nearbyParkIds,
   ) async {
-    if (nearbyParkIds.isEmpty) return;
+    // ParkDataProvider가 아직 로딩 중이면 _hasAttemptedLoad를 true로 설정하지 않음
+    final parkDataProvider = Provider.of<ParkDataProvider>(
+      context,
+      listen: false,
+    );
+
+    if (nearbyParkIds.isEmpty) {
+      setState(() {
+        // 공원 데이터 로딩이 완료된 상태에서만 _hasAttemptedLoad = true 설정
+        if (!parkDataProvider.isLoadingParks &&
+            !parkDataProvider.isLoadingLocation) {
+          _hasAttemptedLoad = true;
+        }
+        _isLoadingTrackingResults = false;
+      });
+      return;
+    }
 
     if (!mounted) return;
 
     setState(() {
       _isLoadingTrackingResults = true;
+      _hasAttemptedLoad = true;
     });
 
     try {
@@ -163,6 +181,10 @@ class _CourseRecommendBottomsheetState
   @override
   void initState() {
     super.initState();
+    _allTrackingResults = [];
+    _isLoadingTrackingResults = false;
+    _hasAttemptedLoad = false;
+    selectedIndex = null;
     // 컴포넌트가 초기화될 때 ParkDataProvider의 데이터 로드
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final parkDataProvider = Provider.of<ParkDataProvider>(
@@ -173,25 +195,28 @@ class _CourseRecommendBottomsheetState
     });
   }
 
+  // 데이터 로딩을 체크하는 메서드
+  void _checkAndLoadData(ParkDataProvider parkDataProvider) {
+    // ParkDataProvider가 완전히 로딩 완료된 후에만 TrackingResult 로딩 시작
+    if (!_hasAttemptedLoad &&
+        !parkDataProvider.isLoadingParks &&
+        !parkDataProvider.isLoadingLocation &&
+        parkDataProvider.allFetchedParks.isNotEmpty) {
+      // 2km 이내 공원들의 TrackingResult 가져오기
+      final nearbyParkIds =
+          parkDataProvider.nearbyParks2km.map((park) => park.id).toList();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _fetchTrackingResultsForNearbyParks(nearbyParkIds);
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer3<MapProvider, StepProvider, ParkDataProvider>(
       builder: (context, mapProvider, stepProvider, parkDataProvider, child) {
-        // 조건이 맞으면 자동으로 TrackingResult 가져오기
-        if (!parkDataProvider.isLoadingParks &&
-            !parkDataProvider.isLoadingLocation &&
-            _allTrackingResults.isEmpty &&
-            !_isLoadingTrackingResults) {
-          // 2km 이내 공원들의 TrackingResult 가져오기
-          final nearbyParkIds =
-              parkDataProvider.nearbyParks2km.map((park) => park.id).toList();
-          if (nearbyParkIds.isNotEmpty) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              _fetchTrackingResultsForNearbyParks(nearbyParkIds);
-            });
-          }
-        }
-
+        // 데이터 로딩 체크
+        _checkAndLoadData(parkDataProvider);
         return DraggableScrollableSheet(
           initialChildSize: 0.5,
           minChildSize: 0.4,
@@ -339,39 +364,10 @@ class _CourseRecommendBottomsheetState
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                      child:
-                          parkDataProvider.isLoadingParks ||
-                                  parkDataProvider.isLoadingLocation ||
-                                  _isLoadingTrackingResults
-                              ? _buildLoadingIndicator()
-                              : _allTrackingResults.isEmpty
-                              ? _buildEmptyParksWithTrackingMessage() // 데이터가 없을때 표시되는 메시지 Widget
-                              : GridView.builder(
-                                controller: scrollSheetController,
-                                gridDelegate:
-                                    const SliverGridDelegateWithFixedCrossAxisCount(
-                                      crossAxisCount: 2, // 2열
-                                      crossAxisSpacing: 10,
-                                      childAspectRatio: 0.72, // 카드의 가로:세로 비율 조정
-                                    ),
-                                itemCount: _allTrackingResults.length,
-                                itemBuilder: (context, index) {
-                                  final trackingResult =
-                                      _allTrackingResults[index];
-                                  final parkInfo = _getParkInfo(
-                                    trackingResult.parkId!,
-                                  );
-
-                                  return SizedBox(
-                                    height: 350, // 고정 높이 설정
-                                    child: _buildTrackingCard(
-                                      trackingResult,
-                                      parkInfo,
-                                      index,
-                                    ),
-                                  );
-                                },
-                              ),
+                      child: _buildContentBasedOnState(
+                        parkDataProvider,
+                        scrollSheetController,
+                      ),
                     ),
                   ),
                 ],
@@ -629,5 +625,48 @@ class _CourseRecommendBottomsheetState
         ),
       ),
     );
+  }
+
+  // 상태에 따른 컨텐츠를 빌드하는 메서드
+  Widget _buildContentBasedOnState(
+    ParkDataProvider parkDataProvider,
+    ScrollController scrollSheetController,
+  ) {
+    // 로딩 상태 체크
+    if (parkDataProvider.isLoadingParks ||
+        parkDataProvider.isLoadingLocation ||
+        _isLoadingTrackingResults) {
+      return _buildLoadingIndicator();
+    }
+
+    // 데이터가 있는 경우 GridView 표시
+    if (_allTrackingResults.isNotEmpty) {
+      return GridView.builder(
+        controller: scrollSheetController,
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2, // 2열
+          crossAxisSpacing: 10,
+          childAspectRatio: 0.72, // 카드의 가로:세로 비율 조정
+        ),
+        itemCount: _allTrackingResults.length,
+        itemBuilder: (context, index) {
+          final trackingResult = _allTrackingResults[index];
+          final parkInfo = _getParkInfo(trackingResult.parkId!);
+
+          return SizedBox(
+            height: 350, // 고정 높이 설정
+            child: _buildTrackingCard(trackingResult, parkInfo, index),
+          );
+        },
+      );
+    }
+
+    // 로드를 시도했지만 데이터가 없는 경우
+    if (_hasAttemptedLoad) {
+      return _buildEmptyParksWithTrackingMessage();
+    }
+
+    // 기본적으로 로딩 인디케이터 표시
+    return _buildLoadingIndicator();
   }
 }

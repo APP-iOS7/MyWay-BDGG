@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:myway/const/colors.dart';
+import 'package:toastification/toastification.dart';
 
 import '../../const/custome_button.dart';
 import 'my_course_detail_screen.dart';
@@ -34,9 +35,12 @@ class _MycourseScreenState extends State<MycourseScreen> {
 
     final current = _selectedNotifier.value;
     final newList = <dynamic>[];
+    int deletedCount = 0;
     for (int i = 0; i < trackingResult.length; i++) {
       if (!current[i]) {
         newList.add(trackingResult[i]);
+      } else {
+        deletedCount++;
       }
     }
 
@@ -44,6 +48,15 @@ class _MycourseScreenState extends State<MycourseScreen> {
     setState(() {
       isEditing = false;
     });
+
+    toastification.show(
+      context: context,
+      type: ToastificationType.success,
+      style: ToastificationStyle.flat,
+      alignment: Alignment.bottomCenter,
+      autoCloseDuration: Duration(seconds: 2),
+      title: Text('$deletedCount개의 코스 삭제완료'),
+    );
   }
 
   @override
@@ -145,25 +158,57 @@ class _MycourseScreenState extends State<MycourseScreen> {
             actions:
                 isEditing
                     ? [
-                      TextButton(
-                        onPressed: () => deleteSelected(trackingResult),
-                        style: customTextButtonStyle(),
-                        child: const Text(
-                          '삭제',
-                          style: TextStyle(color: Colors.red),
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () => setState(() => isEditing = false),
-                        style: customTextButtonStyle(),
-                        child: const Text(
-                          '취소',
-                          style: TextStyle(
-                            color: GRAYSCALE_LABEL_900,
-                            fontWeight: FontWeight.w500,
-                            fontSize: 15,
-                          ),
-                        ),
+                      ValueListenableBuilder<List<bool>>(
+                        valueListenable: _selectedNotifier,
+                        builder: (context, selected, _) {
+                          final selectedCount =
+                              selected.where((isSelected) => isSelected).length;
+                          return Column(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                  left: 10.0,
+                                  right: 10.0,
+                                ),
+                                child: Row(
+                                  children: [
+                                    TextButton(
+                                      onPressed:
+                                          () => deleteSelected(trackingResult),
+                                      style: customTextButtonStyle(),
+                                      child: const Text(
+                                        '삭제',
+                                        style: TextStyle(color: Colors.red),
+                                      ),
+                                    ),
+                                    TextButton(
+                                      onPressed:
+                                          () =>
+                                              setState(() => isEditing = false),
+                                      style: customTextButtonStyle(),
+                                      child: const Text(
+                                        '취소',
+                                        style: TextStyle(
+                                          color: GRAYSCALE_LABEL_900,
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 15,
+                                        ),
+                                      ),
+                                    ),
+                                    Text(
+                                      '$selectedCount개 선택',
+                                      style: const TextStyle(
+                                        color: GRAYSCALE_LABEL_900,
+                                        fontWeight: FontWeight.w500,
+                                        fontSize: 15,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          );
+                        },
                       ),
                     ]
                     : [
