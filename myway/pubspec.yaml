@@ -58,6 +58,7 @@ dependencies:
   rxdart: ^0.28.0
   uuid: ^4.5.1
   cached_network_image: ^3.4.1
+  csv: ^6.0.0
 
 dev_dependencies:
   flutter_test:
@@ -85,7 +86,8 @@ flutter:
   assets:
     - assets/images/
     - assets/icons/
-
+    - assets/data/park_data.csv
+    
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
 

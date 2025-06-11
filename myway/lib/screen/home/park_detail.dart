@@ -53,18 +53,7 @@ class _ParkDetailScreenState extends State<ParkDetailScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder:
-                (context) => CourseDetailScreen(
-                  data: {
-                    '이미지 Url': record.imageUrl,
-                    '코스이름': record.courseName,
-                    '종료시간': record.stopTime,
-                    '거리': record.distance.toStringAsFixed(1),
-                    '걸음수': record.steps,
-                    '소요시간': formatDuration(record.duration),
-                    '경로': record.route,
-                  },
-                ),
+            builder: (context) => CourseDetailScreen(data: record.toJson()),
           ),
         );
       },
@@ -266,7 +255,7 @@ class _ParkDetailScreenState extends State<ParkDetailScreen> {
   Widget build(BuildContext context) {
     return Consumer<ParkDataProvider>(
       builder: (context, parkDataProvider, child) {
-        bool isCurrentParkFavorite = parkDataProvider.isParkFavorite(
+        bool isCurrentParkFavorite = parkDataProvider.isFavorite(
           _currentPark.id,
         );
 
@@ -304,7 +293,7 @@ class _ParkDetailScreenState extends State<ParkDetailScreen> {
                   size: 26,
                 ),
                 onPressed: () {
-                  parkDataProvider.toggleParkFavorite(_currentPark.id);
+                  parkDataProvider.toggleFavorite(_currentPark.id);
                 },
               ),
               const SizedBox(width: 8),

@@ -91,6 +91,7 @@ class ParkInfo {
       try {
         double parkLat = double.parse(latitude!);
         double parkLon = double.parse(longitude!);
+        // Geolocator를 사용하여 현재 위치와 공원 간의 거리 계산
         distanceKm =
             Geolocator.distanceBetween(
               currentPosition.latitude,
@@ -105,5 +106,33 @@ class ParkInfo {
     } else {
       distanceKm = 99999.0;
     }
+  }
+
+  factory ParkInfo.fromCsvRow(List<dynamic> row) {
+    String getStr(dynamic value) => value?.toString() ?? '';
+
+    return ParkInfo(
+      id: getStr(row[0]),
+      name: getStr(row[1]),
+      address: getStr(row[2]),
+      latitude: getStr(row[3]),
+      longitude: getStr(row[4]),
+
+      // 나머지는 기본값 그대로 두기
+      type: '',
+      mainEquip: '',
+      mainPlant: '',
+      guidance: '',
+      visitRoad: '',
+      useRefer: '',
+      parkImage: '',
+      updatedDate: '',
+      regionArea: 0.0,
+      admZone: '',
+      wifi: 'N',
+      hasToilet: false,
+      hasParking: false,
+      templateUrl: '',
+    );
   }
 }

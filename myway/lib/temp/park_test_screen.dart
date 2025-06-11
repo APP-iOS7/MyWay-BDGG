@@ -4,6 +4,8 @@ import 'package:myway/temp/park_data_provider_test.dart';
 import 'package:provider/provider.dart';
 import 'package:myway/model/park_info.dart';
 
+enum ParkFilterType { all, nearby2km, bookmarked }
+
 class ParkListScreenTest extends StatefulWidget {
   final initialTabIndex;
   const ParkListScreenTest({super.key, this.initialTabIndex = 0});
@@ -38,11 +40,11 @@ class _ParkListScreenTestState extends State<ParkListScreenTest>
           provider.hasMoreParks) {
         provider.loadNextParkPage();
       }
-      _tabController.addListener(() {
-        if (_tabController.index == 1) {
-          context.read<ParkDataProviderTest>().fetchNearbyParks2km();
-        }
-      });
+    });
+    _scrollController.addListener(() {
+      if (_tabController.index == 1) {
+        context.read<ParkDataProviderTest>().fetchNearbyParks2km();
+      }
     });
   }
 
@@ -75,11 +77,25 @@ class _ParkListScreenTestState extends State<ParkListScreenTest>
         controller: _tabController,
         children: [
           // 🟦 Tab 0: 전체 공원 목록 (pagination)
-          _buildParkListView(parks: allParks, showLoading: hasMoreAll),
+          _buildParkListTab(provider),
 
           _buildParkListView(parks: nearbyParks, showLoading: false),
         ],
       ),
+    );
+  }
+
+  Widget _buildParkListTab(ParkDataProviderTest provider) {
+    final allParks = provider.paginatedParks;
+    final hasMoreAll = provider.hasMoreParks;
+    return Column(
+      children: [
+        // Padding(
+        //   padding: const EdgeInsets.symmetric(horizontal: 20),
+        //   child: _buildParkSearchBarAndFilters(provider),
+        // ),
+        _buildParkListView(parks: allParks, showLoading: hasMoreAll),
+      ],
     );
   }
 

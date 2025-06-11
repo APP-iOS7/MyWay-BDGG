@@ -24,6 +24,50 @@ class _CourseRecommendBottomsheetState
   List<StepModel> _allTrackingResults = []; // 모든 TrackingResult 데이터
   bool _isLoadingTrackingResults = false;
   bool _hasAttemptedLoad = false; // 로드 시도 여부를 추적
+  List<ParkInfo> nearbyParks = [];
+  bool isLoading = true; // 초기 로딩 상태
+  @override
+  void initState() {
+    super.initState();
+    _allTrackingResults = [];
+    _isLoadingTrackingResults = false;
+    _hasAttemptedLoad = false;
+    selectedIndex = null;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      try {
+        final parkProvider = Provider.of<ParkDataProvider>(
+          context,
+          listen: false,
+        );
+
+        // 현재 위치 없으면 먼저 위치 가져오고 거리 계산
+        await parkProvider.fetchCurrentLocationAndCalculateDistance();
+
+        for (var park in parkProvider.allParks) {}
+        List<ParkInfo> filtered =
+            parkProvider.allParks
+                .where((park) => park.distanceKm > 0 && park.distanceKm < 2)
+                .toList();
+        print(filtered.length);
+        filtered.sort((a, b) => a.distanceKm.compareTo(b.distanceKm));
+
+        if (mounted) {
+          setState(() {
+            nearbyParks = filtered;
+            isLoading = false;
+          });
+
+          // parkId 리스트 추출 후 트래킹 결과 가져오기
+          final List<String> parkIds = nearbyParks.map((e) => e.id).toList();
+          await _fetchTrackingResultsForNearbyParks(parkIds);
+        }
+      } catch (e, s) {
+        print('[ERROR] 위치 계산 실패: $e');
+        print(s);
+      }
+    });
+  }
 
   // Firestore에서 2km 이내 공원들의 TrackingResult를 가져오는 메서드
   Future<void> _fetchTrackingResultsForNearbyParks(
@@ -38,7 +82,7 @@ class _CourseRecommendBottomsheetState
     if (nearbyParkIds.isEmpty) {
       setState(() {
         // 공원 데이터 로딩이 완료된 상태에서만 _hasAttemptedLoad = true 설정
-        if (!parkDataProvider.isLoadingParks &&
+        if (!parkDataProvider.isLoading &&
             !parkDataProvider.isLoadingLocation) {
           _hasAttemptedLoad = true;
         }
@@ -170,44 +214,9 @@ class _CourseRecommendBottomsheetState
     );
 
     try {
-      return parkDataProvider.nearbyParks2km.firstWhere(
-        (park) => park.id == parkId,
-      );
+      return parkDataProvider.allParks.firstWhere((park) => park.id == parkId);
     } catch (e) {
       return null;
-    }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _allTrackingResults = [];
-    _isLoadingTrackingResults = false;
-    _hasAttemptedLoad = false;
-    selectedIndex = null;
-    // 컴포넌트가 초기화될 때 ParkDataProvider의 데이터 로드
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final parkDataProvider = Provider.of<ParkDataProvider>(
-        context,
-        listen: false,
-      );
-      parkDataProvider.fetchAllDataIfNeeded();
-    });
-  }
-
-  // 데이터 로딩을 체크하는 메서드
-  void _checkAndLoadData(ParkDataProvider parkDataProvider) {
-    // ParkDataProvider가 완전히 로딩 완료된 후에만 TrackingResult 로딩 시작
-    if (!_hasAttemptedLoad &&
-        !parkDataProvider.isLoadingParks &&
-        !parkDataProvider.isLoadingLocation &&
-        parkDataProvider.allFetchedParks.isNotEmpty) {
-      // 2km 이내 공원들의 TrackingResult 가져오기
-      final nearbyParkIds =
-          parkDataProvider.nearbyParks2km.map((park) => park.id).toList();
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _fetchTrackingResultsForNearbyParks(nearbyParkIds);
-      });
     }
   }
 
@@ -216,7 +225,6 @@ class _CourseRecommendBottomsheetState
     return Consumer3<MapProvider, StepProvider, ParkDataProvider>(
       builder: (context, mapProvider, stepProvider, parkDataProvider, child) {
         // 데이터 로딩 체크
-        _checkAndLoadData(parkDataProvider);
         return DraggableScrollableSheet(
           initialChildSize: 0.5,
           minChildSize: 0.4,
@@ -402,21 +410,25 @@ class _CourseRecommendBottomsheetState
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.location_off, size: 48, color: GRAYSCALE_LABEL_400),
-          SizedBox(height: 16),
+          Icon(Icons.location_off, color: GRAYSCALE_LABEL_800, size: 30),
+          SizedBox(height: 5),
           Text(
-            "반경 2km 이내에 추천할 코스가 없습니다.",
+            "반경 2km 이내에 추천 코스가 없습니다.",
             style: TextStyle(
-              color: GRAYSCALE_LABEL_700,
+              color: GRAYSCALE_LABEL_800,
               fontSize: 16,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w600,
             ),
             textAlign: TextAlign.center,
           ),
           SizedBox(height: 8),
           Text(
             "다른 위치로 이동하거나 위치 권한을 확인해주세요.",
-            style: TextStyle(color: GRAYSCALE_LABEL_600, fontSize: 14),
+            style: TextStyle(
+              color: GRAYSCALE_LABEL_600,
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
             textAlign: TextAlign.center,
           ),
         ],
@@ -431,7 +443,7 @@ class _CourseRecommendBottomsheetState
     int index,
   ) {
     return Container(
-      margin: EdgeInsets.only(bottom: 30),
+      margin: EdgeInsets.only(bottom: 40),
       decoration: BoxDecoration(
         color: WHITE,
         borderRadius: BorderRadius.circular(12),
@@ -442,9 +454,9 @@ class _CourseRecommendBottomsheetState
         ),
         boxShadow: [
           BoxShadow(
-            color: GRAYSCALE_LABEL_200.withAlpha(128),
+            color: GRAYSCALE_LABEL_200.withAlpha(100),
             blurRadius: 4,
-            offset: Offset(0, 2),
+            offset: Offset(0, 1),
           ),
         ],
       ),
@@ -487,47 +499,51 @@ class _CourseRecommendBottomsheetState
             SizedBox(height: 8),
             // 코스이름
             Padding(
-              padding: const EdgeInsets.only(left: 5.0, right: 5.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
+              padding: const EdgeInsets.symmetric(horizontal: 5.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.location_on, color: ORANGE_PRIMARY_500, size: 24),
-                  SizedBox(width: 4),
-                  Expanded(
-                    child: Text(
-                      trackingResult.courseName,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: GRAYSCALE_LABEL_950,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Icon(
+                        Icons.location_on,
+                        color: ORANGE_PRIMARY_500,
+                        size: 18,
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                      SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          trackingResult.courseName,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: GRAYSCALE_LABEL_950,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 5.0),
+                    child: Text(
+                      trackingResult.parkName ?? parkInfo?.name ?? '공원 정보 없음',
+                      style: TextStyle(
+                        color: GRAYSCALE_LABEL_700,
+                        fontSize: 12,
+                      ),
                     ),
                   ),
+                  SizedBox(height: 4),
+                  // 트레킹 상세 정보
+                  _buildTrackingResultItem(trackingResult),
                 ],
               ),
             ),
             // 공원이름
-            Padding(
-              padding: const EdgeInsets.only(left: 10.0, right: 10.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    trackingResult.parkName ?? parkInfo?.name ?? '공원 정보 없음',
-                    style: TextStyle(color: GRAYSCALE_LABEL_700, fontSize: 12),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(height: 15),
 
-            // 트레킹 상세 정보
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: _buildTrackingResultItem(trackingResult),
-            ),
             // 최신 활동 기록들
           ],
         ),
@@ -543,7 +559,12 @@ class _CourseRecommendBottomsheetState
         int hours = int.tryParse(parts[0]) ?? 0; // 시
         int minutes = int.tryParse(parts[1]) ?? 0; // 분
         int seconds = int.tryParse(parts[2]) ?? 0; // 초
-
+        // if (hours == 0) {
+        //   if (minutes == 0) {
+        //     return '$seconds초';
+        //   }
+        //   return '$minutes분 $seconds초';
+        // }
         // 시간이 있는경우
         if (hours > 0) {
           return '$hours시간 $minutes분';
@@ -557,48 +578,47 @@ class _CourseRecommendBottomsheetState
           return '$seconds초';
         }
       }
+
       // 잘못된 형식이면 원본 문자열 반환
       return durationStr;
     }
 
-    return Padding(
-      padding: const EdgeInsets.only(left: 5.0, right: 5.0),
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-        decoration: BoxDecoration(
-          color: GRAYSCALE_LABEL_100,
-          borderRadius: BorderRadius.circular(5),
-        ),
-        child: Row(
-          children: [
-            Icon(Icons.directions_walk, size: 16, color: Colors.green[600]),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Text(
-                  '${result.distance}km',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: GRAYSCALE_LABEL_800,
-                  ),
-                  maxLines: 1,
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 3, vertical: 6),
+      child: Row(
+        children: [
+          Icon(
+            Icons.directions_walk_outlined,
+            size: 16,
+            color: BLUE_SECONDARY_600,
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Text(
+                '${result.distance}km',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: GRAYSCALE_LABEL_800,
                 ),
-                SizedBox(width: 4),
-                Text(
-                  formatDuration(result.duration),
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: GRAYSCALE_LABEL_800,
-                  ),
-                  // overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
+                maxLines: 1,
+              ),
+              SizedBox(width: 4),
+              Icon(Icons.timer_outlined, size: 16, color: BLUE_SECONDARY_600),
+              Text(
+                formatDuration(result.duration),
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: GRAYSCALE_LABEL_800,
                 ),
-              ],
-            ),
-          ],
-        ),
+                // overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -633,7 +653,7 @@ class _CourseRecommendBottomsheetState
     ScrollController scrollSheetController,
   ) {
     // 로딩 상태 체크
-    if (parkDataProvider.isLoadingParks ||
+    if (parkDataProvider.isLoading ||
         parkDataProvider.isLoadingLocation ||
         _isLoadingTrackingResults) {
       return _buildLoadingIndicator();

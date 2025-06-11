@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 
+import '../../provider/park_data_provider.dart';
 import '../../provider/user_provider.dart';
 import '../../temp/park_test_screen.dart';
 import '/const/colors.dart';
@@ -33,6 +34,8 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     context.read<UserProvider>().loadNickname();
     fetchImages();
+    final parkProvider = context.read<ParkDataProvider>();
+    parkProvider.loadParksFromCsv();
   }
 
   Future<void> fetchImages() async {
@@ -381,21 +384,20 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 Row(
                                                   children: [
                                                     Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+
                                                       children: [
-                                                        Row(
-                                                          children: [
-                                                            Text(
-                                                              '${result['거리']}',
-                                                              style: TextStyle(
-                                                                fontSize: 25,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w600,
-                                                                color:
-                                                                    GRAYSCALE_LABEL_900,
-                                                              ),
-                                                            ),
-                                                          ],
+                                                        Text(
+                                                          '${result['거리']}',
+                                                          style: TextStyle(
+                                                            fontSize: 25,
+                                                            fontWeight:
+                                                                FontWeight.w600,
+                                                            color:
+                                                                GRAYSCALE_LABEL_900,
+                                                          ),
                                                         ),
                                                         Text(
                                                           '거리(km)',

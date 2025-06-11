@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:myway/const/colors.dart';
 import 'package:myway/model/park_course_info.dart';
+import 'package:myway/model/park_info.dart';
 import 'package:myway/model/step_model.dart';
 import 'package:myway/provider/park_data_provider.dart';
 import 'package:myway/provider/step_provider.dart';
@@ -38,10 +39,11 @@ class _CourseNameScreenState extends State<CourseNameScreen> {
   late Uint8List imageBytes;
   late StepProvider stepProvider;
 
+  List<ParkInfo> nearbyParks = [];
+  ParkInfo? selectedPark;
+
   // 추천 코스 관련 변수
-  ParkCourseInfo? selectedRecommendedCourse;
-  List<ParkCourseInfo> nearbyRecommendedCourses2km = [];
-  bool isLoadingRecommendedCourses = true;
+  bool isLoading = true;
 
   @override
   void initState() {
@@ -49,38 +51,34 @@ class _CourseNameScreenState extends State<CourseNameScreen> {
     stepProvider = Provider.of<StepProvider>(context, listen: false);
     _courseNameController.text = stepProvider.courseName.text;
 
-    final parkDataProvider = Provider.of<ParkDataProvider>(
-      context,
-      listen: false,
-    );
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final parkProvider = Provider.of<ParkDataProvider>(
+        context,
+        listen: false,
+      );
 
-    // 이미 로드된 데이터 사용 및 중복 제거
-    setState(() {
-      final originalList = parkDataProvider.nearbyRecommendedCourses2km;
-      print('원본 리스트 길이: ${originalList.length}');
-
-      // 공원명 기준으로 중복 제거 (각 공원의 중간 거리 코스만 선택)
-      final uniqueCourses = <String, ParkCourseInfo>{};
-      for (final course in originalList) {
-        final parkName = course.parkName ?? 'unknown';
-
-        // 같은 공원의 코스가 없거나, 현재 코스가 1.0km 코스인 경우 선택
-        if (!uniqueCourses.containsKey(parkName) ||
-            course.details.distance == 1.0) {
-          uniqueCourses[parkName] = course;
-        }
+      if (parkProvider.currentPosition == null) {
+        await parkProvider.fetchCurrentLocationAndCalculateDistance();
       }
 
-      nearbyRecommendedCourses2km = uniqueCourses.values.toList();
-      print('중복 제거 후 리스트 길이: ${nearbyRecommendedCourses2km.length}');
-
-      // 디버깅: 각 아이템 출력
-      for (int i = 0; i < nearbyRecommendedCourses2km.length; i++) {
-        final course = nearbyRecommendedCourses2km[i];
-        print('$i: 공원명=${course.parkName}, 거리=${course.details.distance}km');
+      if (mounted) {
+        setState(() {
+          print('--- 디버깅 시작 ---');
+          print('현재 위치: ${parkProvider.currentPosition}');
+          print('공원 개수: ${parkProvider.allParks.length}');
+          for (final park in parkProvider.allParks) {
+            print('${park.name} - 거리: ${park.distanceKm}');
+          }
+          print('--- 디버깅 끝 ---');
+          nearbyParks =
+              parkProvider.allParks
+                  .where((park) => park.distanceKm < 2)
+                  .toList();
+          nearbyParks.sort((a, b) => a.distanceKm.compareTo(b.distanceKm));
+          isLoading = false;
+          print('Nearby parks loaded: ${nearbyParks.length}');
+        });
       }
-
-      isLoadingRecommendedCourses = false;
     });
   }
 
@@ -186,7 +184,7 @@ class _CourseNameScreenState extends State<CourseNameScreen> {
                                   },
                                   cursorColor: ORANGE_PRIMARY_500,
                                   decoration: InputDecoration(
-                                    labelText: '코스 이름',
+                                    labelText: '코스 이름을 입력해주세요',
                                     labelStyle: TextStyle(
                                       color: GRAYSCALE_LABEL_600,
                                     ),
@@ -212,25 +210,8 @@ class _CourseNameScreenState extends State<CourseNameScreen> {
                                   ),
                                 ),
                                 // SizedBox(height: 10),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        if (isLoadingRecommendedCourses)
-                                          SizedBox(
-                                            width: 16,
-                                            height: 16,
-                                            child: CircularProgressIndicator(
-                                              color: ORANGE_PRIMARY_500,
-                                              strokeWidth: 2,
-                                            ),
-                                          ),
-                                      ],
-                                    ),
-                                    _buildRecommendedCourseDropdown(),
-                                  ],
-                                ),
+                                _buildRecommendedCourseDropdown(),
+
                                 Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
@@ -435,41 +416,21 @@ class _CourseNameScreenState extends State<CourseNameScreen> {
     );
   }
 
-  // 추천 코스 드롭다운 위젯 (커스텀 IconButton + AlertDialog)
   Widget _buildRecommendedCourseDropdown() {
-    if (isLoadingRecommendedCourses) {
+    if (nearbyParks.isEmpty) {
       return Container(
         padding: EdgeInsets.symmetric(vertical: 8),
         child: Row(
           children: [
-            Text(
-              '추천 코스 불러오는 중...',
-              style: TextStyle(color: GRAYSCALE_LABEL_600, fontSize: 14),
-            ),
+            Icon(Icons.location_off, size: 16, color: GRAYSCALE_LABEL_800),
             SizedBox(width: 8),
-            SizedBox(
-              width: 16,
-              height: 16,
-              child: CircularProgressIndicator(
-                color: ORANGE_PRIMARY_500,
-                strokeWidth: 2,
+            Text(
+              '반경 2km 이내 공원이 없습니다',
+              style: TextStyle(
+                color: GRAYSCALE_LABEL_800,
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
               ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    if (nearbyRecommendedCourses2km.isEmpty) {
-      return Container(
-        padding: EdgeInsets.symmetric(vertical: 8),
-        child: Row(
-          children: [
-            Icon(Icons.location_off, size: 16, color: GRAYSCALE_LABEL_600),
-            SizedBox(width: 8),
-            Text(
-              '반경 2km 이내 추천 코스가 없습니다',
-              style: TextStyle(color: GRAYSCALE_LABEL_600, fontSize: 14),
             ),
           ],
         ),
@@ -490,17 +451,15 @@ class _CourseNameScreenState extends State<CourseNameScreen> {
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
             child: Text(
-              selectedRecommendedCourse?.parkName ?? '반경 2km 이내 추천코스 선택',
+              selectedPark?.name ?? '내 주변 공원 선택',
               style: TextStyle(
                 color:
-                    selectedRecommendedCourse != null
+                    nearbyParks != null
                         ? GRAYSCALE_LABEL_900
                         : GRAYSCALE_LABEL_600,
-                fontSize: selectedRecommendedCourse != null ? 16 : 14,
+                fontSize: nearbyParks != null ? 16 : 14,
                 fontWeight:
-                    selectedRecommendedCourse != null
-                        ? FontWeight.w600
-                        : FontWeight.w500,
+                    nearbyParks != null ? FontWeight.w600 : FontWeight.w500,
               ),
               overflow: TextOverflow.ellipsis,
             ),
@@ -517,7 +476,6 @@ class _CourseNameScreenState extends State<CourseNameScreen> {
     );
   }
 
-  // 공원 선택 다이얼로그
   void _showParkSelectionDialog() {
     showDialog(
       context: context,
@@ -527,137 +485,94 @@ class _CourseNameScreenState extends State<CourseNameScreen> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Text(
-                      '공원 선택',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: GRAYSCALE_LABEL_950,
-                      ),
-                    ),
-                    Spacer(),
-                    IconButton(
-                      icon: Icon(Icons.close, color: GRAYSCALE_LABEL_600),
-                      onPressed: () => Navigator.of(context).pop(),
-                    ),
-                  ],
-                ),
+          child: SizedBox(
+            width: double.infinity,
+            height: MediaQuery.of(context).size.height * 0.8,
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
 
-                SizedBox(height: 16),
-                Flexible(
-                  child: Container(
-                    constraints: BoxConstraints(
-                      maxHeight: MediaQuery.of(context).size.height * 0.6,
-                    ),
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        '공원 선택',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: GRAYSCALE_LABEL_950,
+                        ),
+                      ),
+                      Spacer(),
+                      IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: Icon(Icons.close, color: GRAYSCALE_LABEL_600),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 16),
+                  Expanded(
                     child: ListView.separated(
                       shrinkWrap: true,
-                      itemCount: nearbyRecommendedCourses2km.length,
-                      separatorBuilder:
-                          (context, index) =>
-                              Divider(color: GRAYSCALE_LABEL_300, height: 1),
-                      itemBuilder: (context, index) {
-                        final course = nearbyRecommendedCourses2km[index];
-                        final isSelected = selectedRecommendedCourse == course;
+                      itemCount: nearbyParks.length,
+                      separatorBuilder: (_, __) => Divider(),
+                      itemBuilder: (_, index) {
+                        final park = nearbyParks[index];
+                        final isSelected = selectedPark?.id == park.id;
 
-                        // 각 코스에 해당하는 공원 정보 가져오기
-                        final parkDataProvider = Provider.of<ParkDataProvider>(
-                          context,
-                          listen: false,
-                        );
-                        final parkInfo = parkDataProvider.allFetchedParks
-                            .firstWhere((park) => park.id == course.parkId);
-                        final courseAddress =
-                            parkInfo.address.isNotEmpty
-                                ? parkInfo.address
-                                : '주소 정보 없음';
-
-                        return Container(
-                          margin: EdgeInsets.symmetric(vertical: 2),
-                          child: TextButton(
-                            onPressed: () {
-                              setState(() {
-                                selectedRecommendedCourse = course;
-
-                                // stepProvider에 공원명 설정
-                                final stepProvider = Provider.of<StepProvider>(
-                                  context,
-                                  listen: false,
-                                );
-                                stepProvider.setParkName(course.parkName);
-                                stepProvider.setParkId(course.parkId);
-                              });
-                              Navigator.of(context).pop();
-                            },
-                            style: TextButton.styleFrom(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 12,
-                              ),
-                              alignment: Alignment.centerLeft,
-                              backgroundColor:
-                                  isSelected
-                                      ? ORANGE_PRIMARY_500.withAlpha(1)
-                                      : Colors.transparent,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      course.parkName ?? '공원 정보 없음',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight:
-                                            isSelected
-                                                ? FontWeight.w600
-                                                : FontWeight.w500,
-                                        color:
-                                            isSelected
-                                                ? ORANGE_PRIMARY_500
-                                                : GRAYSCALE_LABEL_900,
-                                      ),
+                        return TextButton(
+                          onPressed: () {
+                            setState(() {
+                              selectedPark = park;
+                              stepProvider.setParkName(park.name);
+                              stepProvider.setParkId(park.id);
+                            });
+                            Navigator.pop(context);
+                          },
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    park.name,
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight:
+                                          isSelected
+                                              ? FontWeight.w600
+                                              : FontWeight.w500,
+                                      color:
+                                          isSelected
+                                              ? ORANGE_PRIMARY_500
+                                              : GRAYSCALE_LABEL_900,
                                     ),
-                                    if (course.title.isNotEmpty)
-                                      Padding(
-                                        padding: EdgeInsets.only(top: 4),
-                                        child: Text(
-                                          courseAddress,
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            color: GRAYSCALE_LABEL_900,
-                                          ),
-                                        ),
-                                      ),
-                                  ],
-                                ),
-                                if (isSelected)
-                                  Icon(
-                                    Icons.check_circle,
-                                    color: ORANGE_PRIMARY_500,
-                                    size: 20,
                                   ),
-                              ],
-                            ),
+                                  Text(
+                                    park.address,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: GRAYSCALE_LABEL_900,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              if (isSelected)
+                                Icon(
+                                  Icons.check_circle,
+                                  color: ORANGE_PRIMARY_500,
+                                ),
+                            ],
                           ),
                         );
                       },
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         );

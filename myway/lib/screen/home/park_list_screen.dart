@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:myway/model/park_info.dart';
 import 'package:myway/model/step_model.dart';
+import 'package:myway/screen/home/course_detail_screen.dart';
 import 'package:provider/provider.dart';
 import '../../provider/park_data_provider.dart';
 import '../../const/colors.dart';
@@ -43,10 +44,7 @@ class _ParkListScreenState extends State<ParkListScreen>
   @override
   void initState() {
     super.initState();
-    final parkDataProvider = Provider.of<ParkDataProvider>(
-      context,
-      listen: false,
-    );
+
     _tabController = TabController(
       length: 2,
       vsync: this,
@@ -57,16 +55,12 @@ class _ParkListScreenState extends State<ParkListScreen>
     _searchController.addListener(_onParkSearchChanged);
     _parkListScrollController.addListener(_onParkScroll);
     _userRecordsScrollController.addListener(_onUserRecordsScroll);
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        parkDataProvider.fetchAllDataIfNeeded().then((_) {
-          if (mounted) {
-            _applyParkFilterAndSearchAndPagination(parkDataProvider);
-            _applyUserRecordsPagination(parkDataProvider);
-          }
-        });
-      }
+      final provider = Provider.of<ParkDataProvider>(context, listen: false);
+      provider.initialize().then((_) {
+        _applyParkFilterAndSearchAndPagination(provider);
+        _applyUserRecordsPagination(provider);
+      });
     });
   }
 
@@ -146,12 +140,12 @@ class _ParkListScreenState extends State<ParkListScreen>
   }
 
   void _applyParkFilterAndSearchAndPagination(ParkDataProvider provider) {
-    if (!provider.isLoadingParks) {
-      List<ParkInfo> tempFilteredList = List.from(provider.allFetchedParks);
+    if (!provider.isLoading) {
+      List<ParkInfo> tempFilteredList = List.from(provider.allParks);
       if (_currentParkFilter == ParkFilterType.favorites) {
         tempFilteredList =
             tempFilteredList
-                .where((park) => provider.isParkFavorite(park.id))
+                .where((park) => provider.isFavorite(park.id))
                 .toList();
       } else if (_currentParkFilter == ParkFilterType.nearby) {
         if (provider.currentPosition != null) {
@@ -164,7 +158,7 @@ class _ParkListScreenState extends State<ParkListScreen>
           tempFilteredList = [];
         }
       } else {
-        tempFilteredList.sort((a, b) => a.name.compareTo(b.name));
+        tempFilteredList.sort((a, b) => a.distanceKm.compareTo(b.distanceKm));
       }
       if (_searchTerm.isNotEmpty) {
         tempFilteredList =
@@ -192,20 +186,9 @@ class _ParkListScreenState extends State<ParkListScreen>
   }
 
   void _loadParksForCurrentPage() {
-    final int startIndex = (_currentParkPage - 1) * _parksPerPage;
-    int endIndex = startIndex + _parksPerPage;
-    if (endIndex > _filteredParks.length) {
-      endIndex = _filteredParks.length;
-    }
     if (mounted) {
       setState(() {
-        if (_currentParkPage == 1) {
-          _parksToDisplayOnPage = _filteredParks.sublist(startIndex, endIndex);
-        } else {
-          _parksToDisplayOnPage.addAll(
-            _filteredParks.sublist(startIndex, endIndex),
-          );
-        }
+        _parksToDisplayOnPage = List.from(_filteredParks);
         _isFetchingMoreParks = false;
       });
     }
@@ -325,10 +308,11 @@ class _ParkListScreenState extends State<ParkListScreen>
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          park.type.isNotEmpty ? park.type : "정보 없음",
+                          '${park.distanceKm.toStringAsFixed(1)} km',
                           style: const TextStyle(
                             fontSize: 13,
-                            color: GRAYSCALE_LABEL_600,
+                            color: BLUE_SECONDARY_500,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ],
@@ -459,31 +443,76 @@ class _ParkListScreenState extends State<ParkListScreen>
       label: Text(label),
       selected: isSelected,
       onSelected: (bool selected) {
-        if (selected) {
-          if (isParkTab) {
-            if (filterType == ParkFilterType.nearby &&
-                provider.currentPosition == null &&
-                !provider.isLoadingLocation) {
-              if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                      "현재 위치를 가져올 수 없어 '내 주변' 필터를 사용할 수 없습니다. 위치 권한을 확인해주세요.",
-                    ),
-                    backgroundColor: YELLOW_INFO_BASE_30,
-                  ),
-                );
+        if (!selected || !isParkTab) return;
+
+        final provider = Provider.of<ParkDataProvider>(context, listen: false);
+
+        void applyFilters() {
+          if (_parkListScrollController.hasClients) {
+            _parkListScrollController.jumpTo(0);
+          }
+
+          List<ParkInfo> result = List.from(provider.allParks);
+
+          switch (filterType) {
+            case ParkFilterType.favorites:
+              result = result.where((p) => provider.isFavorite(p.id)).toList();
+              break;
+            case ParkFilterType.nearby:
+              if (provider.currentPosition != null) {
+                result =
+                    result
+                        .where((p) => p.distanceKm < _nearbyFilterRadiusKm)
+                        .toList()
+                      ..sort((a, b) => a.distanceKm.compareTo(b.distanceKm));
+              } else {
+                result = [];
               }
-              return;
-            }
-            if (mounted) {
-              setState(() {
-                _currentParkFilter = filterType;
-                _applyParkFilterAndSearchAndPagination(provider);
-              });
-            }
+              break;
+            case ParkFilterType.all:
+              result.sort((a, b) => a.distanceKm.compareTo(b.distanceKm));
+              break;
+          }
+
+          final term = _searchController.text.toLowerCase();
+          if (term.isNotEmpty) {
+            result =
+                result
+                    .where(
+                      (p) =>
+                          p.name.toLowerCase().contains(term) ||
+                          p.address.toLowerCase().contains(term),
+                    )
+                    .toList();
+          }
+
+          if (mounted) {
+            setState(() {
+              _currentParkFilter = filterType;
+              _filteredParks = result;
+              _currentParkPage = 1;
+              _parksToDisplayOnPage = _filteredParks;
+            });
           }
         }
+
+        // 필터에 따라 동적 로딩 필요할 경우 비동기 호출
+        Future<void> handleDynamicFilters() async {
+          if (filterType == ParkFilterType.nearby &&
+              provider.currentPosition == null &&
+              !provider.isLoadingLocation) {
+            await provider.fetchCurrentLocationAndCalculateDistance();
+          }
+
+          if (filterType == ParkFilterType.favorites &&
+              provider.favoriteParkIds.isEmpty) {
+            await provider.loadFavoritesFromFirestore();
+          }
+
+          applyFilters();
+        }
+
+        handleDynamicFilters();
       },
       backgroundColor: isSelected ? BLUE_SECONDARY_500 : GRAYSCALE_LABEL_100,
       selectedColor: BLUE_SECONDARY_500,
@@ -507,8 +536,8 @@ class _ParkListScreenState extends State<ParkListScreen>
   Widget buildParkTabContent(ParkDataProvider provider) {
     const double horizontalPageMargin = 20.0;
     if (provider.isLoadingLocation &&
-        provider.allFetchedParks.isEmpty &&
-        provider.isLoadingParks) {
+        provider.allParks.isEmpty &&
+        provider.isLoading) {
       return const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -523,7 +552,7 @@ class _ParkListScreenState extends State<ParkListScreen>
         ),
       );
     }
-    if (provider.isLoadingParks && provider.allFetchedParks.isEmpty) {
+    if (provider.isLoading && provider.allParks.isEmpty) {
       return const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -538,7 +567,7 @@ class _ParkListScreenState extends State<ParkListScreen>
         ),
       );
     }
-    if (provider.apiError.isNotEmpty && provider.allFetchedParks.isEmpty) {
+    if (provider.error.isNotEmpty && provider.allParks.isEmpty) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(horizontalPageMargin),
@@ -561,7 +590,7 @@ class _ParkListScreenState extends State<ParkListScreen>
               ),
               const SizedBox(height: 8),
               Text(
-                provider.apiError,
+                provider.error,
                 style: const TextStyle(
                   color: GRAYSCALE_LABEL_700,
                   fontSize: 14,
@@ -569,86 +598,9 @@ class _ParkListScreenState extends State<ParkListScreen>
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 20),
-              ElevatedButton.icon(
-                icon: const Icon(Icons.refresh, color: BACKGROUND_COLOR),
-                label: const Text(
-                  "다시 시도",
-                  style: TextStyle(color: BACKGROUND_COLOR),
-                ),
-                onPressed: () async {
-                  await provider.refreshData();
-                  if (mounted) {
-                    _applyParkFilterAndSearchAndPagination(provider);
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: BLUE_SECONDARY_500,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 10,
-                  ),
-                ),
-              ),
             ],
           ),
         ),
-      );
-    }
-    if (provider.allFetchedParks.isEmpty && !provider.isLoadingParks) {
-      return Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: horizontalPageMargin,
-            ),
-            child: _buildParkSearchBarAndFilters(provider),
-          ),
-          const Expanded(
-            child: Center(
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: horizontalPageMargin),
-                child: Text(
-                  "제공된 공원 정보가 없습니다.",
-                  style: TextStyle(color: GRAYSCALE_LABEL_600, fontSize: 14),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ),
-          ),
-        ],
-      );
-    }
-    if (_parksToDisplayOnPage.isEmpty &&
-        !provider.isLoadingParks &&
-        (_searchTerm.isNotEmpty || _currentParkFilter != ParkFilterType.all)) {
-      return Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: horizontalPageMargin,
-            ),
-            child: _buildParkSearchBarAndFilters(provider),
-          ),
-          Expanded(
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: horizontalPageMargin,
-                ),
-                child: Text(
-                  _searchTerm.isNotEmpty
-                      ? "'$_searchTerm' 검색 결과가 없습니다."
-                      : "선택한 조건에 맞는 공원이 없습니다.",
-                  style: const TextStyle(
-                    color: GRAYSCALE_LABEL_600,
-                    fontSize: 14,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ),
-          ),
-        ],
       );
     }
     return Column(
@@ -685,144 +637,156 @@ class _ParkListScreenState extends State<ParkListScreen>
     );
   }
 
+  String formatDuration(String durationStr) {
+    final parts = durationStr.split(':');
+    if (parts.length == 3) {
+      int hours = int.tryParse(parts[0]) ?? 0;
+      int minutes = int.tryParse(parts[1]) ?? 0;
+      int seconds = int.tryParse(parts[2]) ?? 0;
+      String result = "";
+      if (hours > 0) result += "$hours시간 ";
+      if (minutes > 0 || hours > 0) result += "$minutes분 ";
+      result += "$seconds초";
+      return result.trim().isEmpty ? "0초" : result.trim();
+    }
+    return durationStr;
+  }
+
+  String formatStopTime(String stopTimeStr) {
+    try {
+      DateTime dt = DateTime.parse(stopTimeStr);
+      return "${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')} ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}";
+    } catch (e) {
+      return stopTimeStr;
+    }
+  }
+
   Widget _buildUserRecordCardItem(StepModel record) {
-    String formatDuration(String durationStr) {
-      final parts = durationStr.split(':');
-      if (parts.length == 3) {
-        int hours = int.tryParse(parts[0]) ?? 0;
-        int minutes = int.tryParse(parts[1]) ?? 0;
-        int seconds = int.tryParse(parts[2]) ?? 0;
-        String result = "";
-        if (hours > 0) result += "$hours시간 ";
-        if (minutes > 0 || hours > 0) result += "$minutes분 ";
-        result += "$seconds초";
-        return result.trim().isEmpty ? "0초" : result.trim();
-      }
-      return durationStr;
-    }
-
-    String formatStopTime(String stopTimeStr) {
-      try {
-        DateTime dt = DateTime.parse(stopTimeStr);
-        return "${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')} ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}";
-      } catch (e) {
-        return stopTimeStr;
-      }
-    }
-
-    return Container(
-      key: ValueKey('user_record_item_${record.id}'),
-      decoration: BoxDecoration(
-        color: BACKGROUND_COLOR,
-        borderRadius: BorderRadius.circular(12.0),
-        boxShadow: const [
-          BoxShadow(
-            color: Color.fromRGBO(32, 32, 32, 0.08),
-            spreadRadius: 1,
-            blurRadius: 6,
-            offset: Offset(0, 1),
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => CourseDetailScreen(data: record.toJson()),
           ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: ClipRRect(
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(12.0),
-              ),
-              child:
-                  record.imageUrl.isNotEmpty
-                      ? Image.network(
-                        record.imageUrl,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) return child;
-                          return Center(
-                            child: CircularProgressIndicator(
-                              value:
-                                  loadingProgress.expectedTotalBytes != null
-                                      ? loadingProgress.cumulativeBytesLoaded /
-                                          loadingProgress.expectedTotalBytes!
-                                      : null,
-                              color: BLUE_SECONDARY_500,
-                            ),
-                          );
-                        },
-                        errorBuilder:
-                            (context, error, stackTrace) => const Center(
-                              child: Icon(
-                                Icons.broken_image_outlined,
-                                color: GRAYSCALE_LABEL_400,
-                                size: 40,
-                              ),
-                            ),
-                      )
-                      : Image.asset(
-                        'assets/images/default_course_image.png',
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                        errorBuilder:
-                            (context, error, stackTrace) => const Center(
-                              child: Icon(
-                                Icons.image_not_supported,
-                                color: GRAYSCALE_LABEL_400,
-                                size: 40,
-                              ),
-                            ),
-                      ),
+        );
+      },
+      child: Container(
+        key: ValueKey(record.id),
+        decoration: BoxDecoration(
+          color: BACKGROUND_COLOR,
+          borderRadius: BorderRadius.circular(12.0),
+          boxShadow: const [
+            BoxShadow(
+              color: Color.fromRGBO(32, 32, 32, 0.08),
+              spreadRadius: 1,
+              blurRadius: 6,
+              offset: Offset(0, 1),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  record.courseName.isNotEmpty ? record.courseName : "코스 이름 없음",
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    color: GRAYSCALE_LABEL_950,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: ClipRRect(
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(12.0),
                 ),
-                if (record.parkName != null && record.parkName!.isNotEmpty) ...[
-                  const SizedBox(height: 1),
+                child:
+                    record.imageUrl.isNotEmpty
+                        ? Image.network(
+                          record.imageUrl,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return Center(
+                              child: CircularProgressIndicator(
+                                value:
+                                    loadingProgress.expectedTotalBytes != null
+                                        ? loadingProgress
+                                                .cumulativeBytesLoaded /
+                                            loadingProgress.expectedTotalBytes!
+                                        : null,
+                                color: BLUE_SECONDARY_500,
+                              ),
+                            );
+                          },
+                          errorBuilder:
+                              (context, error, stackTrace) => const Center(
+                                child: Icon(
+                                  Icons.broken_image_outlined,
+                                  color: GRAYSCALE_LABEL_400,
+                                  size: 40,
+                                ),
+                              ),
+                        )
+                        : Image.asset(
+                          'assets/images/default_course_image.png',
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder:
+                              (context, error, stackTrace) => const Center(
+                                child: Icon(
+                                  Icons.image_not_supported,
+                                  color: GRAYSCALE_LABEL_400,
+                                  size: 40,
+                                ),
+                              ),
+                        ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
                   Text(
-                    record.parkName!,
+                    record.courseName.isNotEmpty
+                        ? record.courseName
+                        : "코스 이름 없음",
                     style: const TextStyle(
-                      fontSize: 14,
-                      color: GRAYSCALE_LABEL_800,
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: GRAYSCALE_LABEL_950,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                ],
-                const SizedBox(height: 3),
+                  if (record.parkName != null &&
+                      record.parkName!.isNotEmpty) ...[
+                    const SizedBox(height: 1),
+                    Text(
+                      record.parkName!,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: GRAYSCALE_LABEL_800,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                  const SizedBox(height: 3),
 
-                Text(
-                  formatStopTime(record.stopTime),
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: GRAYSCALE_LABEL_800,
+                  Text(
+                    formatStopTime(record.stopTime),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: GRAYSCALE_LABEL_800,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
   Widget buildUserRecordsTabContent(ParkDataProvider provider) {
-    const double horizontalPageMargin = 20.0;
-
     if (provider.isLoadingUserRecords &&
         provider.allUserCourseRecords.isEmpty) {
       return const Center(
@@ -842,33 +806,47 @@ class _ParkListScreenState extends State<ParkListScreen>
 
     if (provider.userRecordsError.isNotEmpty &&
         provider.allUserCourseRecords.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(horizontalPageMargin),
-          child: Text(provider.userRecordsError, textAlign: TextAlign.center),
-        ),
-      );
+      return Center(child: Text(provider.userRecordsError));
     }
 
     if (provider.allUserCourseRecords.isEmpty &&
         !provider.isLoadingUserRecords) {
       return const Center(
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: horizontalPageMargin),
-          child: Text(
-            "사용자 활동 기록이 아직 없습니다.",
-            style: TextStyle(color: GRAYSCALE_LABEL_600, fontSize: 14),
-            textAlign: TextAlign.center,
+          padding: EdgeInsets.symmetric(horizontal: 20),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.directions_walk_outlined,
+                color: GRAYSCALE_LABEL_800,
+                size: 30,
+              ),
+              Text(
+                "추천코스가 없습니다.",
+                style: TextStyle(
+                  color: GRAYSCALE_LABEL_800,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              Text(
+                "산책을 시작해 다른사람들과 함께 공유해보세요!",
+                style: TextStyle(
+                  color: GRAYSCALE_LABEL_600,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
           ),
         ),
       );
     }
-
     return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: horizontalPageMargin,
-        vertical: 12.0,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12.0),
       child: GridView.builder(
         controller: _userRecordsScrollController,
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -931,6 +909,7 @@ class _ParkListScreenState extends State<ParkListScreen>
               labelColor: BLUE_SECONDARY_700,
               unselectedLabelColor: GRAYSCALE_LABEL_500,
               indicatorColor: BLUE_SECONDARY_700,
+              indicatorSize: TabBarIndicatorSize.tab,
               indicatorWeight: 3.0,
               overlayColor: WidgetStateProperty.all(Colors.transparent),
               labelStyle: const TextStyle(

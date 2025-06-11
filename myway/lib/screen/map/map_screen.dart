@@ -54,6 +54,10 @@ class _MapScreenState extends State<MapScreen>
     super.dispose();
     _tracking = false;
     location.onLocationChanged.drain();
+    if (mapController != null) {
+      mapController!.dispose();
+      mapController = null;
+    }
   }
 
   Future<void> _checkLocationPermission() async {
@@ -337,8 +341,6 @@ class _MapScreenState extends State<MapScreen>
           );
         },
       );
-      // ParkDataProvider의 데이터 로딩이 완료될 때까지 대기
-      await parkDataProvider.fetchAllDataIfNeeded();
 
       if (!context.mounted) return;
       Navigator.pop(context); // 현재 화면 닫기
