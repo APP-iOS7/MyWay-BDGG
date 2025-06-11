@@ -15,32 +15,18 @@ class StepProvider extends ChangeNotifier {
   String? _parkId;
   String? get parkId => _parkId;
 
-  void setParkName(String? parkName) {
-    _parkName = parkName;
-    notifyListeners();
-  }
-
-  void setParkId(String? parkId) {
-    _parkId = parkId;
-    notifyListeners();
-  }
-
   int _baseSteps = 0;
   int _currentSteps = 0;
   int get steps => _currentSteps;
 
   bool _isCourseNameValid = false;
   bool get isCourseNameValid => _isCourseNameValid;
-  StepProvider() {
-    courseName.addListener(_validateCourseName);
-  }
+
   // 평균 보폭 기준으로 칼로리 계산 (고정 값)
   final double _strideLengthCm = 70.0; // 평균보폭
 
   String get distanceKm =>
       (_currentSteps * _strideLengthCm / 100000).toStringAsFixed(2);
-
-  // 이미지
 
   // 시간
   DateTime? _startTime;
@@ -57,12 +43,35 @@ class StepProvider extends ChangeNotifier {
   TrackingStatus _status = TrackingStatus.running;
   TrackingStatus get status => _status;
 
-  final List<LatLng> _route = [];
+  List<LatLng> _route = [];
   List<LatLng> get route => _route;
 
   // 현재 저장된 데이터를 관리하는 변수
   StepModel? _currentStepModel;
   StepModel? get currentStepModel => _currentStepModel;
+
+  StepProvider() {
+    courseName.addListener(_validateCourseName);
+  }
+
+  void setParkName(String? parkName) {
+    _parkName = parkName;
+    notifyListeners();
+  }
+
+  void setRoute(List<LatLng>? route) {
+    if (route != null) {
+      _route = List.from(route);
+    } else {
+      _route.clear();
+    }
+    notifyListeners();
+  }
+
+  void setParkId(String? parkId) {
+    _parkId = parkId;
+    notifyListeners();
+  }
 
   void toggle() {
     if (_status == TrackingStatus.running) {

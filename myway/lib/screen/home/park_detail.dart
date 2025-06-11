@@ -294,6 +294,9 @@ class _ParkDetailScreenState extends State<ParkDetailScreen> {
                 ),
                 onPressed: () {
                   parkDataProvider.toggleFavorite(_currentPark.id);
+                  setState(() {
+                    isCurrentParkFavorite = !isCurrentParkFavorite;
+                  });
                 },
               ),
               const SizedBox(width: 8),

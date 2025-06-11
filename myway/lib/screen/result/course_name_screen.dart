@@ -449,6 +449,8 @@ class _CourseNameScreenState extends State<CourseNameScreen> {
               alignment: Alignment.centerLeft,
               minimumSize: Size.zero,
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              splashFactory: NoSplash.splashFactory,
+              overlayColor: Colors.transparent,
             ),
             child: Text(
               selectedPark?.name ?? '내 주변 공원 선택',
@@ -465,6 +467,10 @@ class _CourseNameScreenState extends State<CourseNameScreen> {
             ),
           ),
           IconButton(
+            style: IconButton.styleFrom(
+              splashFactory: NoSplash.splashFactory,
+              overlayColor: Colors.transparent,
+            ),
             onPressed: () => _showParkSelectionDialog(),
             icon: Icon(Icons.keyboard_arrow_down, color: GRAYSCALE_LABEL_600),
             padding: EdgeInsets.only(left: 4),
@@ -523,6 +529,11 @@ class _CourseNameScreenState extends State<CourseNameScreen> {
                         final isSelected = selectedPark?.id == park.id;
 
                         return TextButton(
+                          style: TextButton.styleFrom(
+                            splashFactory: NoSplash.splashFactory,
+                            overlayColor: Colors.transparent,
+                          ),
+
                           onPressed: () {
                             setState(() {
                               selectedPark = park;

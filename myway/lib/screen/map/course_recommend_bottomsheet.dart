@@ -5,6 +5,7 @@ import 'package:myway/screen/alert/countdown_diallog.dart';
 import 'package:myway/provider/step_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../model/park_course_info.dart';
 import '../../model/step_model.dart';
 import '/const/colors.dart';
 import '/provider/map_provider.dart';
@@ -44,7 +45,6 @@ class _CourseRecommendBottomsheetState
         // 현재 위치 없으면 먼저 위치 가져오고 거리 계산
         await parkProvider.fetchCurrentLocationAndCalculateDistance();
 
-        for (var park in parkProvider.allParks) {}
         List<ParkInfo> filtered =
             parkProvider.allParks
                 .where((park) => park.distanceKm > 0 && park.distanceKm < 2)
@@ -436,6 +436,19 @@ class _CourseRecommendBottomsheetState
     );
   }
 
+  ParkCourseInfo convertStepModelToParkCourseInfo(StepModel step) {
+    return ParkCourseInfo(
+      parkId: step.parkId ?? '',
+      parkName: step.parkName,
+      title: step.courseName,
+      details: step,
+      park: step.parkName ?? '',
+      date: DateTime.parse(step.stopTime),
+      isSelected: false,
+      isFavorite: false,
+    );
+  }
+
   // 개별 TrackingResult 카드를 빌드하는 메서드
   Widget _buildTrackingCard(
     StepModel trackingResult,
@@ -462,9 +475,20 @@ class _CourseRecommendBottomsheetState
       ),
       child: GestureDetector(
         onTap: () {
+          final isDeselecting = selectedIndex == index;
+
           setState(() {
-            selectedIndex = selectedIndex == index ? null : index;
+            selectedIndex = isDeselecting ? null : index;
           });
+
+          final course =
+              isDeselecting
+                  ? null
+                  : convertStepModelToParkCourseInfo(
+                    _allTrackingResults[index],
+                  );
+
+          Provider.of<MapProvider>(context, listen: false).selectCourse(course);
         },
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -559,12 +583,7 @@ class _CourseRecommendBottomsheetState
         int hours = int.tryParse(parts[0]) ?? 0; // 시
         int minutes = int.tryParse(parts[1]) ?? 0; // 분
         int seconds = int.tryParse(parts[2]) ?? 0; // 초
-        // if (hours == 0) {
-        //   if (minutes == 0) {
-        //     return '$seconds초';
-        //   }
-        //   return '$minutes분 $seconds초';
-        // }
+
         // 시간이 있는경우
         if (hours > 0) {
           return '$hours시간 $minutes분';

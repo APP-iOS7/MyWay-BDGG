@@ -292,15 +292,51 @@ class _MapScreenState extends State<MapScreen>
       return;
     }
 
-    polylines.removeWhere((p) => p.polylineId.value == 'route');
-    final Uint8List? imageBytes = await mapController?.takeSnapshot();
-    final stepProvider = Provider.of<StepProvider>(context, listen: false);
-    final parkDataProvider = Provider.of<ParkDataProvider>(
-      context,
-      listen: false,
+    polylines.removeWhere((p) => p.polylineId.value == 'recommended');
+    Navigator.pop(context); // 현재 화면 닫기
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      barrierColor: Colors.black.withValues(alpha: 0.5),
+      builder: (context) {
+        return Dialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          insetPadding: const EdgeInsets.symmetric(horizontal: 40),
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: const [
+                CircularProgressIndicator(color: ORANGE_PRIMARY_500),
+                SizedBox(height: 20),
+                Text(
+                  '산책 경로를 캡처 중...',
+                  style: TextStyle(
+                    color: GRAYSCALE_LABEL_950,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
 
+    await Future.delayed(Duration.zero);
+    await WidgetsBinding.instance.endOfFrame;
+    final Uint8List? imageBytes = await mapController?.takeSnapshot();
+    final stepProvider = Provider.of<StepProvider>(context, listen: false);
+
     stepProvider.stopTracking();
+    stepProvider.setRoute(walkingRoute);
+
+    polylines.removeWhere((p) => p.polylineId.value == 'route');
 
     if (imageBytes != null && imageBytes.isNotEmpty) {
       debugPrint('📍 이미지 캡처 성공, 길이: ${imageBytes.length}');
@@ -308,42 +344,7 @@ class _MapScreenState extends State<MapScreen>
 
       if (!context.mounted) return;
 
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        barrierColor: Colors.black.withValues(alpha: 0.5),
-        builder: (context) {
-          return Dialog(
-            backgroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            insetPadding: const EdgeInsets.symmetric(horizontal: 40),
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: const [
-                  CircularProgressIndicator(color: ORANGE_PRIMARY_500),
-                  SizedBox(height: 20),
-                  Text(
-                    '산책 경로를 캡처 중...',
-                    style: TextStyle(
-                      color: GRAYSCALE_LABEL_950,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      );
-
       if (!context.mounted) return;
-      Navigator.pop(context); // 현재 화면 닫기
       Navigator.pop(context); // 현재 화면 닫기
       Navigator.push(
         context,
@@ -401,7 +402,8 @@ class _MapScreenState extends State<MapScreen>
   }
 
   void drawRecommendPolylines(ParkCourseInfo? selectedCourse) {
-    if (selectedCourse == null || selectedCourse == _prevCourse) return;
+    if (selectedCourse == null || identical(selectedCourse, _prevCourse))
+      return;
     _prevCourse = selectedCourse;
 
     // 기존 추천 경로 제거
@@ -423,6 +425,8 @@ class _MapScreenState extends State<MapScreen>
     final mapProvider = Provider.of<MapProvider>(context);
     final status = stepProvider.status;
     final selectedCourse = Provider.of<MapProvider>(context).selectedCourse;
+    print('mapProvider.selectedCourse: ${mapProvider.selectedCourse}');
+
     if (mapProvider.selectedCourse == null) {
       print('null course');
       // 추천 코스가 선택되지 않은 경우 특정 polyline 그리지않음
@@ -435,7 +439,6 @@ class _MapScreenState extends State<MapScreen>
     if (mapProvider.isTracking && !_tracking) {
       startLocationTracking();
     }
-
     // 상태 변화 체크를 안전하게 처리
     if (_prevStatus != null &&
         _prevStatus != TrackingStatus.stopped &&
