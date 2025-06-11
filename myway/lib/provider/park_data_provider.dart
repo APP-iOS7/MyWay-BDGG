@@ -21,6 +21,7 @@ class ParkDataProvider extends ChangeNotifier {
   String _userRecordsError = '';
   bool _isLoadingUserRecords = false;
   bool _isLoadingLocation = false;
+  bool _disposed = false; // dispose 상태 추적
 
   final List<ParkCourseInfo> _recommendedCourse = [];
 
@@ -37,7 +38,7 @@ class ParkDataProvider extends ChangeNotifier {
 
   void setCurrentPosition(Position? position) {
     _currentPosition = position;
-    notifyListeners();
+    _safeNotifyListeners();
   }
 
   List<ParkCourseInfo> get nearbyRecommendedCourses {
@@ -61,7 +62,7 @@ class ParkDataProvider extends ChangeNotifier {
     } else {
       _favoriteParkIds.add(parkId);
     }
-    notifyListeners();
+    _safeNotifyListeners();
 
     try {
       final docRef = FirebaseFirestore.instance
@@ -88,7 +89,7 @@ class ParkDataProvider extends ChangeNotifier {
           _favoriteParkIds
             ..clear()
             ..addAll(List<String>.from(data['favorites']));
-          notifyListeners();
+          _safeNotifyListeners();
         }
       }
     } catch (e) {
@@ -98,7 +99,7 @@ class ParkDataProvider extends ChangeNotifier {
 
   Future<void> loadParksFromCsv() async {
     _isLoading = true;
-    notifyListeners();
+    _safeNotifyListeners();
 
     try {
       _allParks = await loadParksFromCSV();
@@ -108,12 +109,12 @@ class ParkDataProvider extends ChangeNotifier {
     }
 
     _isLoading = false;
-    notifyListeners();
+    _safeNotifyListeners();
   }
 
   Future<void> fetchCurrentLocationAndCalculateDistance() async {
     _isLoadingLocation = true;
-    notifyListeners();
+    _safeNotifyListeners();
     try {
       _currentPosition = await _determinePosition();
       for (final park in _allParks) {
@@ -126,7 +127,7 @@ class ParkDataProvider extends ChangeNotifier {
     }
 
     _isLoadingLocation = false;
-    notifyListeners();
+    _safeNotifyListeners();
   }
 
   Future<void> initialize() async {
@@ -138,7 +139,7 @@ class ParkDataProvider extends ChangeNotifier {
   Future<void> _fetchUserCourseRecordsInternal() async {
     _isLoadingUserRecords = true;
     _userRecordsError = '';
-    notifyListeners();
+    _safeNotifyListeners();
 
     try {
       final firestore = FirebaseFirestore.instance;
@@ -174,7 +175,7 @@ class ParkDataProvider extends ChangeNotifier {
     }
 
     _isLoadingUserRecords = false;
-    notifyListeners();
+    _safeNotifyListeners();
   }
 
   Future<Position> _determinePosition() async {
@@ -196,5 +197,21 @@ class ParkDataProvider extends ChangeNotifier {
     }
 
     return await Geolocator.getCurrentPosition();
+  }
+
+  void _safeNotifyListeners() {
+    if (_disposed) return;
+
+    try {
+      _safeNotifyListeners();
+    } catch (e) {
+      print('MapProvider: notifyListeners 호출 중 오류 발생: $e');
+    }
+  }
+
+  @override
+  void dispose() {
+    _disposed = true; // dispose 상태 설정
+    super.dispose();
   }
 }
