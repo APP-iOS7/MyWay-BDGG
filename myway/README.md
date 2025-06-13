@@ -102,9 +102,9 @@ lib/
 | :-----------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------: | 
 | <img src="https://github.com/user-attachments/assets/cbdcbf16-f7fc-4ca3-902c-e984175696fd" width="200"> | <img src="https://github.com/user-attachments/assets/3a81f4f8-9eb6-4fb9-8c5a-0ec663e9cb14" width="200"> | 
 
-|                                           산책 시작                                           |                                           추천코스 산책 시작                                           |                                           홈화면 날씨 버튼                                           |                                           산책종료                                           |                                           산책저장                                           
+|                                           산책 시작                                           |                                           추천코스 산책 시작                                           |                                           산책저장                                           |                                           산책종료                                           |                                           홈화면 날씨 버튼                                           
 | :-----------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------: 
-| <img src="https://github.com/user-attachments/assets/bc1b7dbb-fd3c-454b-8613-03412b65543f" width="200"> | <img src="https://github.com/user-attachments/assets/48893043-5e49-444d-be20-d097cdacd540" width="200"> | <img src="https://github.com/user-attachments/assets/f74514db-bdf9-4ed9-9ff9-d2e40adfe191" width="200"> | <img src="https://github.com/user-attachments/assets/9f82056f-6d0f-4311-9178-eafac3f9f113" width="200">| <img src="https://github.com/user-attachments/assets/910edf71-2315-474b-93b9-ee9f9aba45fd" width="200">
+| <img src="https://github.com/user-attachments/assets/bc1b7dbb-fd3c-454b-8613-03412b65543f" width="200"> | <img src="https://github.com/user-attachments/assets/48893043-5e49-444d-be20-d097cdacd540" width="200"> | <img src="https://github.com/user-attachments/assets/910edf71-2315-474b-93b9-ee9f9aba45fd" width="200"> | <img src="https://github.com/user-attachments/assets/9f82056f-6d0f-4311-9178-eafac3f9f113" width="200">| <img src="https://github.com/user-attachments/assets/f74514db-bdf9-4ed9-9ff9-d2e40adfe191" width="200">
 <br />
 
 ## 🗺️ 앞으로의 계획 (Roadmap)
@@ -121,17 +121,19 @@ lib/
 
 ### 강보현  
 
-**사진** 
+ <img src="https://github.com/user-attachments/assets/4f77cad0-93e4-49fa-b483-f93962f8ba40" style="width:150px; height:150px;  margin-bottom:10px;">
 
 
 **📝 회고록**  
-> _회고를 작성해주세요... ✍️_
+> _처음에는 각자의 개발 스타일과 속도가 달라 코드 통합시 충돌이 잦았고, 충돌을 직접 해결하면서 어려움을 겪기도 했습니다. 하지만 단순히 문제를 혼자 해결하기보다, 서로의 코드를 같이 보고 소통하며 맞춰나갔습니다. 
+다른 사람의 코드를 읽고 이해한 뒤 리팩토링하는 과정은 절대 쉽지 않았지만, 더 좋은 결과를 위해 함께 고민하고 합의점을 찾으려 노력한 경험 자체가 의미 있었습니다. 
+무엇보다 제 의견에 귀 기울이고 잘 따라와 준 덕분에, 팀장으로서 많이 배울 수 있었고, 저의 왼팔, 오른팔, (기은님 어디야..?)들에게도 감사합니다._
 
 ---
 
 ### 김건  
 
- <img src="https://github.com/user-attachments/assets/af2c71b3-e4a7-4138-8953-01129b81fc3f" style="width:130px; height:150px;  margin-bottom:10px;">
+ <img src="https://github.com/user-attachments/assets/af2c71b3-e4a7-4138-8953-01129b81fc3f" style="width:150px; height:150px;  margin-bottom:10px;">
 
 
 **📝 회고록**  
@@ -141,7 +143,7 @@ lib/
 
 ### 김덕원  
 
- <img src="https://github.com/user-attachments/assets/b0cca077-ab8b-4f98-9e6e-3c9657640ea1" style="width:130px; height:150px;  margin-bottom:10px;">
+ <img src="https://github.com/user-attachments/assets/b0cca077-ab8b-4f98-9e6e-3c9657640ea1" style="width:150px; height:150px;  margin-bottom:10px;">
 
 
 **📝 회고록**  
@@ -165,4 +167,3 @@ lib/
 </div>
 
 
-https://github.com/user-attachments/assets/b0cca077-ab8b-4f98-9e6e-3c9657640ea1
