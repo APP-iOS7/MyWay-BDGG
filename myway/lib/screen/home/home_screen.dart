@@ -374,7 +374,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 ),
                                                 SizedBox(height: 5),
                                                 Text(
-                                                  '${result['공원명']}' ?? " ",
+                                                  '${result['공원명']}' ??
+                                                      "공원 미지정",
                                                   style: TextStyle(
                                                     fontSize: 15,
                                                     fontWeight: FontWeight.w600,
