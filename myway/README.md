@@ -1,4 +1,4 @@
-**대표이미지**
+![Image](https://github.com/user-attachments/assets/f0ed4868-2d6f-40d7-9388-95f561f1fef6)
 
 <br /><br />
 
