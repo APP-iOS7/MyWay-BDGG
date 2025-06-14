@@ -1,14 +1,18 @@
-# MyWay - 나만의 길, 나만의 그림
+![Image](https://github.com/user-attachments/assets/f0ed4868-2d6f-40d7-9388-95f561f1fef6)
 
-**당신의 발자취를 예술로 만드는 특별한 산책 기록 앱, MyWay입니다.**
+<br /><br />
 
-MyWay는 단순한 산책 기록 앱을 넘어, 당신의 발자취를 예술로 만드는 특별한 경험을 제공합니다. Flutter로 개발된 이 앱을 통해 사용자는 자신의 산책 경로를 기록하고, 그 경로를 기반으로 세상에 하나뿐인 디지털 아트를 생성할 수 있습니다. 모든 산책이 당신만의 새로운 예술 작품이 됩니다.
+## About MyWay-BDG **이미지**
+**MyWay**는 단순한 산책 기록 앱을 넘어, 당신의 발자취를 예술로 만드는 특별한 경험을 제공합니다. Flutter로 개발된 이 앱을 통해 사용자는 자신의 산책 경로를 기록하고, 그 경로를 기반으로 세상에 하나뿐인 디지털 아트를 생성할 수 있습니다. 모든 산책이 당신만의 새로운 예술 작품이 됩니다.
 
-![Flutter](https://img.shields.io/badge/Flutter-02569B?style=for-the-badge&logo=flutter&logoColor=white)
-![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)
-![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)
+<br />
 
-## 🌟 주요 기능 (Key Features)
+
+
+
+---
+
+## 🏃 주요 기능
 
 -   **🎨 경로 아트 생성 (Path-to-Art)**
     -   기록된 산책 경로(동선)를 기반으로 아름다운 추상화 또는 라인 아트를 생성합니다.
@@ -17,6 +21,11 @@ MyWay는 단순한 산책 기록 앱을 넘어, 당신의 발자취를 예술로
 -   **🛰️ GPS 기반 산책 기록**
     -   실시간으로 사용자의 위치를 추적하여 거리, 시간, 걸음 수, 경로 등을 정확하게 기록합니다.
     -   산책 중 잠시 멈추거나 다시 시작하는 등 다양한 상황을 손쉽게 제어할 수 있습니다.
+
+
+-   **🌤 날씨 및 대기질 정보 제공**  
+    -   산책 전 기상청 및 에어코리아 API를 통해 날씨, 강수확률, 미세먼지(PM10), 초미세먼지(PM2.5) 정보를 제공합니다.
+
 
 -   **🏞️ 공원 정보 및 추천 코스**
     -   사용자 주변의 공원을 찾아주고, 거리 및 상세 정보를 제공합니다.
@@ -29,92 +38,131 @@ MyWay는 단순한 산책 기록 앱을 넘어, 당신의 발자취를 예술로
 -   **❤️ 즐겨찾기 기능**
     -   마음에 드는 공원이나 코스를 '찜'하여 언제든지 쉽게 다시 찾아볼 수 있습니다.
 
-## 💻 기술 스택 (Tech Stack)
 
--   **Framework**: `Flutter`
--   **State Management**: `Provider`
--   **Database**: `Firestore`
--   **Location & Maps**: `geolocator`, `google_maps_flutter`
--   **Authentication**: `Firebase Authentication`
--   **Storage**: `Firebase Storage`
 
-## 📱 스크린샷 (Screenshots)
-
-| 산책 시작 화면 | 실시간 기록 화면 |
-| :----------: | :-----------: |
-| ![Main Screen](./readme_assets/main_screen.png) | ![Tracking Screen](./readme_assets/tracking_screen.png) |
-| **경로 아트 생성 결과** | **활동 기록 갤러리** |
-| ![Art Result](./readme_assets/art_result.png) | ![History Gallery](./readme_assets/history_gallery.png) |
-
-*(위 이미지는 예시입니다. 실제 프로젝트의 스크린샷으로 교체해주세요. `readme_assets` 폴더를 만들고 그 안에 이미지를 넣어 관리하면 좋습니다.)*
-
-## 🚀 시작하기 (Getting Started)
-
-프로젝트를 로컬 환경에서 실행하려면 아래의 단계를 따라주세요.
-
-### 사전 준비
-
--   [Flutter SDK](https://flutter.dev/docs/get-started/install)가 설치되어 있어야 합니다.
--   [Firebase CLI](https://firebase.google.com/docs/cli)가 설치되어 있어야 합니다.
-
-### 설치 및 실행
-
-1.  **저장소 클론하기**
-    ```bash
-    git clone https://github.com/your-username/MyWay.git
-    cd MyWay
-    ```
-
-2.  **Flutter 패키지 설치**
-    ```bash
-    flutter pub get
-    ```
-
-3.  **Firebase 프로젝트 설정**
-    -   [Firebase Console](https://console.firebase.google.com/)에서 새로운 프로젝트를 생성합니다.
-    -   Android 및 iOS 앱을 프로젝트에 추가합니다.
-    -   **Cloud Firestore**와 **Firebase Storage**를 활성화합니다.
-    -   아래 명령어를 실행하여 프로젝트를 Firebase에 연결하고, `google-services.json` (Android) 및 `GoogleService-Info.plist` (iOS) 파일을 자동으로 구성합니다.
-        ```bash
-        flutterfire configure
-        ```
-
-4.  **앱 실행**
-    ```bash
-    flutter run
-    ```
-
-## 🗺️ 앞으로의 계획 (Roadmap)
-
--   [ ] 경로 아트 스타일 추가 (수채화, 유화, 픽셀 아트 등)
--   [ ] 소셜 공유 기능 (생성된 아트를 SNS에 공유)
--   [ ] 친구와 함께 걷기 및 경로 공유
--   [ ] 산책 챌린지 및 배지 시스템 도입
--   [ ] 웨어러블 기기 연동 (Galaxy Watch, Apple Watch)
-
-## 🤝 기여하기 (Contributing)
-
-이 프로젝트에 기여하고 싶으시다면 언제든지 환영합니다! 이슈를 등록하거나 Pull Request를 보내주세요.
-
-1.  프로젝트를 Fork 하세요.
-2.  새로운 브랜치를 생성하세요.
-    ```bash
-    git checkout -b feature/AmazingFeature
-    ```
-3.  변경 사항을 커밋하세요.
-    ```bash
-    git commit -m 'Add some AmazingFeature'
-    ```
-4.  브랜치에 Push 하세요.
-    ```bash
-    git push origin feature/AmazingFeature
-    ```
-5.  Pull Request를 열어주세요.
-
-## 📜 라이선스 (License)
-
-이 프로젝트는 [MIT License](LICENSE)에 따라 라이선스가 부여됩니다.
 
 ---
 
-**만든 사람:** [강보현, 김건, 김덕원, 김기은](https://github.com/APP-iOS7/MyWay-BDGG)
+<br />
+
+## 🛠 기술 스택
+
+| 분류        | 사용 기술                                 |
+|-------------|--------------------------------------------|
+| **개발 언어** | Flutter (Dart)                            |
+| **상태 관리** | Provider (`ChangeNotifier`)                |
+| **지도/위치** | Google Maps API, Location 패키지 등       |
+| **백엔드**   | Firebase Authentication, Firestore, Storage |
+| **외부 API** | 기상청 단기예보 API, 에어코리아 API, 공원 API       |
+| **기타**     | HTTP 요청, JSON 파싱, 사용자 커스텀 위젯 등 |
+
+---
+
+<br />
+
+## 📁 프로젝트 구조
+
+```
+lib/
+├── 🖥️ screen/ ▶ 주요 UI 화면 구성
+│ ├── home/ ▶ 홈 화면
+│ ├── map/ ▶ 지도 및 산책 경로 표시
+│ ├── result/ ▶ 산책 기록 결과 화면
+│ ├── login/ ▶ 로그인/회원가입 화면
+│ ├── setting/ ▶ 설정 화면
+│ └── notice/ ▶ 공지사항 화면
+│
+├── 📦 model/ ▶ 데이터 모델 - park, step, user 등 도메인 클래스
+│
+├── 📡 provider/ ▶ 상태 관리 (Provider 기반) - 지도, 유저, 날씨, 산책 등
+│
+├── 🔌 services/ ▶ 외부 API 연동 - 공원, 날씨, 대기질 등
+│
+├── 🎨 const/ ▶ 공통 상수, 스타일, 공용 위젯
+│
+└── 🚀 main.dart ▶ 앱 시작점
+
+```
+
+<br />
+
+## 주요기능
+
+|                                                 홈화면                                                  |                                                산책시작                                                 |                                                전체메뉴                                                 |
+| :-----------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------: |
+| <img src="https://github.com/user-attachments/assets/f49101b9-ece7-40f0-b7c5-e5d029ecca61" width="200"> | <img src="https://github.com/user-attachments/assets/f5beb386-dd92-46cf-aa8b-23a6c18185f2" width="200"> | <img src="https://github.com/user-attachments/assets/9639dd40-62b8-465b-b9d5-a843c7db5a93" width="200"> |
+
+|                                          날씨페이지                                           |                                          나의 코스                                           |                                           주간 기록                                           |                                           월간 기록                                           |  
+| :-----------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------: | 
+| <img src="https://github.com/user-attachments/assets/970003dc-8bd1-440f-9039-4eeb0ae52a27" width="200"> | <img src="https://github.com/user-attachments/assets/62e7f494-bcc4-475f-9d3d-84411996a66d" width="200"> |  <img src="https://github.com/user-attachments/assets/5f6f1015-9a47-4cba-8a25-807d12ef379d" width="200"> | <img src="https://github.com/user-attachments/assets/2da6fcbc-049c-436e-b87e-674d2218c322" width="200"> | 
+
+ 
+
+|                                               추천 코스                                               |                                        내 주변 공원                                         |  
+| :-----------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------: | 
+| <img src="https://github.com/user-attachments/assets/cbdcbf16-f7fc-4ca3-902c-e984175696fd" width="200"> | <img src="https://github.com/user-attachments/assets/3a81f4f8-9eb6-4fb9-8c5a-0ec663e9cb14" width="200"> | 
+
+|                                           산책 시작                                           |                                           추천코스 산책 시작                                           |                                           산책저장                                           |                                           산책종료                                           |                                           홈화면 날씨 버튼                                           
+| :-----------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------: 
+| <img src="https://github.com/user-attachments/assets/bc1b7dbb-fd3c-454b-8613-03412b65543f" width="200"> | <img src="https://github.com/user-attachments/assets/48893043-5e49-444d-be20-d097cdacd540" width="200"> | <img src="https://github.com/user-attachments/assets/910edf71-2315-474b-93b9-ee9f9aba45fd" width="200"> | <img src="https://github.com/user-attachments/assets/9f82056f-6d0f-4311-9178-eafac3f9f113" width="200">| <img src="https://github.com/user-attachments/assets/f74514db-bdf9-4ed9-9ff9-d2e40adfe191" width="200">
+<br />
+
+## 🗺️ 앞으로의 계획 (Roadmap)
+
+-    친구와 공동 아트워크
+-    산책 콘텐츠 다양화
+-    산책 챌린지 및 배지 시스템 도입
+-    스마트워치 기기 연동 (Galaxy Watch, Apple Watch)
+
+<br />
+
+## 🧑‍💻  BDGG - 팀원 소개 및 회고
+
+### 강보현  
+
+ <img src="https://github.com/user-attachments/assets/4f77cad0-93e4-49fa-b483-f93962f8ba40" style="width:150px; height:150px;  margin-bottom:10px;">
+
+
+**📝 회고록**  
+> _처음에는 각자의 개발 스타일과 속도가 달라 코드 통합시 충돌이 잦았고, 충돌을 직접 해결하면서 어려움을 겪기도 했습니다. 하지만 단순히 문제를 혼자 해결하기보다, 서로의 코드를 같이 보고 소통하며 맞춰나갔습니다. 
+다른 사람의 코드를 읽고 이해한 뒤 리팩토링하는 과정은 절대 쉽지 않았지만, 더 좋은 결과를 위해 함께 고민하고 합의점을 찾으려 노력한 경험 자체가 의미 있었습니다. 
+무엇보다 제 의견에 귀 기울이고 잘 따라와 준 덕분에, 팀장으로서 많이 배울 수 있었고, 저의 왼팔, 오른팔, (기은님 어디야..?)들에게도 감사합니다._
+
+---
+
+### 김건  
+
+ <img src="https://github.com/user-attachments/assets/af2c71b3-e4a7-4138-8953-01129b81fc3f" style="width:150px; height:150px;  margin-bottom:10px;">
+
+
+**📝 회고록**  
+> _회고를 작성해주세요... ✍️_
+
+---
+
+### 김덕원  
+
+ <img src="https://github.com/user-attachments/assets/b0cca077-ab8b-4f98-9e6e-3c9657640ea1" style="width:150px; height:150px;  margin-bottom:10px;">
+
+
+**📝 회고록**  
+> _회고를 작성해주세요... ✍️_
+
+---
+
+### 김기은  
+
+**사진** 
+
+**📝 회고록**  
+> _회고를 작성해주세요... ✍️_
+
+---
+
+
+
+</div>
+
+</div>
+
+
