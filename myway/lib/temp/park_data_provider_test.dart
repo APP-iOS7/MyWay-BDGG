@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:myway/model/park_info.dart';
-import 'package:myway/services/park_api_service.dart';
-
 import 'park_api_service_test.dart';
 
 class ParkDataProviderTest extends ChangeNotifier {
