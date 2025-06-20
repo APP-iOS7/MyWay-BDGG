@@ -4,13 +4,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:myway/temp/park_recommend_screen.dart';
 import 'package:provider/provider.dart';
-
 import '../../provider/park_data_provider.dart';
 import '../../provider/user_provider.dart';
-import '../../temp/park_data_provider_test.dart';
-import '../../temp/park_test_screen.dart';
 import '/const/colors.dart';
 import 'mycourse_screen.dart';
 import 'park_list_screen.dart';
@@ -41,19 +37,42 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> fetchImages() async {
-    final ref = FirebaseStorage.instance.ref().child('walk_result');
-    final result = await ref.listAll();
-    print(result);
+    try {
+      // 사용자가 로그인되어 있는지 확인
+      final user = _auth.currentUser;
+      if (user == null) {
+        print('사용자가 로그인되어 있지 않습니다. 이미지를 가져올 수 없습니다.');
+        if (mounted) {
+          setState(() {
+            imageUrls = [];
+            isLoading = false;
+          });
+        }
+        return;
+      }
 
-    final urls = await Future.wait(
-      result.items.map((item) => item.getDownloadURL()),
-    );
+      final ref = FirebaseStorage.instance.ref().child('walk_result');
+      final result = await ref.listAll();
+      print('Storage에서 찾은 이미지 개수: ${result.items.length}');
 
-    if (mounted) {
-      setState(() {
-        imageUrls = urls;
-        isLoading = false;
-      });
+      final urls = await Future.wait(
+        result.items.map((item) => item.getDownloadURL()),
+      );
+
+      if (mounted) {
+        setState(() {
+          imageUrls = urls;
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('이미지 가져오기 실패: $e');
+      if (mounted) {
+        setState(() {
+          imageUrls = [];
+          isLoading = false;
+        });
+      }
     }
   }
 
