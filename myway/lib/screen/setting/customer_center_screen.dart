@@ -89,7 +89,7 @@ class CustomerCenterScreen extends StatelessWidget {
                         content: '계정을 삭제합니다. \n삭제한 이후에는 되돌릴 수 없습니다.',
                         onConfirm: () {
                           deleteAccount();
-                          Navigator.pop(context);
+                          Navigator.pushReplacementNamed(context, 'signIn');
                         },
                       );
                     },

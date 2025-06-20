@@ -74,7 +74,7 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Text(
-              '저장된 활동이 없습니다',
+              '저장된 활동이 없습니다.',
               style: TextStyle(
                 fontSize: 20,
                 color: GRAYSCALE_LABEL_800,

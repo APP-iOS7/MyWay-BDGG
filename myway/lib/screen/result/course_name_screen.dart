@@ -424,7 +424,7 @@ class _CourseNameScreenState extends State<CourseNameScreen> {
             Icon(Icons.location_off, size: 16, color: GRAYSCALE_LABEL_800),
             SizedBox(width: 8),
             Text(
-              '반경 2km 이내 공원이 없습니다',
+              '반경 2km 이내 공원이 없습니다.',
               style: TextStyle(
                 color: GRAYSCALE_LABEL_800,
                 fontSize: 14,
