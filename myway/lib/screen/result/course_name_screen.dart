@@ -7,7 +7,6 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:myway/const/colors.dart';
-import 'package:myway/model/park_course_info.dart';
 import 'package:myway/model/park_info.dart';
 import 'package:myway/model/step_model.dart';
 import 'package:myway/provider/park_data_provider.dart';

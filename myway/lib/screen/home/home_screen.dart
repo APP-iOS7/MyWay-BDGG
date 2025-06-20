@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:myway/screen/setting/setting_screen_test.dart';
 import 'package:provider/provider.dart';
 
 import '../../provider/park_data_provider.dart';
@@ -126,7 +127,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   Spacer(),
                   IconButton(
                     onPressed: () {
-                      Navigator.pushNamed(context, 'setting');
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => SettingScreenTest(),
+                        ),
+                      );
                     },
                     icon: Icon(
                       Icons.settings_outlined,

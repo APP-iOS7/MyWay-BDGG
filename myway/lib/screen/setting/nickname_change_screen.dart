@@ -23,6 +23,7 @@ class _NicknameChangeScreenState extends State<NicknameChangeScreen> {
   String? _currentNickname;
   String initialNickname = '';
   String validationLabelString = '';
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -41,6 +42,11 @@ class _NicknameChangeScreenState extends State<NicknameChangeScreen> {
     if (mounted) {
       setState(() {
         _enteredNickname = value;
+        if (value.length < 2 || value.length > 8) {
+          validationLabelString = "닉네임은 2~8자여야 합니다.";
+        } else {
+          validationLabelString = '';
+        }
       });
     }
   }
@@ -71,6 +77,9 @@ class _NicknameChangeScreenState extends State<NicknameChangeScreen> {
   }
 
   void nicknameChange() async {
+    setState(() {
+      _isLoading = true;
+    });
     try {
       final newNickname = _nicknameController.text.trim();
       await context.read<UserProvider>().updateNickname(newNickname);
@@ -82,6 +91,7 @@ class _NicknameChangeScreenState extends State<NicknameChangeScreen> {
           _isNicknameChangeConfirmed = true;
           _currentNicknameHint = "현재 닉네임: $_currentNickname";
           _enteredNickname = "";
+          _isLoading = false;
         });
       }
       Navigator.pop(context);
@@ -95,6 +105,9 @@ class _NicknameChangeScreenState extends State<NicknameChangeScreen> {
       );
     } catch (e) {
       if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
         toastification.show(
           context: context,
           type: ToastificationType.error,
@@ -216,7 +229,9 @@ class _NicknameChangeScreenState extends State<NicknameChangeScreen> {
                           horizontal: 16.0,
                           vertical: (fieldHeight - 20) / 2,
                         ),
+                        counterText: '',
                       ),
+                      maxLength: 8,
                       style: TextStyle(
                         fontSize: 14,
                         color: GRAYSCALE_LABEL_950,
@@ -228,55 +243,69 @@ class _NicknameChangeScreenState extends State<NicknameChangeScreen> {
                 if (!_isNicknameChangeConfirmed)
                   SizedBox(
                     height: fieldHeight,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        if (_enteredNickname.isEmpty ||
-                            _nicknameController.text == initialNickname) {
-                          ();
-                        } else {
-                          _showConfirmationDialog();
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            (_enteredNickname.isEmpty ||
-                                    _nicknameController.text == initialNickname)
-                                ? GRAYSCALE_LABEL_300
-                                : ORANGE_PRIMARY_600,
-                        foregroundColor: WHITE,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(
-                            borderRadiusValue,
-                          ),
-                        ),
-                        padding: EdgeInsets.symmetric(horizontal: 20),
-                        elevation: 0,
-                      ),
-                      child: Text(
-                        "변경하기",
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
+                    child:
+                        _isLoading
+                            ? Center(
+                              child: CircularProgressIndicator(
+                                color: ORANGE_PRIMARY_500,
+                              ),
+                            )
+                            : ElevatedButton(
+                              onPressed: () {
+                                if (_enteredNickname.isEmpty ||
+                                    _nicknameController.text ==
+                                        initialNickname ||
+                                    _enteredNickname.length < 2 ||
+                                    _enteredNickname.length > 8) {
+                                  ();
+                                } else {
+                                  _showConfirmationDialog();
+                                }
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor:
+                                    (_enteredNickname.isEmpty ||
+                                            _nicknameController.text ==
+                                                initialNickname ||
+                                            _enteredNickname.length < 2 ||
+                                            _enteredNickname.length > 8)
+                                        ? GRAYSCALE_LABEL_300
+                                        : ORANGE_PRIMARY_600,
+                                foregroundColor: WHITE,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(
+                                    borderRadiusValue,
+                                  ),
+                                ),
+                                padding: EdgeInsets.symmetric(horizontal: 20),
+                                elevation: 0,
+                              ),
+                              child: Text(
+                                "변경하기",
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
                   ),
               ],
             ),
             if (_enteredNickname.isEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 10.0),
-                child: Text(
-                  "변경할 닉네임을 입력해주세요.",
-                  style: TextStyle(fontSize: 14, color: GRAYSCALE_LABEL_700),
+              if (_enteredNickname.isNotEmpty && !_isNicknameChangeConfirmed)
+                Padding(
+                  padding: const EdgeInsets.only(top: 10.0),
+                  child: Text(
+                    "변경 전 닉네임: $initialNickname",
+                    style: TextStyle(fontSize: 14, color: GRAYSCALE_LABEL_700),
+                  ),
                 ),
-              ),
-            if (_enteredNickname.isNotEmpty && !_isNicknameChangeConfirmed)
+            if (validationLabelString.isNotEmpty)
               Padding(
-                padding: const EdgeInsets.only(top: 10.0),
+                padding: const EdgeInsets.only(top: 8.0),
                 child: Text(
-                  "변경 전 닉네임: $initialNickname",
-                  style: TextStyle(fontSize: 14, color: GRAYSCALE_LABEL_700),
+                  validationLabelString,
+                  style: TextStyle(fontSize: 13, color: Colors.red),
                 ),
               ),
           ],
