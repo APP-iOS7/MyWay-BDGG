@@ -5,6 +5,7 @@ import 'package:myway/firebase_options.dart';
 import 'package:myway/screen/notice/notice_list_screen.dart';
 import 'package:myway/screen/notice/notice_screen.dart';
 import 'package:myway/screen/home/park_list_screen.dart';
+import 'package:myway/temp/park_recommend_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:toastification/toastification.dart';
 
@@ -77,7 +78,7 @@ class MyApp extends StatelessWidget {
           'testMap': (context) => const MapInputScreen(),
           'noticeList': (context) => const NoticeListScreen(),
           'notice': (context) => const NoticeScreen(),
-          'parkList': (context) => const ParkListScreen(initialTabIndex: 0),
+          'parkList': (context) => const ParkRecommendScreen(),
         },
       ),
     );

@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/semantics.dart';
 import 'package:myway/model/park_course_info.dart';
 import 'package:myway/model/park_info.dart';
 import 'package:geolocator/geolocator.dart';
