@@ -80,7 +80,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    '마이웨이',
+                    nickname,
                     style: TextStyle(
                       color: Colors.black,
                       fontSize: 30,
@@ -145,25 +145,9 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text.rich(
-                    TextSpan(
-                      text: nickname,
-                      style: TextStyle(
-                        color: BLUE_SECONDARY_600,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      children: <TextSpan>[
-                        TextSpan(
-                          text: ' 님의 코스',
-                          style: TextStyle(
-                            color: GRAYSCALE_LABEL_800,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
-                      ],
-                    ),
+                  Text(
+                    '나의 산책 코스',
+                    style: TextStyle(color: BLACK, fontSize: 17),
                   ),
                 ],
               ),
@@ -283,175 +267,182 @@ class _HomeScreenState extends State<HomeScreen> {
                               return Container(
                                 width: MediaQuery.of(context).size.width * 0.8,
                                 margin: EdgeInsets.symmetric(horizontal: 10),
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(20),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: GRAYSCALE_LABEL_300,
-                                        spreadRadius: 1,
-                                        blurRadius: 8,
-                                        offset: Offset(1, 1),
-                                      ),
-                                    ],
-                                  ),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(20),
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        imageUrl.isNotEmpty
-                                            ? Image.network(
-                                              result['이미지 Url'],
-                                              width: double.infinity,
-                                              height: 262,
-                                              fit: BoxFit.cover,
-                                            )
-                                            : Container(
-                                              width: double.infinity,
-                                              height: 282,
-                                              color: GRAYSCALE_LABEL_200,
-                                              child: Icon(
-                                                Icons.image_not_supported,
-                                              ),
-                                            ),
-                                        SizedBox(
-                                          width: double.infinity,
-                                          child: Padding(
-                                            padding: const EdgeInsets.all(10),
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  '${result['코스이름']}',
-                                                  style: TextStyle(
-                                                    fontSize: 20,
-                                                    fontWeight: FontWeight.w600,
-                                                  ),
-                                                ),
-                                                Text(
-                                                  '${result['종료시간']}',
-                                                  style: TextStyle(
-                                                    fontSize: 13,
-                                                    fontWeight: FontWeight.w400,
-                                                    color: GRAYSCALE_LABEL_700,
-                                                  ),
-                                                ),
-                                                SizedBox(height: 5),
-                                                Text(
-                                                  '${result['공원명']}' ??
-                                                      "공원 미지정",
-                                                  style: TextStyle(
-                                                    fontSize: 15,
-                                                    fontWeight: FontWeight.w600,
-                                                  ),
-                                                ),
-
-                                                Row(
-                                                  children: [
-                                                    Column(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .start,
-
-                                                      children: [
-                                                        Text(
-                                                          '${result['거리']}',
-                                                          style: TextStyle(
-                                                            fontSize: 25,
-                                                            fontWeight:
-                                                                FontWeight.w600,
-                                                            color:
-                                                                GRAYSCALE_LABEL_900,
-                                                          ),
-                                                        ),
-                                                        Text(
-                                                          '거리(km)',
-                                                          style: TextStyle(
-                                                            color:
-                                                                GRAYSCALE_LABEL_500,
-                                                            fontSize: 12,
-                                                            fontWeight:
-                                                                FontWeight.w500,
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                    SizedBox(width: 20),
-                                                    Row(
-                                                      children: [
-                                                        Column(
-                                                          crossAxisAlignment:
-                                                              CrossAxisAlignment
-                                                                  .start,
-                                                          children: [
-                                                            Text(
-                                                              '${result['소요시간']}',
-                                                              style: TextStyle(
-                                                                fontSize: 25,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w600,
-                                                                color:
-                                                                    GRAYSCALE_LABEL_900,
-                                                              ),
-                                                            ),
-                                                            Text(
-                                                              '시간',
-                                                              style: TextStyle(
-                                                                color:
-                                                                    GRAYSCALE_LABEL_500,
-                                                                fontSize: 12,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w500,
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                        SizedBox(width: 20),
-                                                        Column(
-                                                          crossAxisAlignment:
-                                                              CrossAxisAlignment
-                                                                  .start,
-                                                          children: [
-                                                            Text(
-                                                              '${result['걸음수']}',
-                                                              style: TextStyle(
-                                                                fontSize: 25,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w600,
-                                                                color:
-                                                                    GRAYSCALE_LABEL_900,
-                                                              ),
-                                                            ),
-                                                            Text(
-                                                              '걸음수',
-                                                              style: TextStyle(
-                                                                color:
-                                                                    GRAYSCALE_LABEL_500,
-                                                                fontSize: 12,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w500,
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ],
-                                                ),
-                                              ],
-                                            ),
-                                          ),
+                                child: GestureDetector(
+                                  onTap: () {},
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(20),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: GRAYSCALE_LABEL_300,
+                                          spreadRadius: 1,
+                                          blurRadius: 8,
+                                          offset: Offset(1, 1),
                                         ),
                                       ],
+                                    ),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(20),
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          imageUrl.isNotEmpty
+                                              ? Image.network(
+                                                result['이미지 Url'],
+                                                width: double.infinity,
+                                                height: 262,
+                                                fit: BoxFit.cover,
+                                              )
+                                              : Container(
+                                                width: double.infinity,
+                                                height: 282,
+                                                color: GRAYSCALE_LABEL_200,
+                                                child: Icon(
+                                                  Icons.image_not_supported,
+                                                ),
+                                              ),
+                                          SizedBox(
+                                            width: double.infinity,
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(10),
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    '${result['코스이름']}',
+                                                    style: TextStyle(
+                                                      fontSize: 20,
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    '${result['종료시간']}',
+                                                    style: TextStyle(
+                                                      fontSize: 13,
+                                                      fontWeight:
+                                                          FontWeight.w400,
+                                                      color:
+                                                          GRAYSCALE_LABEL_700,
+                                                    ),
+                                                  ),
+                                                  SizedBox(height: 5),
+                                                  Text(
+                                                    result['공원명'] ?? '공원 미지정',
+                                                    style: TextStyle(
+                                                      fontSize: 15,
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                    ),
+                                                  ),
+
+                                                  Row(
+                                                    children: [
+                                                      Column(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          Text(
+                                                            '${result['거리']}',
+                                                            style: TextStyle(
+                                                              fontSize: 25,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w600,
+                                                              color:
+                                                                  GRAYSCALE_LABEL_900,
+                                                            ),
+                                                          ),
+                                                          Text(
+                                                            '거리(km)',
+                                                            style: TextStyle(
+                                                              color:
+                                                                  GRAYSCALE_LABEL_500,
+                                                              fontSize: 12,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w500,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      SizedBox(width: 20),
+                                                      Row(
+                                                        children: [
+                                                          Column(
+                                                            crossAxisAlignment:
+                                                                CrossAxisAlignment
+                                                                    .start,
+                                                            children: [
+                                                              Text(
+                                                                '${result['소요시간']}',
+                                                                style: TextStyle(
+                                                                  fontSize: 25,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w600,
+                                                                  color:
+                                                                      GRAYSCALE_LABEL_900,
+                                                                ),
+                                                              ),
+                                                              Text(
+                                                                '시간',
+                                                                style: TextStyle(
+                                                                  color:
+                                                                      GRAYSCALE_LABEL_500,
+                                                                  fontSize: 12,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w500,
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                          SizedBox(width: 20),
+                                                          Column(
+                                                            crossAxisAlignment:
+                                                                CrossAxisAlignment
+                                                                    .start,
+                                                            children: [
+                                                              Text(
+                                                                '${result['걸음수']}',
+                                                                style: TextStyle(
+                                                                  fontSize: 25,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w600,
+                                                                  color:
+                                                                      GRAYSCALE_LABEL_900,
+                                                                ),
+                                                              ),
+                                                              Text(
+                                                                '걸음수',
+                                                                style: TextStyle(
+                                                                  color:
+                                                                      GRAYSCALE_LABEL_500,
+                                                                  fontSize: 12,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w500,
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ),

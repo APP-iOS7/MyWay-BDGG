@@ -55,7 +55,7 @@ class _MycourseScreenState extends State<MycourseScreen> {
       style: ToastificationStyle.flat,
       alignment: Alignment.bottomCenter,
       autoCloseDuration: Duration(seconds: 2),
-      title: Text('$deletedCount개의 코스 삭제완료'),
+      title: Text('$deletedCount개의 코스 삭제완료.'),
     );
   }
 

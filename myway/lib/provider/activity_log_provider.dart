@@ -384,12 +384,12 @@ class ActivityLogProvider extends ChangeNotifier {
   String getNoDataMessage() {
     switch (_currentDataStatus) {
       case DataStatus.noDataAtAll:
-        return '데이터가 없습니다';
+        return '데이터가 없습니다.';
       case DataStatus.noDataInPeriod:
         if (_selectedPeriod == ActivityPeriod.weekly) {
-          return '이 주에는 데이터가 없습니다';
+          return '이 주에는 데이터가 없습니다.';
         } else {
-          return '이 달에는 데이터가 없습니다';
+          return '이 달에는 데이터가 없습니다.';
         }
       case DataStatus.hasData:
         return '';
