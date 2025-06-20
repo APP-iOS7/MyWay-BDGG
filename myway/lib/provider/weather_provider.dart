@@ -41,6 +41,9 @@ class WeatherProvider extends ChangeNotifier {
         return;
       }
 
+      // 디버깅 (개발 중에만 사용)
+      await debugLocation();
+
       final current = await location.getLocation();
       final grid = convertToGrid(current.latitude!, current.longitude!);
       cityName = await _getAddressFromCoordinates(
@@ -86,7 +89,19 @@ class WeatherProvider extends ChangeNotifier {
   Future<String> _getAddressFromCoordinates(double lat, double lon) async {
     try {
       final placemarks = await placemarkFromCoordinates(lat, lon);
-      final adminArea = placemarks.first.administrativeArea ?? '서울특별시';
+      if (placemarks.isEmpty) {
+        print('Placemark 결과 없음');
+        return '위치 불명';
+      }
+
+      final placemark = placemarks.first;
+      final adminArea = placemark.administrativeArea ?? '';
+
+      print('역지오코딩 결과:');
+      print('- administrativeArea: $adminArea');
+      print('- locality: ${placemark.locality}');
+      print('- subAdministrativeArea: ${placemark.subAdministrativeArea}');
+      print('- thoroughfare: ${placemark.thoroughfare}');
 
       const regionMap = {
         '서울특별시': '서울',
@@ -99,19 +114,61 @@ class WeatherProvider extends ChangeNotifier {
         '세종특별자치시': '세종',
         '경기도': '경기',
         '강원도': '강원',
+        '강원특별자치도': '강원',
         '충청북도': '충북',
         '충청남도': '충남',
         '전라북도': '전북',
+        '전북특별자치도': '전북',
         '전라남도': '전남',
         '경상북도': '경북',
         '경상남도': '경남',
         '제주특별자치도': '제주',
       };
 
-      return '서울'; // fallback (혹시라도 실패할 경우)
+      final mappedRegion = regionMap[adminArea];
+      if (mappedRegion != null) {
+        print('지역 매핑 성공: $adminArea -> $mappedRegion');
+        return mappedRegion;
+      }
+
+      if (adminArea.isNotEmpty) {
+        print('매핑되지 않은 지역: $adminArea (원본 반환)');
+        return adminArea;
+      }
+
+      final locality = placemark.locality ?? '';
+      if (locality.isNotEmpty) {
+        print('locality 사용: $locality');
+        return locality;
+      }
+
+      print('위치 정보 부족 - 좌표: ($lat, $lon)');
+      return '위치 불명';
     } catch (e) {
       print('역지오코딩 실패: $e');
+      print('실패한 좌표: ($lat, $lon)');
       return '위치 불명';
+    }
+  }
+
+  Future<void> debugLocation() async {
+    try {
+      final current = await location.getLocation();
+      print('=== 위치 디버깅 ===');
+      print('위도: ${current.latitude}');
+      print('경도: ${current.longitude}');
+      print('정확도: ${current.accuracy}m');
+      print('위치 제공자: ${current.provider}');
+
+      if (current.latitude != null && current.longitude != null) {
+        final cityName = await _getAddressFromCoordinates(
+          current.latitude!,
+          current.longitude!,
+        );
+        print('최종 도시명: $cityName');
+      }
+    } catch (e) {
+      print('위치 디버깅 실패: $e');
     }
   }
 
@@ -154,6 +211,8 @@ class WeatherProvider extends ChangeNotifier {
 
     if (data != null) {
       final items = data['response']['body']['items']['item'] as List<dynamic>;
+      String currentRain = '0';
+
       for (var item in items) {
         switch (item['category']) {
           case 'T1H':
@@ -163,15 +222,72 @@ class WeatherProvider extends ChangeNotifier {
             humidity = item['obsrValue'];
             break;
           case 'RN1':
-            rainProb =
-                (item['obsrValue'] != '0') ? '비 ${item['obsrValue']}mm' : '0';
+            currentRain = item['obsrValue'];
+            rainProb = (currentRain != '0') ? '비 ${currentRain}mm' : '0';
+            break;
+          case 'PTY':
+            if (item['obsrValue'] != '0') {
+              _updateWeatherFromPty(item['obsrValue'], now);
+              return;
+            }
             break;
         }
+      }
+
+      if (currentRain != '0' &&
+          double.tryParse(currentRain) != null &&
+          double.parse(currentRain) > 0) {
+        weatherStatus = '비';
+        weatherIconPath = 'assets/icons/weather_rain.svg';
+        print('실시간 강수량 감지: ${currentRain}mm - 비 아이콘으로 설정');
       }
     }
   }
 
+  void _updateWeatherFromPty(String pty, DateTime now) {
+    switch (pty) {
+      case '1':
+        weatherStatus = '비';
+        weatherIconPath = _getWeatherIconPath(
+          '비',
+          WeatherServiceHelper.isNightTime(now),
+        );
+        break;
+      case '2':
+        weatherStatus = '비/눈';
+        weatherIconPath = _getWeatherIconPath(
+          '비',
+          WeatherServiceHelper.isNightTime(now),
+        );
+        break;
+      case '3':
+        weatherStatus = '눈';
+        weatherIconPath = _getWeatherIconPath(
+          '눈',
+          WeatherServiceHelper.isNightTime(now),
+        );
+        break;
+      case '4':
+        weatherStatus = '소나기';
+        weatherIconPath = _getWeatherIconPath(
+          '소나기',
+          WeatherServiceHelper.isNightTime(now),
+        );
+        break;
+      default:
+        break;
+    }
+  }
+
   Future<void> _fetchSkyPty(String nx, String ny) async {
+    if (weatherStatus == '비' ||
+        weatherStatus == '눈' ||
+        weatherStatus == '소나기' ||
+        weatherStatus == '천둥') {
+      print('실시간 강수 상태 유지: $weatherStatus');
+      return;
+    }
+
     final now = DateTime.now();
     final baseDateTime = WeatherServiceHelper.getSafeForecastDateTime(now);
     final targetDateTime = WeatherServiceHelper.getFcstTargetDateTime(now);
@@ -188,6 +304,19 @@ class WeatherProvider extends ChangeNotifier {
         final items =
             data['response']['body']['items']['item'] as List<dynamic>;
 
+        final currentPtyItem = items.firstWhere(
+          (e) =>
+              e['category'] == 'PTY' &&
+              e['fcstTime'] == targetDateTime['time'] &&
+              e['fcstDate'] == targetDateTime['date'],
+          orElse: () => null,
+        );
+
+        if (currentPtyItem != null && currentPtyItem['fcstValue'] != '0') {
+          _updateWeatherFromPty(currentPtyItem['fcstValue'], now);
+          return;
+        }
+
         final skyItem = items.firstWhere(
           (e) =>
               e['category'] == 'SKY' &&
@@ -196,18 +325,9 @@ class WeatherProvider extends ChangeNotifier {
           orElse: () => null,
         );
 
-        final ptyItem = items.firstWhere(
-          (e) =>
-              e['category'] == 'PTY' &&
-              e['fcstTime'] == targetDateTime['time'] &&
-              e['fcstDate'] == targetDateTime['date'],
-          orElse: () => null,
-        );
-
-        if (skyItem != null && ptyItem != null) {
+        if (skyItem != null) {
           final sky = skyItem['fcstValue'];
-          final pty = ptyItem['fcstValue'];
-          weatherStatus = _getWeatherStatus(sky, pty);
+          weatherStatus = _getWeatherStatusFromSky(sky);
           weatherIconPath = _getWeatherIconPath(
             weatherStatus,
             WeatherServiceHelper.isNightTime(now),
@@ -218,10 +338,22 @@ class WeatherProvider extends ChangeNotifier {
         }
       } catch (e) {
         print('SKY/PTY 데이터 파싱 오류: $e');
-
         weatherStatus = '정보 없음';
         weatherIconPath = 'assets/icons/weather_cloud.svg';
       }
+    }
+  }
+
+  String _getWeatherStatusFromSky(String sky) {
+    switch (sky) {
+      case '1':
+        return '맑음';
+      case '3':
+        return '구름조금';
+      case '4':
+        return '흐림';
+      default:
+        return '맑음';
     }
   }
 
@@ -269,7 +401,6 @@ class WeatherProvider extends ChangeNotifier {
       );
       print('폴백: ${closestHour}시 데이터 사용 (목표: ${targetHour}시)');
     } else {
-      // 마지막 폴백
       weatherStatus = '정보 없음';
       weatherIconPath = 'assets/icons/weather_cloud.svg';
       print('사용 가능한 날씨 데이터 없음');

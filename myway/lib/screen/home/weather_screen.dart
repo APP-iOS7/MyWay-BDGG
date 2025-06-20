@@ -122,6 +122,7 @@ class WeatherScreen extends StatelessWidget {
                                       value:
                                           weatherProvider.rainProb.contains('비')
                                               ? weatherProvider.rainProb
+                                                  .replaceAll('비', '')
                                               : '${weatherProvider.rainProb}%',
                                       color: BLUE_SECONDARY_800,
                                     ),
@@ -205,12 +206,16 @@ class WeatherScreen extends StatelessWidget {
             children: [
               Icon(icon, size: 40, color: color),
               const SizedBox(width: 5),
-              AutoSizeText(
-                value,
-                style: TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.bold,
-                  color: color,
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerRight,
+                child: Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                  ),
                 ),
               ),
             ],
