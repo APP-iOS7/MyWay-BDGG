@@ -1,6 +1,3 @@
-import 'dart:typed_data';
-import 'dart:ui';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -83,19 +80,35 @@ class _CourseNameScreenState extends State<CourseNameScreen> {
 
   Future<String?> imageUpload() async {
     try {
-      // Storage업로드
+      // 사용자가 로그인되어 있는지 확인
+      final user = _auth.currentUser;
+      if (user == null) {
+        print('사용자가 로그인되어 있지 않습니다. 이미지를 업로드할 수 없습니다.');
+        throw Exception('로그인이 필요합니다.');
+      }
+      // Storage업로드 (사용자별 폴더 구조 사용)
       final fileName =
           'walk_result_map${DateTime.now().millisecondsSinceEpoch}.png';
-      final ref = FirebaseStorage.instance.ref().child('walk_result/$fileName');
+      final ref = FirebaseStorage.instance.ref().child(
+        'users/${user.uid}walk_result/$fileName',
+      );
 
+      print('이미지 업로드 시작: $fileName');
       final uploadTask = await ref.putData(widget.courseImage);
 
       // 업로드 완료 후 URL 얻기
       final downloadUrl = await uploadTask.ref.getDownloadURL();
+      print('이미지 업로드 성공: $downloadUrl');
       return downloadUrl;
+    } on FirebaseException catch (e) {
+      print('Firebase Storage 오류: ${e.code} - ${e.message}');
+      if (e.code == 'unauthorized') {
+        throw Exception('Storage 접근 권한이 없습니다. 관리자에게 문의하세요.');
+      }
+      throw Exception('업로드 실패: ${e.message}');
     } catch (e) {
       print('업로드 및 저장 실패: $e');
-      return null;
+      throw Exception('업로드 실패: $e');
     }
   }
 

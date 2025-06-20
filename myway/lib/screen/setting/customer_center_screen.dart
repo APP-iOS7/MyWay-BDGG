@@ -5,28 +5,68 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../const/colors.dart';
 
-class CustomerCenterScreen extends StatelessWidget {
+class CustomerCenterScreen extends StatefulWidget {
   const CustomerCenterScreen({super.key});
 
+  @override
+  State<CustomerCenterScreen> createState() => _CustomerCenterScreenState();
+}
+
+class _CustomerCenterScreenState extends State<CustomerCenterScreen> {
   Future<void> deleteAccount() async {
+    if (!mounted) return; // 위젯이 마운트되어 있는지 확인
+    
     try {
       final user = FirebaseAuth.instance.currentUser;
 
       if (user != null) {
         await user.delete();
         print('계정이 성공적으로 삭제되었습니다.');
+        
+        // 위젯이 여전히 마운트되어 있는지 다시 확인
+        if (mounted) {
+          Navigator.pushNamedAndRemoveUntil(context, 'signIn', (route) => false);
+        }
       }
     } on FirebaseAuthException catch (e) {
       if (e.code == 'requires-recent-login') {
         print('로그인 이후에만 삭제할 수 있습니다. 다시 로그인 후 시도하세요.');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('다시 로그인 후 시도해주세요.'),
+              backgroundColor: RED_DANGER_TEXT_50,
+            ),
+          );
+        }
       } else {
         print('계정 삭제 실패: ${e.message}');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('계정 삭제 실패: ${e.message}'),
+              backgroundColor: RED_DANGER_TEXT_50,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      print('예상치 못한 오류: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('예상치 못한 오류가 발생했습니다.'),
+            backgroundColor: RED_DANGER_TEXT_50,
+          ),
+        );
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final parentContext = context;
+
     return Scaffold(
       backgroundColor: WHITE,
       appBar: AppBar(
@@ -81,15 +121,16 @@ class CustomerCenterScreen extends StatelessWidget {
                 onTap: () {
                   showDialog(
                     context: context,
-                    builder: (context) {
+                    builder: (dialogContext) {
                       return ConfirmationDialog(
                         title: '회원탈퇴',
                         confirmText: '네',
                         cancelText: '아니요',
                         content: '계정을 삭제합니다. \n삭제한 이후에는 되돌릴 수 없습니다.',
-                        onConfirm: () {
-                          deleteAccount();
-                          Navigator.pushReplacementNamed(context, 'signIn');
+                        onConfirm: () async {
+                          Navigator.of(dialogContext).pop();
+                          // 다이얼로그를 닫은 후 알맞은 시점에 계정 삭제 실행
+                          await deleteAccount();
                         },
                       );
                     },
