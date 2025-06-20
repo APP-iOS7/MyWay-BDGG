@@ -93,31 +93,71 @@ class ParkDataProviderTest extends ChangeNotifier {
     }
   }
 
-  /// 위치 정보 필요 시
-  Future<void> fetchCurrentPosition() async {
-    try {
-      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) throw Exception('위치 서비스 꺼짐');
+  // /// 위치 정보 필요 시
+  // Future<void> fetchCurrentPosition() async {
+  //   try {
+  //     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+  //     if (!serviceEnabled) throw Exception('위치 서비스 꺼짐');
 
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) {
-          throw Exception('위치 권한 거부됨');
-        }
-      }
+  //     LocationPermission permission = await Geolocator.checkPermission();
+  //     if (permission == LocationPermission.denied) {
+  //       permission = await Geolocator.requestPermission();
+  //       if (permission == LocationPermission.denied) {
+  //         throw Exception('위치 권한 거부됨');
+  //       }
+  //     }
 
-      if (permission == LocationPermission.deniedForever) {
-        throw Exception('위치 권한 영구 거부됨');
-      }
+  //     if (permission == LocationPermission.deniedForever) {
+  //       throw Exception('위치 권한 영구 거부됨');
+  //     }
 
-      _currentPosition = await Geolocator.getCurrentPosition();
-      print('현재 위치: $_currentPosition');
-      notifyListeners();
-    } catch (e) {
-      _apiError = '위치 정보 오류: $e';
-    }
-  }
+  //     _currentPosition = await Geolocator.getCurrentPosition();
+  //     print('현재 위치: $_currentPosition');
+  //     notifyListeners();
+  //   } catch (e) {
+  //     _apiError = '위치 정보 오류: $e';
+  //   }
+  // }
+
+  // Future<void> fetchNearbyParks2km() async {
+  //   _isLoadingNearbyParks = true;
+  //   _apiError = '';
+  //   _nearbyParks.clear();
+  //   notifyListeners();
+  //   print('현재 위치: $_currentPosition');
+
+  //   try {
+  //     _currentPosition = await Geolocator.getCurrentPosition();
+
+  //     final placemarks = await placemarkFromCoordinates(
+  //       _currentPosition!.latitude,
+  //       _currentPosition!.longitude,
+  //     );
+  //     final region = placemarks.first;
+  //     final targetInsttNm = '${region.administrativeArea} ${region.locality}';
+
+  //     final parks = await _parkApiService.fetchParksByRegion(
+  //       targetInsttNm: targetInsttNm,
+  //     );
+
+  //     await Future.wait(
+  //       parks.map((p) => p.calculateDistance(_currentPosition!)),
+  //     );
+
+  //     _nearbyParks =
+  //         parks.where((p) => p.distanceKm < 2.0).toList()
+  //           ..sort((a, b) => a.distanceKm.compareTo(b.distanceKm));
+
+  //     for (final p in parks) {
+  //       print('${p.name} → ${p.distanceKm.toStringAsFixed(2)}km');
+  //     }
+  //   } catch (e) {
+  //     _apiError = '2km 이내 공원 불러오기 실패: $e';
+  //   } finally {
+  //     _isLoadingNearbyParks = false;
+  //     notifyListeners();
+  //   }
+  // }
 
   Future<void> fetchNearbyParks2km() async {
     _isLoadingNearbyParks = true;
@@ -126,32 +166,74 @@ class ParkDataProviderTest extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _currentPosition = await Geolocator.getCurrentPosition();
+      // 🔥 위치 권한 체크 추가
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        throw Exception('위치 서비스가 비활성화되어 있습니다. 설정에서 위치 서비스를 활성화해주세요.');
+      }
 
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          throw Exception('위치 권한이 거부되었습니다. 권한을 허용해주세요.');
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        throw Exception('위치 권한이 영구적으로 거부되었습니다. 설정에서 권한을 활성화해주세요.');
+      }
+
+      // 현재 위치 가져오기
+      _currentPosition = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+        timeLimit: const Duration(seconds: 10),
+      );
+      print(
+        '현재 위치: ${_currentPosition!.latitude}, ${_currentPosition!.longitude}',
+      );
+
+      // 주소 정보 가져오기
       final placemarks = await placemarkFromCoordinates(
         _currentPosition!.latitude,
         _currentPosition!.longitude,
       );
+
+      if (placemarks.isEmpty) {
+        throw Exception('현재 위치의 주소 정보를 가져올 수 없습니다.');
+      }
+
       final region = placemarks.first;
       final targetInsttNm = '${region.administrativeArea} ${region.locality}';
+      print('검색 지역: $targetInsttNm');
 
+      // 해당 지역의 공원들 가져오기
       final parks = await _parkApiService.fetchParksByRegion(
         targetInsttNm: targetInsttNm,
       );
+      print('가져온 공원 수: ${parks.length}');
 
+      // 각 공원의 거리 계산
       await Future.wait(
         parks.map((p) => p.calculateDistance(_currentPosition!)),
       );
 
+      // 2km 이내 공원 필터링 및 정렬
       _nearbyParks =
-          parks.where((p) => p.distanceKm < 2.0).toList()
+          parks.where((p) => p.distanceKm <= 2.0).toList()
             ..sort((a, b) => a.distanceKm.compareTo(b.distanceKm));
 
-      for (final p in parks) {
+      print('2km 이내 공원 수: ${_nearbyParks.length}');
+      for (final p in _nearbyParks) {
         print('${p.name} → ${p.distanceKm.toStringAsFixed(2)}km');
+      }
+
+      if (_nearbyParks.isEmpty) {
+        _apiError = '2km 이내에 공원이 없습니다.';
       }
     } catch (e) {
       _apiError = '2km 이내 공원 불러오기 실패: $e';
+      print('에러 상세: $e');
     } finally {
       _isLoadingNearbyParks = false;
       notifyListeners();
