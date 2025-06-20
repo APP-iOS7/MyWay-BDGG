@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:myway/const/colors.dart';
 import 'package:myway/temp/park_api_service_test.dart';
 import 'package:myway/temp/park_data_provider_test.dart';
 import 'package:provider/provider.dart';
@@ -41,9 +42,14 @@ class _ParkListScreenTestState extends State<ParkListScreenTest>
         provider.loadNextParkPage();
       }
     });
-    _scrollController.addListener(() {
+    // 탭 변경 리스너 추가
+    _tabController.addListener(() {
       if (_tabController.index == 1) {
-        context.read<ParkDataProviderTest>().fetchNearbyParks2km();
+        // 탭 1(2km 이내)로 변경될 때 근처 공원 로딩
+        final provider = context.read<ParkDataProviderTest>();
+        if (provider.nearbyParks.isEmpty && !provider.isLoadingNearbyParks) {
+          provider.fetchNearbyParks2km();
+        }
       }
     });
   }
@@ -79,9 +85,63 @@ class _ParkListScreenTestState extends State<ParkListScreenTest>
           // 🟦 Tab 0: 전체 공원 목록 (pagination)
           _buildParkListTab(provider),
 
-          _buildParkListView(parks: nearbyParks, showLoading: false),
+          // _buildNearbyParks2km(provider),
+          _buildNearbyParksTab(provider),
         ],
       ),
+    );
+  }
+
+  Widget _buildNearbyParksTab(ParkDataProviderTest provider) {
+    final nearbyParks = provider.nearbyParks;
+    final isLoadingNearby = provider.isLoadingNearbyParks;
+    final error = provider.apiError;
+
+    return Column(
+      children: [
+        // 수동 새로고침 버튼
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: ElevatedButton.icon(
+            onPressed:
+                isLoadingNearby
+                    ? null
+                    : () {
+                      provider.fetchNearbyParks2km();
+                    },
+            icon: const Icon(Icons.refresh),
+            label: const Text('2km 이내 공원 찾기'),
+          ),
+        ),
+
+        // 에러 표시
+        if (error.isNotEmpty && !isLoadingNearby)
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text(
+              error,
+              style: TextStyle(color: Colors.red),
+              textAlign: TextAlign.center,
+            ),
+          ),
+
+        // 로딩 또는 리스트 표시
+        Expanded(
+          child:
+              isLoadingNearby
+                  ? const Center(
+                    child: CircularProgressIndicator(color: ORANGE_PRIMARY_500),
+                  )
+                  : nearbyParks.isEmpty
+                  ? const Center(
+                    child: Text(
+                      '2km 이내에 공원이 없거나\n위치 권한을 확인 해주세요.',
+                      textAlign: TextAlign.center,
+                    ),
+                  )
+                  : _buildParkListView(parks: nearbyParks, showLoading: false),
+        ),
+      ],
     );
   }
 
@@ -94,7 +154,9 @@ class _ParkListScreenTestState extends State<ParkListScreenTest>
         //   padding: const EdgeInsets.symmetric(horizontal: 20),
         //   child: _buildParkSearchBarAndFilters(provider),
         // ),
-        _buildParkListView(parks: allParks, showLoading: hasMoreAll),
+        Expanded(
+          child: _buildParkListView(parks: allParks, showLoading: hasMoreAll),
+        ),
       ],
     );
   }

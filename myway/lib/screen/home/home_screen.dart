@@ -546,9 +546,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder:
-                                    (context) =>
-                                        ParkListScreen(initialTabIndex: 0),
+                                builder: (context) => ParkListScreenTest(),
+                                // ParkListScreen(initialTabIndex: 0),
                               ),
                             );
                           },

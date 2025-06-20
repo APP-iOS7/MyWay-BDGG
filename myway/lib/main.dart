@@ -5,6 +5,7 @@ import 'package:myway/firebase_options.dart';
 import 'package:myway/screen/notice/notice_list_screen.dart';
 import 'package:myway/screen/notice/notice_screen.dart';
 import 'package:myway/screen/home/park_list_screen.dart';
+import 'package:myway/temp/park_test_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:toastification/toastification.dart';
 
