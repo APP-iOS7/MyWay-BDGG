@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
@@ -116,7 +117,7 @@ class WeatherScreen extends StatelessWidget {
                                   const SizedBox(width: 10),
                                   Expanded(
                                     child: _buildInfoCard(
-                                      label: "강수확률",
+                                      label: "강수량",
                                       icon: Icons.water_drop,
                                       value:
                                           weatherProvider.rainProb.contains('비')
@@ -204,7 +205,7 @@ class WeatherScreen extends StatelessWidget {
             children: [
               Icon(icon, size: 40, color: color),
               const SizedBox(width: 5),
-              Text(
+              AutoSizeText(
                 value,
                 style: TextStyle(
                   fontSize: 30,

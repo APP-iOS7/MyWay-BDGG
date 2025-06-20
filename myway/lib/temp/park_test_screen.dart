@@ -73,9 +73,10 @@ class _ParkListScreenTestState extends State<ParkListScreenTest>
     return Scaffold(
       appBar: AppBar(
         title: const Text('공원 목록'),
+        centerTitle: true,
         bottom: TabBar(
           controller: _tabController,
-          tabs: const [Tab(text: '전체'), Tab(text: '2km 이내')],
+          tabs: const [Tab(text: '2km 이내'), Tab(text: '전체')],
         ),
       ),
       body: TabBarView(

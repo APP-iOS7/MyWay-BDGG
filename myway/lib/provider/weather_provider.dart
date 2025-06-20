@@ -88,23 +88,25 @@ class WeatherProvider extends ChangeNotifier {
       final placemarks = await placemarkFromCoordinates(lat, lon);
       final adminArea = placemarks.first.administrativeArea ?? '서울특별시';
 
-      if (adminArea.contains('서울')) return '서울';
-      if (adminArea.contains('부산')) return '부산';
-      if (adminArea.contains('대구')) return '대구';
-      if (adminArea.contains('인천')) return '인천';
-      if (adminArea.contains('광주')) return '광주';
-      if (adminArea.contains('대전')) return '대전';
-      if (adminArea.contains('울산')) return '울산';
-      if (adminArea.contains('세종')) return '세종';
-      if (adminArea.contains('경기')) return '경기';
-      if (adminArea.contains('강원')) return '강원';
-      if (adminArea.contains('충북')) return '충북';
-      if (adminArea.contains('충남')) return '충남';
-      if (adminArea.contains('전북')) return '전북';
-      if (adminArea.contains('전남')) return '전남';
-      if (adminArea.contains('경북')) return '경북';
-      if (adminArea.contains('경남')) return '경남';
-      if (adminArea.contains('제주')) return '제주';
+      const regionMap = {
+        '서울특별시': '서울',
+        '부산광역시': '부산',
+        '대구광역시': '대구',
+        '인천광역시': '인천',
+        '광주광역시': '광주',
+        '대전광역시': '대전',
+        '울산광역시': '울산',
+        '세종특별자치시': '세종',
+        '경기도': '경기',
+        '강원도': '강원',
+        '충청북도': '충북',
+        '충청남도': '충남',
+        '전라북도': '전북',
+        '전라남도': '전남',
+        '경상북도': '경북',
+        '경상남도': '경남',
+        '제주특별자치도': '제주',
+      };
 
       return '서울'; // fallback (혹시라도 실패할 경우)
     } catch (e) {
