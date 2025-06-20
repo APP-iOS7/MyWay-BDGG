@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:myway/model/park_course_info.dart';
+import 'package:myway/screen/alert/dialog.dart';
 import 'package:myway/screen/result/course_name_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:toastification/toastification.dart';
@@ -431,12 +432,25 @@ class _MapScreenState extends State<MapScreen>
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
-            // 뒤로가기 버튼을 누르면 Provider의 상태 변경
-            Provider.of<MapProvider>(
-              context,
-              listen: false,
-            ).showCourseRecommendBottomSheet();
-            Navigator.of(context).pop();
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return ConfirmationDialog(
+                  title: '화면을 나가시겠습니까?',
+                  content: '진행 중인 정보가 사라질 수 있습니다.',
+                  cancelText: '취소',
+                  confirmText: '확인',
+                  onConfirm: () {
+                    Provider.of<MapProvider>(
+                      context,
+                      listen: false,
+                    ).showCourseRecommendBottomSheet();
+                    Navigator.of(context).pop(); // 다이얼로그 닫기
+                    Navigator.pushReplacementNamed(context, 'home'); // 실제 뒤로가기
+                  },
+                );
+              },
+            );
           },
         ),
         title: Text(

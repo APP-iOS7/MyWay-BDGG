@@ -6,7 +6,7 @@ import 'package:myway/firebase_options.dart';
 import 'package:myway/screen/notice/notice_list_screen.dart';
 import 'package:myway/screen/notice/notice_screen.dart';
 import 'package:myway/screen/home/park_list_screen.dart';
-import 'package:myway/screen/setting/setting_screen_test.dart';
+import 'package:myway/screen/setting/setting_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:toastification/toastification.dart';
 
@@ -25,7 +25,6 @@ import 'screen/setting/nickname_change_screen.dart';
 import 'screen/setting/change_password_screen.dart';
 import 'screen/login/signIn_screen.dart';
 import 'screen/setting/customer_center_screen.dart';
-import 'screen/setting/setting_screen.dart';
 import 'temp/park_data_provider_test.dart';
 import 'temp/test_drawer.dart';
 import 'temp/test_map.dart';
@@ -77,7 +76,7 @@ class MyApp extends StatelessWidget {
           'home': (context) => const HomeScreen(),
           'map': (context) => const MapScreen(),
           'findPassword': (context) => const FindPasswordScreen(),
-          'setting': (context) => const SettingScreenTest(),
+          'setting': (context) => const SettingScreen(),
           'changeNickname': (context) => const NicknameChangeScreen(),
           'changePassword': (context) => const ChangePasswordScreen(),
           'customerCenter': (context) => const CustomerCenterScreen(),
