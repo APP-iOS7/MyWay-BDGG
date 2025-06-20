@@ -183,7 +183,7 @@ class _CourseNameScreenState extends State<CourseNameScreen> {
                                   },
                                   cursorColor: ORANGE_PRIMARY_500,
                                   decoration: InputDecoration(
-                                    labelText: '코스 이름을 입력해주세요',
+                                    labelText: '코스 이름을 입력해주세요(예) 광장공원 코스',
                                     labelStyle: TextStyle(
                                       color: GRAYSCALE_LABEL_600,
                                     ),

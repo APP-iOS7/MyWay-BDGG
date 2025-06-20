@@ -32,24 +32,12 @@ class _StartTrackingBottomsheetState extends State<StartTrackingBottomsheet> {
       snap: false,
       builder: (BuildContext context, scrollSheetController) {
         return Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-          ),
+          color: WHITE,
           child: Padding(
             padding: const EdgeInsets.only(left: 20.0, right: 20.0),
             child: Column(
               children: [
-                SizedBox(height: 2),
-                Container(
-                  width: 80,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: GRAYSCALE_LABEL_300,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  margin: const EdgeInsets.only(top: 8, bottom: 8),
-                ),
+                SizedBox(height: 20),
                 Container(
                   padding: EdgeInsets.all(18),
                   width: double.infinity,
