@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:myway/firebase_options.dart';
 import 'package:myway/screen/notice/notice_list_screen.dart';
 import 'package:myway/screen/notice/notice_screen.dart';
@@ -25,6 +26,7 @@ import 'screen/setting/change_password_screen.dart';
 import 'screen/login/signIn_screen.dart';
 import 'screen/setting/customer_center_screen.dart';
 import 'screen/setting/setting_screen.dart';
+import 'screen/setting/setting_screen_test.dart';
 import 'temp/park_data_provider_test.dart';
 import 'temp/test_drawer.dart';
 import 'temp/test_map.dart';
@@ -32,6 +34,12 @@ import 'temp/test_map.dart';
 Future<void> main() async {
   print('commit for stable version');
   WidgetsFlutterBinding.ensureInitialized();
+
+  // 세로 방향 고정
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(
     MultiProvider(
@@ -70,7 +78,7 @@ class MyApp extends StatelessWidget {
           'home': (context) => const HomeScreen(),
           'map': (context) => const MapScreen(),
           'findPassword': (context) => const FindPasswordScreen(),
-          'setting': (context) => const SettingScreen(),
+          'setting': (context) => const SettingScreenTest(),
           'changeNickname': (context) => const NicknameChangeScreen(),
           'changePassword': (context) => const ChangePasswordScreen(),
           'customerCenter': (context) => const CustomerCenterScreen(),
