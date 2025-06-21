@@ -178,7 +178,30 @@ class _HomeScreenState extends State<HomeScreen> {
                 if (!snapshot.hasData || !snapshot.data!.exists) {
                   return SizedBox(
                     height: 430,
-                    child: Center(child: Text('저장된 기록이 없습니다.')),
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            '저장된 기록이 없습니다.',
+                            style: TextStyle(
+                              color: GRAYSCALE_LABEL_800,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            '산책을 시작해서 나만의 코스를 만들어보세요!',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: GRAYSCALE_LABEL_600,
+                              fontWeight: FontWeight.w500,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   );
                 }
 

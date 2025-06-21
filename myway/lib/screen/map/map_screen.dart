@@ -13,7 +13,6 @@ import '/const/colors.dart';
 import '/screen/map/course_recommend_bottomsheet.dart';
 import '/provider/map_provider.dart';
 import 'start_tracking_bottomsheet.dart';
-import '/provider/park_data_provider.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});

@@ -490,56 +490,54 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           builder: (context, userProvider, child) {
                             return ElevatedButton(
                               onPressed:
-                                  _allFieldsFilled
+                                  _allFieldsFilled && !userProvider.isLoading
                                       ? () async {
                                         // 회원가입 로직
-                                        if (!userProvider.isLoading) {
-                                          bool
-                                          success = await userProvider.signUp(
-                                            email: _emailController.text,
-                                            password: _passwordController.text,
-                                            checkPassword:
-                                                _confirmPasswordController.text,
-                                            username: _nicknameController.text,
-                                          );
-                                          ScaffoldMessenger.of(
-                                            context,
-                                          ).hideCurrentSnackBar();
+                                        bool
+                                        success = await userProvider.signUp(
+                                          email: _emailController.text,
+                                          password: _passwordController.text,
+                                          checkPassword:
+                                              _confirmPasswordController.text,
+                                          username: _nicknameController.text,
+                                        );
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).hideCurrentSnackBar();
 
-                                          if (success) {
-                                            toastification.show(
-                                              context: context,
-                                              type: ToastificationType.success,
-                                              style: ToastificationStyle.flat,
-                                              alignment: Alignment.bottomCenter,
-                                              autoCloseDuration: Duration(
-                                                seconds: 2,
-                                              ),
-                                              title: Text(
-                                                '회원가입 성공! 이름: ${userProvider.currentUser?.displayName}',
-                                              ),
-                                            );
-                                            Navigator.pushReplacement(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder:
-                                                    (context) => HomeScreen(),
-                                              ),
-                                            );
-                                          } else {
-                                            toastification.show(
-                                              context: context,
-                                              type: ToastificationType.error,
-                                              style: ToastificationStyle.flat,
-                                              alignment: Alignment.bottomCenter,
-                                              autoCloseDuration: Duration(
-                                                seconds: 2,
-                                              ),
-                                              title: Text(
-                                                '회원가입 실패! ${userProvider.errorMessage ?? '알 수 없는 오류'}',
-                                              ),
-                                            );
-                                          }
+                                        if (success) {
+                                          toastification.show(
+                                            context: context,
+                                            type: ToastificationType.success,
+                                            style: ToastificationStyle.flat,
+                                            alignment: Alignment.bottomCenter,
+                                            autoCloseDuration: Duration(
+                                              seconds: 2,
+                                            ),
+                                            title: Text(
+                                              '회원가입 성공! 이름: ${userProvider.currentUser?.displayName}',
+                                            ),
+                                          );
+                                          Navigator.pushReplacement(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder:
+                                                  (context) => HomeScreen(),
+                                            ),
+                                          );
+                                        } else {
+                                          toastification.show(
+                                            context: context,
+                                            type: ToastificationType.error,
+                                            style: ToastificationStyle.flat,
+                                            alignment: Alignment.bottomCenter,
+                                            autoCloseDuration: Duration(
+                                              seconds: 2,
+                                            ),
+                                            title: Text(
+                                              '회원가입 실패! ${userProvider.errorMessage ?? '알 수 없는 오류'}',
+                                            ),
+                                          );
                                         }
                                       }
                                       : null,
@@ -551,14 +549,27 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                   borderRadius: BorderRadius.circular(8.0),
                                 ),
                               ),
-                              child: const Text(
-                                '회원가입',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16.0,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
+                              child:
+                                  userProvider.isLoading
+                                      ? const SizedBox(
+                                        height: 24,
+                                        width: 24,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 3,
+                                          valueColor:
+                                              AlwaysStoppedAnimation<Color>(
+                                                Colors.white,
+                                              ),
+                                        ),
+                                      )
+                                      : const Text(
+                                        '회원가입',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 16.0,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
                             );
                           },
                         ),
@@ -579,7 +590,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               // 로그인 화면으로 이동
                               Navigator.of(
                                 context,
-                              ).pushReplacementNamed('/home');
+                              ).pushReplacementNamed('signIn');
                             },
                             style: TextButton.styleFrom(
                               overlayColor: Colors.transparent,

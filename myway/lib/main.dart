@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:myway/firebase_options.dart';
 import 'package:myway/screen/notice/notice_list_screen.dart';
 import 'package:myway/screen/notice/notice_screen.dart';
-import 'package:myway/screen/home/park_list_screen.dart';
+import 'package:myway/screen/setting/setting_screen.dart';
 import 'package:myway/temp/park_recommend_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:toastification/toastification.dart';
@@ -100,6 +100,13 @@ class AuthWrapper extends StatelessWidget {
     return StreamBuilder<User?>(
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (BuildContext context, AsyncSnapshot<User?> snapshot) {
+        print('AuthWrapper - ConnectionState: ${snapshot.connectionState}');
+        print('AuthWrapper - HasData: ${snapshot.hasData}');
+        print('AuthWrapper - HasError: ${snapshot.hasError}');
+        if (snapshot.hasData) {
+          print('AuthWrapper - Current User: ${snapshot.data?.uid}');
+        }
+
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         } else if (snapshot.hasError) {

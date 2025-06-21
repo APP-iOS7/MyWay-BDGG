@@ -142,6 +142,30 @@ class UserProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<bool> deleteAccount() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        // 계정 삭제 실행
+        await user.delete();
+        await FirebaseAuth.instance.signOut(); // 로그아웃 명시
+        return true;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      print('회원탈퇴 실패: $e');
+      return false;
+    }
+  }
+
+  // 계정 삭제 후 상태 초기화를 위한 메서드
+  void clearUserData() {
+    _currentUser = null;
+    _nickname = null;
+    notifyListeners();
+  }
+
   Future<void> updateDisplayName(String newName) async {
     try {
       final user = FirebaseAuth.instance.currentUser;
