@@ -1,9 +1,13 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:myway/main.dart';
 import 'package:myway/screen/alert/dialog.dart';
+import 'package:toastification/toastification.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:provider/provider.dart';
 
 import '../../const/colors.dart';
+import '../../provider/user_provider.dart';
 
 class CustomerCenterScreen extends StatefulWidget {
   const CustomerCenterScreen({super.key});
@@ -14,59 +18,91 @@ class CustomerCenterScreen extends StatefulWidget {
 
 class _CustomerCenterScreenState extends State<CustomerCenterScreen> {
   Future<void> deleteAccount() async {
-    if (!mounted) return; // 위젯이 마운트되어 있는지 확인
-    
-    try {
-      final user = FirebaseAuth.instance.currentUser;
+    if (!mounted) return;
 
-      if (user != null) {
-        await user.delete();
-        print('계정이 성공적으로 삭제되었습니다.');
-        
-        // 위젯이 여전히 마운트되어 있는지 다시 확인
+    try {
+      // 로딩 표시
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(child: CircularProgressIndicator()),
+      );
+
+      // Provider를 통한 계정 삭제
+      final userProvider = context.read<UserProvider>();
+      final success = await userProvider.deleteAccount();
+
+      Navigator.of(context, rootNavigator: true).pop();
+
+      if (success) {
+        if (!mounted) return;
+
+        // 성공 메시지 표시
         if (mounted) {
-          Navigator.pushNamedAndRemoveUntil(context, 'signIn', (route) => false);
+          toastification.show(
+            context: context,
+            type: ToastificationType.success,
+            alignment: Alignment.bottomCenter,
+            style: ToastificationStyle.flat,
+            autoCloseDuration: Duration(seconds: 2),
+            title: Text('회원탈퇴 완료'),
+          );
+
+          // 네비게이션 스택 초기화
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (_) => const AuthWrapper()),
+            (route) => false,
+          );
+        } else {
+          if (!mounted) return;
+          toastification.show(
+            context: context,
+            type: ToastificationType.error,
+            alignment: Alignment.bottomCenter,
+            style: ToastificationStyle.flat,
+            autoCloseDuration: Duration(seconds: 2),
+            title: Text('계정 삭제에 실패했습니다.'),
+          );
         }
       }
     } on FirebaseAuthException catch (e) {
+      Navigator.of(context, rootNavigator: true).pop();
+
       if (e.code == 'requires-recent-login') {
-        print('로그인 이후에만 삭제할 수 있습니다. 다시 로그인 후 시도하세요.');
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('다시 로그인 후 시도해주세요.'),
-              backgroundColor: RED_DANGER_TEXT_50,
-            ),
-          );
-        }
+        toastification.show(
+          context: context,
+          type: ToastificationType.error,
+          alignment: Alignment.bottomCenter,
+          style: ToastificationStyle.flat,
+          autoCloseDuration: Duration(seconds: 2),
+          title: Text('다시 로그인 후 시도해주세요.'),
+        );
       } else {
-        print('계정 삭제 실패: ${e.message}');
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('계정 삭제 실패: ${e.message}'),
-              backgroundColor: RED_DANGER_TEXT_50,
-            ),
-          );
-        }
-      }
-    } catch (e) {
-      print('예상치 못한 오류: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('예상치 못한 오류가 발생했습니다.'),
-            backgroundColor: RED_DANGER_TEXT_50,
-          ),
+        toastification.show(
+          context: context,
+          type: ToastificationType.error,
+          alignment: Alignment.bottomCenter,
+          style: ToastificationStyle.flat,
+          autoCloseDuration: Duration(seconds: 2),
+          title: Text('계정 삭제 실패: ${e.message}'),
         );
       }
+    } catch (e) {
+      Navigator.of(context, rootNavigator: true).pop();
+
+      toastification.show(
+        context: context,
+        type: ToastificationType.error,
+        alignment: Alignment.bottomCenter,
+        style: ToastificationStyle.flat,
+        autoCloseDuration: Duration(seconds: 2),
+        title: Text('예상치 못한 오류가 발생했습니다: $e'),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final parentContext = context;
-
     return Scaffold(
       backgroundColor: WHITE,
       appBar: AppBar(

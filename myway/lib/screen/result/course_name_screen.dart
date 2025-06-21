@@ -1,3 +1,6 @@
+import 'dart:typed_data';
+import 'dart:ui';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -86,12 +89,11 @@ class _CourseNameScreenState extends State<CourseNameScreen> {
         print('사용자가 로그인되어 있지 않습니다. 이미지를 업로드할 수 없습니다.');
         throw Exception('로그인이 필요합니다.');
       }
-      // Storage업로드 (사용자별 폴더 구조 사용)
+
+      // Storage 업로드 (사용자별 폴더 구조 사용)
       final fileName =
-          'walk_result_map${DateTime.now().millisecondsSinceEpoch}.png';
-      final ref = FirebaseStorage.instance.ref().child(
-        'users/${user.uid}walk_result/$fileName',
-      );
+          'walk_result_map_${user.uid}_${DateTime.now().millisecondsSinceEpoch}.png';
+      final ref = FirebaseStorage.instance.ref().child('users/${user.uid}/walk_result/$fileName');
 
       print('이미지 업로드 시작: $fileName');
       final uploadTask = await ref.putData(widget.courseImage);
