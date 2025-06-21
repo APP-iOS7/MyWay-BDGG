@@ -134,7 +134,7 @@ class SettingScreen extends StatelessWidget {
               onTap: () {},
               child: Container(
                 width: double.infinity,
-                height: 259,
+                height: 309,
                 decoration: BoxDecoration(
                   color: GRAYSCALE_LABEL_50,
                   borderRadius: BorderRadius.circular(12),
@@ -198,7 +198,36 @@ class SettingScreen extends StatelessWidget {
                         ),
                       ),
                       TextButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          Navigator.pushNamed(context, 'terms');
+                        },
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              '이용약관',
+                              style: TextStyle(
+                                color: GRAYSCALE_LABEL_950,
+                                fontSize: 16,
+                              ),
+                            ),
+                            IconButton(
+                              onPressed: () {
+                                Navigator.pushNamed(context, 'terms');
+                              },
+                              icon: Icon(
+                                Icons.arrow_forward_ios_rounded,
+                                color: GRAYSCALE_LABEL_950,
+                                size: 16,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pushNamed(context, 'policy');
+                        },
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -210,7 +239,9 @@ class SettingScreen extends StatelessWidget {
                               ),
                             ),
                             IconButton(
-                              onPressed: () {},
+                              onPressed: () {
+                                Navigator.pushNamed(context, 'policy');
+                              },
                               icon: Icon(
                                 Icons.arrow_forward_ios_rounded,
                                 color: GRAYSCALE_LABEL_950,
