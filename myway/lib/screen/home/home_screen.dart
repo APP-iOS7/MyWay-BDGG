@@ -165,35 +165,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       ],
                     ),
                   ),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const MycourseScreen(),
-                        ),
-                      );
-                    },
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: BLUE_SECONDARY_600,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 2.0,
-                        horizontal: 10.0,
-                      ),
-                      child: Text(
-                        '더보기+',
-                        style: TextStyle(
-                          color: WHITE,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ),
                 ],
               ),
             ),
@@ -570,6 +541,17 @@ class _HomeScreenState extends State<HomeScreen> {
                 setState(() {
                   _selectedIndex = index;
                 });
+                if (index == 3) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => MycourseScreen()),
+                  ).then((_) {
+                    setState(() {
+                      _selectedIndex = 2;
+                    });
+                  });
+                  return;
+                }
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (_) => _screens[index]),
