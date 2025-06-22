@@ -13,6 +13,7 @@ import '../../temp/park_data_provider_test.dart';
 import '../../temp/park_test_screen.dart';
 import '/const/colors.dart';
 import 'mycourse_screen.dart';
+import 'mypage_screen.dart';
 import 'park_list_screen.dart';
 import 'weather_screen.dart';
 import '/provider/weather_provider.dart';
@@ -28,27 +29,31 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   List<String> imageUrls = [];
   bool isLoading = true;
+  int _selectedIndex = 2;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final List<Widget> _screens = [
+    const ParkRecommendScreen(),
+    const ParkListScreen(initialTabIndex: 1),
+    const HomeScreen(),
+    const ActivityLogScreen(),
+    const MypageScreen(),
+  ];
 
   @override
   void initState() {
     super.initState();
     context.read<UserProvider>().loadNickname();
     fetchImages();
-    final parkProvider = context.read<ParkDataProvider>();
-    parkProvider.loadParksFromCsv();
+    context.read<ParkDataProvider>().loadParksFromCsv();
   }
 
   Future<void> fetchImages() async {
     final ref = FirebaseStorage.instance.ref().child('walk_result');
     final result = await ref.listAll();
-    print(result);
-
     final urls = await Future.wait(
       result.items.map((item) => item.getDownloadURL()),
     );
-
     if (mounted) {
       setState(() {
         imageUrls = urls;
@@ -126,15 +131,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   Spacer(),
-                  IconButton(
-                    onPressed: () {
-                      Navigator.pushNamed(context, 'setting');
-                    },
-                    icon: Icon(
-                      Icons.settings_outlined,
-                      color: GRAYSCALE_LABEL_600,
-                    ),
-                  ),
                 ],
               ),
             ),
@@ -532,120 +528,81 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 SizedBox(height: 10),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: _buildBottomItem(
-                          backgroundColor: RECOMMEND_BACKGROUND,
-                          label: '추천 코스',
-                          iconPath: 'assets/images/location.svg',
-                          iconColor: BLUE_SECONDARY_700,
-                          iconWidth: 30,
-                          iconHeight: 30,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => ParkRecommendScreen(),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: _buildBottomItem(
-                          label: '공원 찾기',
-                          iconColor: PARK_IC,
-                          backgroundColor: FIND_PARK_BACKGROUND,
-                          iconWidth: 35,
-                          iconHeight: 35,
-                          iconPath: 'assets/icons/ic_park.svg',
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder:
-                                    (context) => const ParkListScreen(
-                                      initialTabIndex: 1,
-                                    ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: _buildBottomItem(
-                          backgroundColor: MY_RECORD_BACKGROUND,
-                          label: '나의 기록',
-                          iconColor: WALKING_IC,
-                          iconWidth: 30,
-                          iconHeight: 30,
-                          iconPath: 'assets/icons/walk.svg',
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => ActivityLogScreen(),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
               ],
             ),
           ],
         ),
       ),
-    );
-  }
+      bottomNavigationBar: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 5)],
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: List.generate(5, (index) {
+            final isSelected = _selectedIndex == index;
 
-  Widget _buildBottomItem({
-    required String label,
-    required String iconPath,
-    required double iconWidth,
-    required double iconHeight,
-    required Color iconColor,
-    required VoidCallback onTap,
-    required Color backgroundColor,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AspectRatio(
-        aspectRatio: 1, // 가로 = 세로
-        child: Container(
-          decoration: BoxDecoration(
-            color: backgroundColor,
-            borderRadius: BorderRadius.circular(8),
-            boxShadow: [
-              BoxShadow(color: GRAYSCALE_LABEL_200, offset: Offset(1, 1)),
-            ],
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SvgPicture.asset(
-                iconPath,
-                width: iconWidth,
-                height: iconHeight,
-                colorFilter: ColorFilter.mode(
-                  iconColor.withValues(alpha: 1),
-                  BlendMode.srcIn,
-                ),
+            IconData? icon;
+            String label = '';
+            switch (index) {
+              case 0:
+                label = '추천 코스';
+                break;
+              case 1:
+                label = '공원 찾기';
+                break;
+              case 2:
+                icon = Icons.home;
+                break;
+              case 3:
+                label = '나의 기록';
+                break;
+              case 4:
+                icon = Icons.person;
+                break;
+            }
+
+            return GestureDetector(
+              onTap: () {
+                setState(() {
+                  _selectedIndex = index;
+                });
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => _screens[index]),
+                ).then((_) {
+                  setState(() {
+                    _selectedIndex = 2;
+                  });
+                });
+              },
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                child:
+                    icon != null
+                        ? Icon(
+                          icon,
+                          size: 26,
+                          color: isSelected ? ORANGE_PRIMARY_500 : Colors.grey,
+                        )
+                        : Text(
+                          label,
+                          style: TextStyle(
+                            color:
+                                isSelected ? ORANGE_PRIMARY_500 : Colors.grey,
+                            fontSize: 13,
+                            fontWeight:
+                                isSelected
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
+                          ),
+                        ),
               ),
-              const SizedBox(height: 10),
-              Text(
-                label,
-                style: const TextStyle(color: Colors.black, fontSize: 13),
-              ),
-            ],
-          ),
+            );
+          }),
         ),
       ),
     );
