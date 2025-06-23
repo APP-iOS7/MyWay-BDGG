@@ -76,7 +76,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 40),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -100,6 +100,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       );
                     },
+
                     child: Row(
                       spacing: 5,
                       children: [
@@ -138,8 +139,8 @@ class _HomeScreenState extends State<HomeScreen> {
             Padding(
               padding: const EdgeInsets.only(
                 top: 0.0,
-                left: 20,
-                right: 20,
+                left: 40,
+                right: 40,
                 bottom: 10,
               ),
               child: Row(
@@ -483,7 +484,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Padding(
                   padding: const EdgeInsets.symmetric(
                     vertical: 10.0,
-                    horizontal: 20,
+                    horizontal: 45,
                   ),
                   child: SizedBox(
                     width: double.infinity,
@@ -512,7 +513,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                 ),
-                SizedBox(height: 10),
+                SizedBox(height: 35),
               ],
             ),
           ],
@@ -587,7 +588,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   Icon(
                     icon,
-                    size: 26,
+                    size: 30,
                     color: isSelected ? ORANGE_PRIMARY_500 : Colors.grey,
                   ),
                   const SizedBox(height: 4),
