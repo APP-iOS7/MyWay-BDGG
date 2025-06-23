@@ -76,7 +76,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 30),
+              padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -269,11 +269,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         : trackingResult;
 
                 return SizedBox(
-                  height: 450,
+                  height: 500,
                   child: CarouselSlider(
                     options: CarouselOptions(
                       scrollDirection: Axis.horizontal,
-                      height: 430,
+                      height: 480,
                       enableInfiniteScroll: trackingResult.length == 3,
                       padEnds: true,
                       viewportFraction: 0.8, // 화면에 보이는 아이템의 비율
@@ -316,12 +316,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                               ? Image.network(
                                                 result['이미지 Url'],
                                                 width: double.infinity,
-                                                height: 262,
+                                                height: 285,
                                                 fit: BoxFit.cover,
                                               )
                                               : Container(
                                                 width: double.infinity,
-                                                height: 282,
+                                                height: 290,
                                                 color: GRAYSCALE_LABEL_200,
                                                 child: Icon(
                                                   Icons.image_not_supported,
@@ -519,7 +519,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
       bottomNavigationBar: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16),
+        padding: const EdgeInsets.symmetric(vertical: 17),
         decoration: BoxDecoration(
           color: Colors.white,
           boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 5)],
@@ -534,19 +534,24 @@ class _HomeScreenState extends State<HomeScreen> {
             String label = '';
             switch (index) {
               case 0:
+                icon = Icons.explore;
                 label = '추천 코스';
                 break;
               case 1:
+                icon = Icons.park;
                 label = '공원 찾기';
                 break;
               case 2:
                 icon = Icons.home;
+                label = '홈';
                 break;
               case 3:
+                icon = Icons.directions_walk;
                 label = '나의 기록';
                 break;
               case 4:
                 icon = Icons.person;
+                label = '마이페이지';
                 break;
             }
 
@@ -577,27 +582,25 @@ class _HomeScreenState extends State<HomeScreen> {
                   });
                 });
               },
-              child: Container(
-                padding: const EdgeInsets.all(8),
-                child:
-                    icon != null
-                        ? Icon(
-                          icon,
-                          size: 26,
-                          color: isSelected ? ORANGE_PRIMARY_500 : Colors.grey,
-                        )
-                        : Text(
-                          label,
-                          style: TextStyle(
-                            color:
-                                isSelected ? ORANGE_PRIMARY_500 : Colors.grey,
-                            fontSize: 13,
-                            fontWeight:
-                                isSelected
-                                    ? FontWeight.bold
-                                    : FontWeight.normal,
-                          ),
-                        ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    icon,
+                    size: 26,
+                    color: isSelected ? ORANGE_PRIMARY_500 : Colors.grey,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    label,
+                    style: TextStyle(
+                      color: isSelected ? ORANGE_PRIMARY_500 : Colors.grey,
+                      fontSize: 12,
+                      fontWeight:
+                          isSelected ? FontWeight.bold : FontWeight.normal,
+                    ),
+                  ),
+                ],
               ),
             );
           }),
