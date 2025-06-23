@@ -8,8 +8,10 @@ import 'package:provider/provider.dart';
 import '../../provider/park_data_provider.dart';
 import '../../provider/user_provider.dart';
 import '../../temp/park_recommend_screen.dart';
+import '../../temp/park_recommend_screen.dart';
 import '/const/colors.dart';
 import 'mycourse_screen.dart';
+import 'mypage_screen.dart';
 import 'mypage_screen.dart';
 import 'park_list_screen.dart';
 import 'weather_screen.dart';
@@ -27,6 +29,7 @@ class _HomeScreenState extends State<HomeScreen> {
   List<String> imageUrls = [];
   bool isLoading = true;
   int _selectedIndex = 2;
+
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final List<Widget> _screens = [
@@ -42,6 +45,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     context.read<UserProvider>().loadNickname();
     fetchImages();
+    context.read<ParkDataProvider>().loadParksFromCsv();
     context.read<ParkDataProvider>().loadParksFromCsv();
   }
 
@@ -72,7 +76,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 30),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -84,7 +88,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  SizedBox(width: 20),
+                  Spacer(),
                   GestureDetector(
                     onTap: () {
                       Navigator.push(
@@ -551,6 +555,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 setState(() {
                   _selectedIndex = index;
                 });
+
                 if (index == 3) {
                   Navigator.push(
                     context,
@@ -562,6 +567,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   });
                   return;
                 }
+
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (_) => _screens[index]),
