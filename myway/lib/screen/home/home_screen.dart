@@ -425,7 +425,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                           Text(
                                                             '${result['거리']}',
                                                             style: TextStyle(
-                                                              fontSize: 25,
+                                                              fontSize: 23,
                                                               fontWeight:
                                                                   FontWeight
                                                                       .w600,
@@ -457,7 +457,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                               Text(
                                                                 '${result['소요시간']}',
                                                                 style: TextStyle(
-                                                                  fontSize: 25,
+                                                                  fontSize: 23,
                                                                   fontWeight:
                                                                       FontWeight
                                                                           .w600,
@@ -487,7 +487,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                               Text(
                                                                 '${result['걸음수']}',
                                                                 style: TextStyle(
-                                                                  fontSize: 25,
+                                                                  fontSize: 23,
                                                                   fontWeight:
                                                                       FontWeight
                                                                           .w600,

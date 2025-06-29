@@ -58,8 +58,9 @@ class _MapInputScreenState extends State<MapInputScreen> {
       if (!_tracking ||
           !mounted ||
           loc.latitude == null ||
-          loc.longitude == null)
+          loc.longitude == null) {
         return;
+      }
 
       final newPos = LatLng(loc.latitude!, loc.longitude!);
       setState(() {

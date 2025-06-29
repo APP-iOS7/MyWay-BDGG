@@ -163,50 +163,45 @@ class _MycourseScreenState extends State<MycourseScreen> {
                         builder: (context, selected, _) {
                           final selectedCount =
                               selected.where((isSelected) => isSelected).length;
-                          return Column(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                  left: 10.0,
-                                  right: 10.0,
+                          return Flexible(
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                TextButton(
+                                  onPressed:
+                                      () => deleteSelected(trackingResult),
+                                  style: customTextButtonStyle(),
+                                  child: const Text(
+                                    '삭제',
+                                    style: TextStyle(color: Colors.red),
+                                  ),
                                 ),
-                                child: Row(
-                                  children: [
-                                    TextButton(
-                                      onPressed:
-                                          () => deleteSelected(trackingResult),
-                                      style: customTextButtonStyle(),
-                                      child: const Text(
-                                        '삭제',
-                                        style: TextStyle(color: Colors.red),
-                                      ),
+                                TextButton(
+                                  onPressed:
+                                      () => setState(() => isEditing = false),
+                                  style: customTextButtonStyle(),
+                                  child: const Text(
+                                    '취소',
+                                    style: TextStyle(
+                                      color: GRAYSCALE_LABEL_900,
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 15,
                                     ),
-                                    TextButton(
-                                      onPressed:
-                                          () =>
-                                              setState(() => isEditing = false),
-                                      style: customTextButtonStyle(),
-                                      child: const Text(
-                                        '취소',
-                                        style: TextStyle(
-                                          color: GRAYSCALE_LABEL_900,
-                                          fontWeight: FontWeight.w500,
-                                          fontSize: 15,
-                                        ),
-                                      ),
-                                    ),
-                                    Text(
-                                      '$selectedCount개 선택',
-                                      style: const TextStyle(
-                                        color: GRAYSCALE_LABEL_900,
-                                        fontWeight: FontWeight.w500,
-                                        fontSize: 15,
-                                      ),
-                                    ),
-                                  ],
+                                  ),
                                 ),
-                              ),
-                            ],
+                                Flexible(
+                                  child: Text(
+                                    '$selectedCount개 선택',
+                                    style: const TextStyle(
+                                      color: GRAYSCALE_LABEL_900,
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 15,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
                           );
                         },
                       ),
@@ -226,138 +221,188 @@ class _MycourseScreenState extends State<MycourseScreen> {
                       ),
                     ],
           ),
-          body: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0),
-            child: GridView.builder(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                childAspectRatio: 0.9,
-                crossAxisCount: 2,
-                crossAxisSpacing: 5.0,
-                mainAxisSpacing: 5,
-              ),
-              itemCount: trackingResult.length,
-              itemBuilder: (context, index) {
-                final result = trackingResult[index];
-                final imageUrl = result['이미지 Url'] ?? '';
+          body: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: GridView.builder(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  childAspectRatio: 0.85,
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 8.0,
+                  mainAxisSpacing: 8,
+                ),
+                itemCount: trackingResult.length,
+                itemBuilder: (context, index) {
+                  final result = trackingResult[index];
+                  final imageUrl = result['이미지 Url'] ?? '';
 
-                return InkWell(
-                  focusColor: WHITE,
-                  hoverColor: WHITE,
-                  highlightColor: WHITE,
-                  onTap:
-                      isEditing
-                          ? null
-                          : () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder:
-                                    (context) =>
-                                        CourseDetailScreen(data: result),
-                              ),
-                            );
-                          },
-                  child: Stack(
-                    children: [
-                      Card(
-                        color: WHITE,
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            imageUrl.isNotEmpty
-                                ? ClipRRect(
-                                  borderRadius: const BorderRadius.vertical(
-                                    top: Radius.circular(12),
-                                  ),
-                                  child: Image.network(
-                                    imageUrl,
-                                    width: double.infinity,
-                                    height: 130,
-                                    fit: BoxFit.cover,
-                                  ),
-                                )
-                                : const SizedBox(
-                                  width: double.infinity,
-                                  height: 150,
-                                  child: Icon(Icons.image_not_supported),
+                  return InkWell(
+                    focusColor: WHITE,
+                    hoverColor: WHITE,
+                    highlightColor: WHITE,
+                    onTap:
+                        isEditing
+                            ? null
+                            : () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder:
+                                      (context) =>
+                                          CourseDetailScreen(data: result),
                                 ),
-                            const SizedBox(height: 5),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    result['코스이름'] ?? '',
-                                    style: const TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w600,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    maxLines: 1,
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Row(
-                                    children: [
-                                      const Icon(
-                                        Icons.access_time,
-                                        size: 14,
-                                        color: BLUE_SECONDARY_700,
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        result['종료시간'] ?? '',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: GRAYSCALE_LABEL_800,
+                              );
+                            },
+                    child: Stack(
+                      children: [
+                        Card(
+                          color: WHITE,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Expanded(
+                                flex: 3,
+                                child:
+                                    imageUrl.isNotEmpty
+                                        ? ClipRRect(
+                                          borderRadius:
+                                              const BorderRadius.vertical(
+                                                top: Radius.circular(12),
+                                              ),
+                                          child: Image.network(
+                                            imageUrl,
+                                            width: double.infinity,
+                                            height: double.infinity,
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (
+                                              context,
+                                              error,
+                                              stackTrace,
+                                            ) {
+                                              return Container(
+                                                width: double.infinity,
+                                                height: double.infinity,
+                                                color: GRAYSCALE_LABEL_200,
+                                                child: const Icon(
+                                                  Icons.image_not_supported,
+                                                  color: GRAYSCALE_LABEL_400,
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                        )
+                                        : Container(
+                                          width: double.infinity,
+                                          height: double.infinity,
+                                          color: GRAYSCALE_LABEL_200,
+                                          child: const Icon(
+                                            Icons.image_not_supported,
+                                            color: GRAYSCALE_LABEL_400,
+                                          ),
                                         ),
+                              ),
+                              Expanded(
+                                flex: 2,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Flexible(
+                                        child: Text(
+                                          result['코스이름'] ?? '코스명 없음',
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 1,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Row(
+                                        children: [
+                                          const Icon(
+                                            Icons.access_time,
+                                            size: 12,
+                                            color: BLUE_SECONDARY_700,
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Flexible(
+                                            child: Text(
+                                              _formatDateTime(
+                                                result['종료시간'] ?? '',
+                                              ),
+                                              style: TextStyle(
+                                                fontSize: 11,
+                                                color: GRAYSCALE_LABEL_800,
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
+                                              maxLines: 1,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ],
                                   ),
-                                  const SizedBox(height: 6),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      if (isEditing)
-                        Positioned(
-                          top: 1,
-                          right: 1,
-                          child: ValueListenableBuilder<List<bool>>(
-                            valueListenable: _selectedNotifier,
-                            builder: (context, selected, _) {
-                              return Checkbox(
-                                activeColor: ORANGE_PRIMARY_500,
-                                focusColor: Colors.transparent,
-                                hoverColor: Colors.transparent,
-                                checkColor: Colors.white,
-                                overlayColor: WidgetStateProperty.all(
-                                  Colors.transparent,
                                 ),
-                                value: selected[index],
-                                onChanged: (val) {
-                                  final copy = List<bool>.from(selected);
-                                  copy[index] = val!;
-                                  _selectedNotifier.value = copy;
-                                },
-                              );
-                            },
+                              ),
+                            ],
                           ),
                         ),
-                    ],
-                  ),
-                );
-              },
+                        if (isEditing)
+                          Positioned(
+                            top: 4,
+                            right: 4,
+                            child: ValueListenableBuilder<List<bool>>(
+                              valueListenable: _selectedNotifier,
+                              builder: (context, selected, _) {
+                                return Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Checkbox(
+                                    activeColor: ORANGE_PRIMARY_500,
+                                    focusColor: Colors.transparent,
+                                    hoverColor: Colors.transparent,
+                                    checkColor: Colors.white,
+                                    overlayColor: WidgetStateProperty.all(
+                                      Colors.transparent,
+                                    ),
+                                    value: selected[index],
+                                    onChanged: (val) {
+                                      final copy = List<bool>.from(selected);
+                                      copy[index] = val!;
+                                      _selectedNotifier.value = copy;
+                                    },
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                      ],
+                    ),
+                  );
+                },
+              ),
             ),
           ),
         );
       },
     );
+  }
+
+  String _formatDateTime(String dateTimeStr) {
+    if (dateTimeStr.isEmpty) return '';
+    try {
+      final dateTime = DateTime.parse(dateTimeStr);
+      return '${dateTime.month}/${dateTime.day} ${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}';
+    } catch (e) {
+      return dateTimeStr;
+    }
   }
 
   Scaffold _buildScaffoldWithBody(Widget bodyContent) {
@@ -376,7 +421,7 @@ class _MycourseScreenState extends State<MycourseScreen> {
           ),
         ),
       ),
-      body: bodyContent,
+      body: SafeArea(child: bodyContent),
     );
   }
 }

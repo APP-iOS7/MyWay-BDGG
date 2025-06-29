@@ -399,7 +399,7 @@ class WeatherProvider extends ChangeNotifier {
         weatherStatus,
         WeatherServiceHelper.isNightTime(DateTime.now()),
       );
-      print('폴백: ${closestHour}시 데이터 사용 (목표: ${targetHour}시)');
+      print('폴백: $closestHour시 데이터 사용 (목표: $targetHour시)');
     } else {
       weatherStatus = '정보 없음';
       weatherIconPath = 'assets/icons/weather_cloud.svg';
@@ -450,7 +450,7 @@ class WeatherProvider extends ChangeNotifier {
 
           if (!targetHours.contains(hour)) continue;
 
-          final dateTimeKey = '${fcstDate}_${fcstTime}';
+          final dateTimeKey = '${fcstDate}_$fcstTime';
 
           forecastMap.putIfAbsent(
             dateTimeKey,

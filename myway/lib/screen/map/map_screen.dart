@@ -370,8 +370,9 @@ class _MapScreenState extends State<MapScreen>
   }
 
   void drawRecommendPolylines(ParkCourseInfo? selectedCourse) {
-    if (selectedCourse == null || identical(selectedCourse, _prevCourse))
+    if (selectedCourse == null || identical(selectedCourse, _prevCourse)) {
       return;
+    }
     _prevCourse = selectedCourse;
 
     // 기존 추천 경로 제거
