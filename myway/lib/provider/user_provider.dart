@@ -12,6 +12,7 @@ class UserProvider extends ChangeNotifier {
   bool _isSignUpSuccess = false;
   User? _currentUser;
   String? _nickname;
+  String? _email;
 
   // 게터
   bool get isLoading => _isLoading;
@@ -19,6 +20,7 @@ class UserProvider extends ChangeNotifier {
   bool get isSignUpSuccess => _isSignUpSuccess;
   User? get currentUser => _currentUser;
   String? get nickname => _nickname;
+  String? get email => _email;
 
   // 로딩 상태 설정
   void setLoading(bool loading) {
@@ -44,6 +46,7 @@ class UserProvider extends ChangeNotifier {
     final doc =
         await FirebaseFirestore.instance.collection('users').doc(uid).get();
     _nickname = doc.data()?['username'];
+    _email = doc.data()?['email'];
     notifyListeners();
   }
 
@@ -163,6 +166,7 @@ class UserProvider extends ChangeNotifier {
   void clearUserData() {
     _currentUser = null;
     _nickname = null;
+    _email = null;
     notifyListeners();
   }
 

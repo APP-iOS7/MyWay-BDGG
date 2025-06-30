@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:myway/const/colors.dart';
 import 'package:myway/screen/home/home_screen.dart';
-import 'package:myway/screen/home/my_page.dart';
+import 'package:myway/screen/home/my_page_screen.dart';
 import 'package:myway/screen/home/park_list_screen.dart';
 import 'package:myway/screen/result/activity_log_screen.dart';
 
@@ -19,7 +19,7 @@ class _BottomTabBarState extends State<BottomTabBar> {
     ParkListScreen(initialTabIndex: 1), // 공원찾기 탭
     HomeScreen(),
     ActivityLogScreen(),
-    MyPage(),
+    MyPageScreen(),
   ];
   int _selectedIndex = 2;
 
