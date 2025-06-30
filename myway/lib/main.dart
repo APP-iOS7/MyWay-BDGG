@@ -29,13 +29,11 @@ import 'screen/setting/nickname_change_screen.dart';
 import 'screen/setting/change_password_screen.dart';
 import 'screen/login/signIn_screen.dart';
 import 'screen/setting/customer_center_screen.dart';
-import 'screen/setting/setting_screen.dart';
 import 'temp/park_data_provider_test.dart';
 import 'temp/test_drawer.dart';
 import 'temp/test_map.dart';
 
 Future<void> main() async {
-  print('commit for stable version');
   WidgetsFlutterBinding.ensureInitialized();
 
   // 세로 방향 고정

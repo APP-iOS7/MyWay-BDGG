@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:myway/bottomTabBar/bottom_tab_bar.dart';
 import 'package:myway/const/colors.dart';
-import 'package:myway/screen/home/home_screen.dart';
 import 'package:toastification/toastification.dart';
 
 import '../../const/custome_button.dart';
