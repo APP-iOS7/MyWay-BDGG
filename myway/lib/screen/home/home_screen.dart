@@ -2,6 +2,7 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
@@ -363,7 +364,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                           FontWeight.w600,
                                                     ),
                                                   ),
-
+                                                  SizedBox(height: 10),
                                                   Row(
                                                     children: [
                                                       Column(
@@ -374,7 +375,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                           Text(
                                                             '${result['거리']}',
                                                             style: TextStyle(
-                                                              fontSize: 25,
+                                                              fontSize: 23,
                                                               fontWeight:
                                                                   FontWeight
                                                                       .w600,
@@ -406,7 +407,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                               Text(
                                                                 '${result['소요시간']}',
                                                                 style: TextStyle(
-                                                                  fontSize: 25,
+                                                                  fontSize: 23,
                                                                   fontWeight:
                                                                       FontWeight
                                                                           .w600,
@@ -436,7 +437,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                               Text(
                                                                 '${result['걸음수']}',
                                                                 style: TextStyle(
-                                                                  fontSize: 25,
+                                                                  fontSize: 23,
                                                                   fontWeight:
                                                                       FontWeight
                                                                           .w600,
@@ -513,7 +514,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                 ),
-                SizedBox(height: 35),
+                SizedBox(height: 10),
               ],
             ),
           ],
@@ -535,23 +536,23 @@ class _HomeScreenState extends State<HomeScreen> {
             String label = '';
             switch (index) {
               case 0:
-                icon = Icons.explore;
+                icon = CupertinoIcons.map;
                 label = '추천 코스';
                 break;
               case 1:
-                icon = Icons.park;
+                icon = CupertinoIcons.search;
                 label = '공원 찾기';
                 break;
               case 2:
-                icon = Icons.home;
-                label = '홈';
+                icon = CupertinoIcons.add_circled;
+                label = '산책시작';
                 break;
               case 3:
-                icon = Icons.directions_walk;
-                label = '나의 기록';
+                icon = CupertinoIcons.chart_bar;
+                label = '기록';
                 break;
               case 4:
-                icon = Icons.person;
+                icon = CupertinoIcons.person;
                 label = '마이페이지';
                 break;
             }
