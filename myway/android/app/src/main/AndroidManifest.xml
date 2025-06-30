@@ -20,15 +20,12 @@
             android:exported="true"
             android:launchMode="singleTop"
             android:taskAffinity=""
-            android:theme="@style/LaunchTheme"
+            android:theme="@style/NormalTheme"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
             android:hardwareAccelerated="true"
             android:windowSoftInputMode="adjustResize"
-            android:screenOrientation="portrait"> <!-- ✅ 세로 고정 설정 -->
+            android:screenOrientation="portrait"> <!-- 세로 고정 설정 -->
             
-            <meta-data
-                android:name="io.flutter.embedding.android.NormalTheme"
-                android:resource="@style/NormalTheme" />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
