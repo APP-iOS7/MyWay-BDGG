@@ -3,6 +3,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:myway/bottomTabBar/bottom_tab_bar.dart';
 import 'package:myway/const/colors.dart';
 import 'package:myway/screen/home/home_screen.dart';
 import 'package:toastification/toastification.dart';
@@ -56,7 +57,7 @@ class _SigninScreenState extends State<SigninScreen> {
       debugPrint('로그인 성공: ${userCredential.user}');
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => HomeScreen()),
+        MaterialPageRoute(builder: (context) => const BottomTabBar()),
       );
     } catch (e) {
       if (mounted) {
