@@ -86,7 +86,9 @@ class _MyCourseScreenState extends State<MyCourseScreen> {
 
         if (snapshot.connectionState == ConnectionState.waiting) {
           return _buildScaffoldWithBody(
-            const Center(child: CircularProgressIndicator()),
+            const Center(
+              child: CircularProgressIndicator(color: ORANGE_PRIMARY_500),
+            ),
           );
         }
 

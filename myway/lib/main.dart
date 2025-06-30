@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:myway/bottomTabBar/bottom_tab_bar.dart';
+import 'package:myway/const/colors.dart';
 import 'package:myway/firebase_options.dart';
 import 'package:myway/screen/notice/notice_list_screen.dart';
 import 'package:myway/screen/notice/notice_screen.dart';
@@ -113,7 +114,9 @@ class AuthWrapper extends StatelessWidget {
         }
 
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+          return const Center(
+            child: CircularProgressIndicator(color: ORANGE_PRIMARY_500),
+          );
         } else if (snapshot.hasError) {
           return const Center(child: Text('에러가 발생하였습니다.'));
         } else if (snapshot.hasData) {
