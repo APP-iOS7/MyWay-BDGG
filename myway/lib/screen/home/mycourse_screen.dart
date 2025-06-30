@@ -7,14 +7,14 @@ import 'package:toastification/toastification.dart';
 import '../../const/custome_button.dart';
 import 'course_detail_screen.dart';
 
-class MycourseScreen extends StatefulWidget {
-  const MycourseScreen({super.key});
+class MyCourseScreen extends StatefulWidget {
+  const MyCourseScreen({super.key});
 
   @override
-  State<MycourseScreen> createState() => _MycourseScreenState();
+  State<MyCourseScreen> createState() => _MyCourseScreenState();
 }
 
-class _MycourseScreenState extends State<MycourseScreen> {
+class _MyCourseScreenState extends State<MyCourseScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
@@ -67,6 +67,10 @@ class _MycourseScreenState extends State<MycourseScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+    final padding = MediaQuery.of(context).padding;
+    final availableHeight = screenSize.height - padding.top - padding.bottom;
+
     return StreamBuilder<DocumentSnapshot>(
       stream:
           _firestore
@@ -96,12 +100,12 @@ class _MycourseScreenState extends State<MycourseScreen> {
             trackingResult.isEmpty) {
           return _buildScaffoldWithBody(
             Padding(
-              padding: const EdgeInsets.only(top: 200.0),
+              padding: EdgeInsets.only(top: availableHeight * 0.2),
               child: Column(
                 children: [
-                  const Icon(Icons.directions_walk),
-                  const SizedBox(height: 10),
-                  const SizedBox(
+                  Icon(Icons.directions_walk, size: availableHeight * 0.08),
+                  SizedBox(height: availableHeight * 0.02),
+                  SizedBox(
                     width: double.infinity,
                     child: Text(
                       '저장된 기록이 없습니다.',
@@ -109,17 +113,17 @@ class _MycourseScreenState extends State<MycourseScreen> {
                       style: TextStyle(
                         color: GRAYSCALE_LABEL_800,
                         fontWeight: FontWeight.bold,
-                        fontSize: 20,
+                        fontSize: screenSize.width * 0.05,
                       ),
                     ),
                   ),
-                  const Text(
+                  Text(
                     '산책을 시작해서 나만의 코스를 만들어보세요!',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: GRAYSCALE_LABEL_600,
                       fontWeight: FontWeight.w500,
-                      fontSize: 16,
+                      fontSize: screenSize.width * 0.04,
                     ),
                   ),
                 ],
@@ -147,11 +151,11 @@ class _MycourseScreenState extends State<MycourseScreen> {
             elevation: 0,
             scrolledUnderElevation: 0,
             centerTitle: true,
-            title: const Text(
+            title: Text(
               '나의 코스',
               style: TextStyle(
                 color: GRAYSCALE_LABEL_950,
-                fontSize: 18,
+                fontSize: screenSize.width * 0.045,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -163,50 +167,47 @@ class _MycourseScreenState extends State<MycourseScreen> {
                         builder: (context, selected, _) {
                           final selectedCount =
                               selected.where((isSelected) => isSelected).length;
-                          return Column(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                  left: 10.0,
-                                  right: 10.0,
+                          return Flexible(
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                TextButton(
+                                  onPressed:
+                                      () => deleteSelected(trackingResult),
+                                  style: customTextButtonStyle(),
+                                  child: Text(
+                                    '삭제',
+                                    style: TextStyle(
+                                      color: Colors.red,
+                                      fontSize: screenSize.width * 0.035,
+                                    ),
+                                  ),
                                 ),
-                                child: Row(
-                                  children: [
-                                    TextButton(
-                                      onPressed:
-                                          () => deleteSelected(trackingResult),
-                                      style: customTextButtonStyle(),
-                                      child: const Text(
-                                        '삭제',
-                                        style: TextStyle(color: Colors.red),
-                                      ),
+                                TextButton(
+                                  onPressed:
+                                      () => setState(() => isEditing = false),
+                                  style: customTextButtonStyle(),
+                                  child: Text(
+                                    '취소',
+                                    style: TextStyle(
+                                      color: GRAYSCALE_LABEL_900,
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: screenSize.width * 0.035,
                                     ),
-                                    TextButton(
-                                      onPressed:
-                                          () =>
-                                              setState(() => isEditing = false),
-                                      style: customTextButtonStyle(),
-                                      child: const Text(
-                                        '취소',
-                                        style: TextStyle(
-                                          color: GRAYSCALE_LABEL_900,
-                                          fontWeight: FontWeight.w500,
-                                          fontSize: 15,
-                                        ),
-                                      ),
-                                    ),
-                                    Text(
-                                      '$selectedCount개 선택',
-                                      style: const TextStyle(
-                                        color: GRAYSCALE_LABEL_900,
-                                        fontWeight: FontWeight.w500,
-                                        fontSize: 15,
-                                      ),
-                                    ),
-                                  ],
+                                  ),
                                 ),
-                              ),
-                            ],
+                                Flexible(
+                                  child: Text(
+                                    '$selectedCount개 선택',
+                                    style: TextStyle(
+                                      color: GRAYSCALE_LABEL_900,
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: screenSize.width * 0.035,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           );
                         },
                       ),
@@ -215,25 +216,25 @@ class _MycourseScreenState extends State<MycourseScreen> {
                       TextButton(
                         onPressed: () => toggleEditing(trackingResult.length),
                         style: customTextButtonStyle(),
-                        child: const Text(
+                        child: Text(
                           '편집',
                           style: TextStyle(
                             color: GRAYSCALE_LABEL_900,
                             fontWeight: FontWeight.w500,
-                            fontSize: 15,
+                            fontSize: screenSize.width * 0.035,
                           ),
                         ),
                       ),
                     ],
           ),
           body: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            padding: EdgeInsets.symmetric(horizontal: screenSize.width * 0.05),
             child: GridView.builder(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                childAspectRatio: 0.9,
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                childAspectRatio: 0.85,
                 crossAxisCount: 2,
-                crossAxisSpacing: 5.0,
-                mainAxisSpacing: 5,
+                crossAxisSpacing: screenSize.width * 0.02,
+                mainAxisSpacing: screenSize.width * 0.02,
               ),
               itemCount: trackingResult.length,
               itemBuilder: (context, index) {
@@ -264,61 +265,84 @@ class _MycourseScreenState extends State<MycourseScreen> {
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            imageUrl.isNotEmpty
-                                ? ClipRRect(
-                                  borderRadius: const BorderRadius.vertical(
-                                    top: Radius.circular(12),
-                                  ),
-                                  child: Image.network(
-                                    imageUrl,
-                                    width: double.infinity,
-                                    height: 130,
-                                    fit: BoxFit.cover,
-                                  ),
-                                )
-                                : const SizedBox(
-                                  width: double.infinity,
-                                  height: 150,
-                                  child: Icon(Icons.image_not_supported),
-                                ),
-                            const SizedBox(height: 5),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    result['코스이름'] ?? '',
-                                    style: const TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w600,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    maxLines: 1,
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Row(
-                                    children: [
-                                      const Icon(
-                                        Icons.access_time,
-                                        size: 14,
-                                        color: BLUE_SECONDARY_700,
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        result['종료시간'] ?? '',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: GRAYSCALE_LABEL_800,
+                            Expanded(
+                              flex: 3,
+                              child:
+                                  imageUrl.isNotEmpty
+                                      ? ClipRRect(
+                                        borderRadius:
+                                            const BorderRadius.vertical(
+                                              top: Radius.circular(12),
+                                            ),
+                                        child: Image.network(
+                                          imageUrl,
+                                          width: double.infinity,
+                                          fit: BoxFit.cover,
+                                        ),
+                                      )
+                                      : Container(
+                                        width: double.infinity,
+                                        decoration: BoxDecoration(
+                                          color: Colors.grey[200],
+                                          borderRadius:
+                                              const BorderRadius.vertical(
+                                                top: Radius.circular(12),
+                                              ),
+                                        ),
+                                        child: Icon(
+                                          Icons.image_not_supported,
+                                          size: screenSize.width * 0.1,
+                                          color: Colors.grey[400],
                                         ),
                                       ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 6),
-                                ],
+                            ),
+                            Expanded(
+                              flex: 2,
+                              child: Padding(
+                                padding: EdgeInsets.all(
+                                  screenSize.width * 0.025,
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Flexible(
+                                      child: Text(
+                                        result['코스이름'] ?? '',
+                                        style: TextStyle(
+                                          fontSize: screenSize.width * 0.035,
+                                          fontWeight: FontWeight.w600,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        maxLines: 1,
+                                      ),
+                                    ),
+                                    SizedBox(height: screenSize.width * 0.01),
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          Icons.access_time,
+                                          size: screenSize.width * 0.03,
+                                          color: BLUE_SECONDARY_700,
+                                        ),
+                                        SizedBox(
+                                          width: screenSize.width * 0.01,
+                                        ),
+                                        Flexible(
+                                          child: Text(
+                                            result['종료시간'] ?? '',
+                                            style: TextStyle(
+                                              fontSize:
+                                                  screenSize.width * 0.035,
+                                              color: GRAYSCALE_LABEL_800,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           ],
@@ -361,17 +385,19 @@ class _MycourseScreenState extends State<MycourseScreen> {
   }
 
   Scaffold _buildScaffoldWithBody(Widget bodyContent) {
+    final screenSize = MediaQuery.of(context).size;
+
     return Scaffold(
       backgroundColor: WHITE,
       appBar: AppBar(
         backgroundColor: Colors.white,
         scrolledUnderElevation: 0,
         centerTitle: true,
-        title: const Text(
+        title: Text(
           '나의 코스',
           style: TextStyle(
             color: GRAYSCALE_LABEL_950,
-            fontSize: 18,
+            fontSize: screenSize.width * 0.045,
             fontWeight: FontWeight.bold,
           ),
         ),

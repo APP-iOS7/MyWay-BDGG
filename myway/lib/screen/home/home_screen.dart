@@ -2,22 +2,14 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 import '../../provider/park_data_provider.dart';
 import '../../provider/user_provider.dart';
-import '../../temp/park_recommend_screen.dart';
-import '../../temp/park_recommend_screen.dart';
 import '/const/colors.dart';
-import 'mycourse_screen.dart';
-import 'mypage_screen.dart';
-import 'mypage_screen.dart';
-import 'park_list_screen.dart';
 import 'weather_screen.dart';
 import '/provider/weather_provider.dart';
-import '../result/activity_log_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -29,17 +21,9 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   List<String> imageUrls = [];
   bool isLoading = true;
-  int _selectedIndex = 2;
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final List<Widget> _screens = [
-    const ParkRecommendScreen(),
-    const ParkListScreen(initialTabIndex: 1),
-    const HomeScreen(),
-    const ActivityLogScreen(),
-    const MypageScreen(),
-  ];
 
   @override
   void initState() {
@@ -496,7 +480,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       },
                       style: ElevatedButton.styleFrom(
                         shadowColor: Colors.transparent,
-                        backgroundColor: ORANGE_PRIMARY_600,
+                        backgroundColor: ORANGE_PRIMARY_500,
                         foregroundColor: WHITE,
 
                         shape: RoundedRectangleBorder(
@@ -518,94 +502,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
           ],
-        ),
-      ),
-      bottomNavigationBar: Container(
-        padding: const EdgeInsets.symmetric(vertical: 17),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 5)],
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: List.generate(5, (index) {
-            final isSelected = _selectedIndex == index;
-
-            IconData? icon;
-            String label = '';
-            switch (index) {
-              case 0:
-                icon = CupertinoIcons.map;
-                label = '추천 코스';
-                break;
-              case 1:
-                icon = CupertinoIcons.search;
-                label = '공원 찾기';
-                break;
-              case 2:
-                icon = CupertinoIcons.add_circled;
-                label = '산책시작';
-                break;
-              case 3:
-                icon = CupertinoIcons.chart_bar;
-                label = '기록';
-                break;
-              case 4:
-                icon = CupertinoIcons.person;
-                label = '마이페이지';
-                break;
-            }
-
-            return GestureDetector(
-              onTap: () {
-                setState(() {
-                  _selectedIndex = index;
-                });
-
-                if (index == 3) {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => MycourseScreen()),
-                  ).then((_) {
-                    setState(() {
-                      _selectedIndex = 2;
-                    });
-                  });
-                  return;
-                }
-
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => _screens[index]),
-                ).then((_) {
-                  setState(() {
-                    _selectedIndex = 2;
-                  });
-                });
-              },
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    icon,
-                    size: 30,
-                    color: isSelected ? ORANGE_PRIMARY_500 : Colors.grey,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    label,
-                    style: TextStyle(
-                      color: isSelected ? ORANGE_PRIMARY_500 : Colors.grey,
-                      fontSize: 12,
-                      fontWeight:
-                          isSelected ? FontWeight.bold : FontWeight.normal,
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }),
         ),
       ),
     );
