@@ -41,7 +41,7 @@ class MyPageScreen extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(top: 20.0, left: 20.0, right: 20.0),
             child: ClipRRect(
-              borderRadius: BorderRadiusGeometry.circular(50),
+              borderRadius: BorderRadius.circular(50),
               child: Image.asset('assets/images/logo.png', height: 70),
             ),
           ),
