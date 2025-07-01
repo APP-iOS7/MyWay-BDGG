@@ -74,47 +74,50 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   Spacer(),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) {
-                            return WeatherScreen();
-                          },
-                        ),
-                      );
-                    },
+                  Transform.translate(
+                    offset: Offset(0, 10),
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) {
+                              return WeatherScreen();
+                            },
+                          ),
+                        );
+                      },
 
-                    child: Row(
-                      spacing: 5,
-                      children: [
-                        SvgPicture.asset(
-                          weatherProvider.weatherIconPath,
-                          height: 30,
-                        ),
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              weatherProvider.weatherStatus,
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w500,
-                                color: GREEN_SUCCESS_TEXT_50,
+                      child: Row(
+                        spacing: 5,
+                        children: [
+                          SvgPicture.asset(
+                            weatherProvider.weatherIconPath,
+                            height: 30,
+                          ),
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                weatherProvider.weatherStatus,
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w500,
+                                  color: GREEN_SUCCESS_TEXT_50,
+                                ),
                               ),
-                            ),
-                            Text(
-                              '${weatherProvider.temperature}°',
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w500,
-                                color: BLACK,
+                              Text(
+                                '${weatherProvider.temperature}°',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w500,
+                                  color: BLACK,
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                      ],
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],
