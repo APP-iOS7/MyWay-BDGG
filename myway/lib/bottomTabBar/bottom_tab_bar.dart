@@ -82,10 +82,10 @@ class _BottomTabBarState extends State<BottomTabBar> {
                 BottomNavigationBarItem(
                   icon: _buildTabIcon(
                     3,
-                    CupertinoIcons.chart_bar,
-                    CupertinoIcons.chart_bar_fill,
+                    CupertinoIcons.chart_bar_alt_fill,
+                    CupertinoIcons.chart_bar_alt_fill,
                   ),
-                  label: '기록',
+                  label: '활동기록',
                 ),
                 BottomNavigationBarItem(
                   icon: _buildTabIcon(
