@@ -167,40 +167,49 @@ class _MyCourseScreenState extends State<MyCourseScreen> {
                     ),
                   ),
                   isEditing
-                      ? Row(
-                        children: [
-                          TextButton(
-                            onPressed: () => deleteSelected(trackingResult),
-                            style: customTextButtonStyle(),
-                            child: Text(
-                              '삭제',
-                              style: TextStyle(
-                                color: Colors.red,
-                                fontSize: screenSize.width * 0.035,
+                      ? Padding(
+                        padding: const EdgeInsets.only(right: 20.0),
+                        child: Row(
+                          children: [
+                            TextButton(
+                              onPressed: () => deleteSelected(trackingResult),
+                              style: customTextButtonStyle(),
+                              child: Text(
+                                '삭제',
+                                style: TextStyle(
+                                  color: Colors.red,
+                                  fontSize: screenSize.width * 0.035,
+                                ),
                               ),
                             ),
-                          ),
-                          TextButton(
-                            onPressed: () => setState(() => isEditing = false),
-                            style: customTextButtonStyle(),
-                            child: Text(
-                              '취소',
-                              style: TextStyle(
-                                color: GRAYSCALE_LABEL_900,
-                                fontWeight: FontWeight.w500,
-                                fontSize: screenSize.width * 0.035,
+                            TextButton(
+                              onPressed:
+                                  () => setState(() => isEditing = false),
+                              style: customTextButtonStyle(),
+                              child: Text(
+                                '취소',
+                                style: TextStyle(
+                                  color: GRAYSCALE_LABEL_900,
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: screenSize.width * 0.035,
+                                ),
                               ),
                             ),
-                          ),
-                          Text(
-                            '${_selectedNotifier.value.where((e) => e).length}개 선택',
-                            style: TextStyle(
-                              color: GRAYSCALE_LABEL_900,
-                              fontWeight: FontWeight.w500,
-                              fontSize: screenSize.width * 0.035,
+                            ValueListenableBuilder(
+                              valueListenable: _selectedNotifier,
+                              builder: (context, selected, _) {
+                                return Text(
+                                  '${selected.where((e) => e).length}개 선택',
+                                  style: TextStyle(
+                                    color: GRAYSCALE_LABEL_900,
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: screenSize.width * 0.035,
+                                  ),
+                                );
+                              },
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       )
                       : TextButton(
                         onPressed: () => toggleEditing(trackingResult.length),
