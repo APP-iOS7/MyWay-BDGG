@@ -34,22 +34,59 @@ class _TrackingResultScreenState extends State<TrackingResultScreen> {
   final repaintBoundary = GlobalKey();
 
   Future<void> saveCardAsImage() async {
-    // 권한 확인
-    var status = await Permission.storage.status;
-    if (!status.isGranted) {
-      status = await Permission.storage.request();
-      if (!status.isGranted) {
-        toastification.show(
-          context: context,
-          style: ToastificationStyle.flat,
-          type: ToastificationType.error,
-          autoCloseDuration: Duration(seconds: 2),
-          alignment: Alignment.bottomCenter,
-          title: Text('갤러리 접근 권한이 필요합니다'),
-        );
-        return;
+    PermissionStatus status;
+
+    if (Platform.isAndroid) {
+      // Android 13 이상
+      if (await Permission.photos.isDenied ||
+          await Permission.photos.isPermanentlyDenied) {
+        status = await Permission.photos.request();
+        if (!status.isGranted) {
+          toastification.show(
+            context: context,
+            style: ToastificationStyle.flat,
+            type: ToastificationType.error,
+            autoCloseDuration: Duration(seconds: 2),
+            alignment: Alignment.bottomCenter,
+            title: Text('갤러리 접근 권한이 필요합니다'),
+          );
+          return;
+        }
+      }
+      // Android 12 이하
+      if (await Permission.storage.isDenied ||
+          await Permission.storage.isPermanentlyDenied) {
+        status = await Permission.storage.request();
+        if (!status.isGranted) {
+          toastification.show(
+            context: context,
+            style: ToastificationStyle.flat,
+            type: ToastificationType.error,
+            autoCloseDuration: Duration(seconds: 2),
+            alignment: Alignment.bottomCenter,
+            title: Text('갤러리 접근 권한이 필요합니다'),
+          );
+          return;
+        }
+      }
+    } else if (Platform.isIOS) {
+      if (await Permission.photos.isDenied ||
+          await Permission.photos.isPermanentlyDenied) {
+        status = await Permission.photos.request();
+        if (!status.isGranted) {
+          toastification.show(
+            context: context,
+            style: ToastificationStyle.flat,
+            type: ToastificationType.error,
+            autoCloseDuration: Duration(seconds: 2),
+            alignment: Alignment.bottomCenter,
+            title: Text('갤러리 접근 권한이 필요합니다'),
+          );
+          return;
+        }
       }
     }
+
     try {
       final boundary =
           repaintBoundary.currentContext!.findRenderObject()!
