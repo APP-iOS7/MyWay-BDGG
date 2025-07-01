@@ -48,7 +48,9 @@ class _FavoriteParkScreenState extends State<FavoriteParkScreen> {
       body: Builder(
         builder: (context) {
           if (isLoading || allParks.isEmpty || favoriteParkIds.isEmpty) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(
+              child: CircularProgressIndicator(color: ORANGE_PRIMARY_500),
+            );
           }
           if (error.isNotEmpty && allParks.isEmpty) {
             return Center(child: Text('오류: $error'));
