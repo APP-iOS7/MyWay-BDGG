@@ -19,13 +19,12 @@ class _FavoriteParkScreenState extends State<FavoriteParkScreen> {
     super.didChangeDependencies();
     if (!_initialized) {
       final provider = Provider.of<ParkDataProvider>(context, listen: false);
-      if (provider.allParks.isEmpty) {
-        provider.loadParksFromCsv();
-      }
-      if (provider.favoriteParkIds.isEmpty) {
-        provider.loadFavoritesFromFirestore();
-      }
-      _initialized = true;
+      Future.wait([
+        if (provider.allParks.isEmpty) provider.loadParksFromCsv(),
+        if (provider.favoriteParkIds.isEmpty) provider.loadFavoritesFromFirestore(),
+      ]).then((_) {
+        _initialized = true;
+      });
     }
   }
 
@@ -47,7 +46,7 @@ class _FavoriteParkScreenState extends State<FavoriteParkScreen> {
       backgroundColor: GRAYSCALE_LABEL_50,
       body: Builder(
         builder: (context) {
-          if (isLoading || allParks.isEmpty || favoriteParkIds.isEmpty) {
+          if (isLoading || (!_initialized && allParks.isEmpty)) {
             return const Center(
               child: CircularProgressIndicator(color: ORANGE_PRIMARY_500),
             );

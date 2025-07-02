@@ -9,9 +9,13 @@ import 'package:uuid/uuid.dart';
 class ProfileProvider extends ChangeNotifier {
   File? _image;
   String? _imageUrl;
+  bool _isUploading = false;
+  double _uploadProgress = 0.0;
 
   File? get image => _image;
   String? get imageUrl => _imageUrl;
+  bool get isUploading => _isUploading;
+  double get uploadProgress => _uploadProgress;
 
   final ImagePicker _picker = ImagePicker();
 
@@ -27,6 +31,10 @@ class ProfileProvider extends ChangeNotifier {
     if (_image == null) {
       throw Exception('업로드할 이미지가 없습니다.');
     }
+
+    _isUploading = true; // 업로드 시작
+    _uploadProgress = 0.0;
+    notifyListeners();
 
     try {
       print('프로필 이미지 업로드 시작 - userId: $userId');
@@ -46,7 +54,10 @@ class ProfileProvider extends ChangeNotifier {
       
       // 업로드 진행상황 모니터링
       uploadTask.snapshotEvents.listen((TaskSnapshot snapshot) {
-        print('업로드 진행률: ${(snapshot.bytesTransferred / snapshot.totalBytes) * 100}%');
+        _uploadProgress = (snapshot.bytesTransferred / snapshot.totalBytes);
+        _isUploading = snapshot.state == TaskState.running;
+        notifyListeners();
+        print('업로드 진행률: ${_uploadProgress * 100}%');
       });
       
       final snapshot = await uploadTask;
@@ -65,9 +76,14 @@ class ProfileProvider extends ChangeNotifier {
       print('Firestore 저장 완료');
 
       _image = null;
+      _isUploading = false; // 업로드 완료
+      _uploadProgress = 0.0;
       notifyListeners();
       print('프로필 이미지 업로드 전체 완료');
     } catch (e) {
+      _isUploading = false; // 오류 시 업로드 상태 초기화
+      _uploadProgress = 0.0;
+      notifyListeners();
       print('프로필 이미지 업로드 에러: $e');
       print('에러 스택 트레이스: ${StackTrace.current}');
       throw Exception('이미지 업로드 실패: $e');
@@ -80,6 +96,39 @@ class ProfileProvider extends ChangeNotifier {
     if (doc.exists) {
       _imageUrl = doc.data()?['profileImage'];
       notifyListeners();
+    }
+  }
+
+  Future<void> deleteProfileImage(String userId) async {
+    try {
+      print('프로필 이미지 삭제 시작 - userId: $userId');
+
+      // Firestore에서 프로필 이미지 URL 제거
+      await FirebaseFirestore.instance.collection('users').doc(userId).update({
+        'profileImage': FieldValue.delete(),
+      });
+      print('Firestore에서 프로필 이미지 URL 삭제 완료');
+
+      // 기존 Firebase Storage에서 이미지 파일 삭제 (선택사항)
+      if (_imageUrl != null && _imageUrl!.isNotEmpty) {
+        try {
+          final ref = FirebaseStorage.instance.refFromURL(_imageUrl!);
+          await ref.delete();
+          print('Firebase Storage에서 이미지 파일 삭제 완료');
+        } catch (e) {
+          print('Firebase Storage 파일 삭제 실패 (파일이 이미 없을 수 있음): $e');
+        }
+      }
+
+      // 로컬 상태 초기화
+      _imageUrl = null;
+      _image = null;
+      notifyListeners();
+
+      print('프로필 이미지 삭제 완료');
+    } catch (e) {
+      print('프로필 이미지 삭제 에러: $e');
+      throw Exception('프로필 이미지 삭제 실패: $e');
     }
   }
 }

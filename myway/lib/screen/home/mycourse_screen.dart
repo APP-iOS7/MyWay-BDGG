@@ -102,10 +102,10 @@ class _MyCourseScreenState extends State<MyCourseScreen> {
             trackingResult.isEmpty) {
           return _buildScaffoldWithBody(
             Padding(
-              padding: EdgeInsets.only(top: availableHeight * 0.2),
+              padding: EdgeInsets.only(top: availableHeight * 0.1),
               child: Column(
                 children: [
-                  Icon(Icons.directions_walk, size: availableHeight * 0.08),
+                  Icon(Icons.directions_walk, size: availableHeight * 0.05),
                   SizedBox(height: availableHeight * 0.02),
                   SizedBox(
                     width: double.infinity,
