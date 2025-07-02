@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:myway/bottomTabBar/bottom_tab_bar.dart';
 import 'package:myway/const/colors.dart';
 import 'package:myway/firebase_options.dart';
+import 'package:myway/provider/profile_provider.dart';
 import 'package:myway/screen/notice/notice_list_screen.dart';
 import 'package:myway/screen/notice/notice_screen.dart';
 import 'package:myway/screen/setting/privacy_policy_screen.dart';
@@ -54,6 +55,7 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (context) => ActivityLogProvider()),
         ChangeNotifierProvider(create: (context) => ParkDataProvider()),
         ChangeNotifierProvider(create: (context) => ParkDataProviderTest()),
+        ChangeNotifierProvider(create: (context) => ProfileProvider()),
       ],
       child: const MyApp(),
     ),

@@ -62,6 +62,7 @@ dependencies:
   auto_size_text: ^3.0.0
   contained_tab_bar_view: ^0.8.0
   device_info_plus: ^11.5.0
+  image_picker: ^1.1.2
 
 
 dev_dependencies:

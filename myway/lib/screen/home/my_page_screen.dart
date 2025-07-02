@@ -1,17 +1,43 @@
 import 'package:contained_tab_bar_view/contained_tab_bar_view.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:myway/const/colors.dart';
+import 'package:myway/provider/profile_provider.dart';
 import 'package:myway/provider/user_provider.dart';
 import 'package:myway/screen/home/mycourse_screen.dart';
 import 'package:myway/screen/like/favorite_park_screen.dart';
 import 'package:provider/provider.dart';
+import 'package:toastification/toastification.dart';
 
-class MyPageScreen extends StatelessWidget {
+class MyPageScreen extends StatefulWidget {
   const MyPageScreen({super.key});
 
   @override
+  State<MyPageScreen> createState() => _MyPageScreenState();
+}
+
+class _MyPageScreenState extends State<MyPageScreen> {
+  @override
+  void initState() {
+    super.initState();
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      // 프로필 이미지 로드
+      Future.microtask(
+        () => Provider.of<ProfileProvider>(
+          context,
+          listen: false,
+        ).loadProfileImage(user.uid),
+      );
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final profileProvider = Provider.of<ProfileProvider>(context);
+    final user = FirebaseAuth.instance.currentUser;
+
     final userProvider = context.watch<UserProvider>();
     final nickname =
         userProvider.nickname ?? userProvider.currentUser?.displayName ?? '사용자';
@@ -48,16 +74,60 @@ class MyPageScreen extends StatelessWidget {
                       left: 20.0,
                       right: 20.0,
                     ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(50),
-                      child: Image.asset('assets/images/logo.png', height: 70),
+                    child: CircleAvatar(
+                      radius: 50,
+                      backgroundImage:
+                          profileProvider.image != null
+                              ? FileImage(profileProvider.image!)
+                              : (profileProvider.imageUrl != null
+                                  ? NetworkImage(profileProvider.imageUrl!)
+                                  : null),
+                      child:
+                          (profileProvider.image == null &&
+                                  profileProvider.imageUrl == null)
+                              ? Icon(
+                                Icons.person,
+                                size: 40,
+                                color: GRAYSCALE_LABEL_500,
+                              )
+                              : null,
                     ),
                   ),
                   Positioned(
                     top: 60,
                     right: 0,
                     child: GestureDetector(
-                      onTap: () {},
+                      onTap: () async {
+                        try {
+                          await profileProvider.pickImage();
+                          if (user != null && profileProvider.image != null) {
+                            await profileProvider.uploadImage(user.uid);
+                            toastification.show(
+                              context: context,
+                              type: ToastificationType.success,
+                              alignment: Alignment.bottomCenter,
+                              autoCloseDuration: const Duration(seconds: 2),
+                              title: Text('프로필 이미지 업로드 완료'),
+                            );
+                          } else {
+                            toastification.show(
+                              context: context,
+                              type: ToastificationType.error,
+                              alignment: Alignment.bottomCenter,
+                              autoCloseDuration: const Duration(seconds: 2),
+                              title: Text('프로필 이미지를 먼저 선택해주세요.'),
+                            );
+                          }
+                        } catch (e) {
+                          toastification.show(
+                            context: context,
+                            type: ToastificationType.error,
+                            alignment: Alignment.bottomCenter,
+                            autoCloseDuration: const Duration(seconds: 2),
+                            title: Text('프로필 이미지 업로드 실패: $e'),
+                          );
+                        }
+                      },
                       child: Container(
                         width: 30,
                         height: 30,
@@ -102,7 +172,6 @@ class MyPageScreen extends StatelessWidget {
               ),
             ],
           ),
-
           const SizedBox(height: 30),
           Expanded(
             child: Container(
