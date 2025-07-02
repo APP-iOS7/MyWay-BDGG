@@ -3,6 +3,7 @@ import 'package:myway/model/park_info.dart';
 import 'package:myway/provider/park_data_provider.dart';
 import 'package:myway/screen/alert/countdown_diallog.dart';
 import 'package:myway/provider/step_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../model/park_course_info.dart';
@@ -30,6 +31,7 @@ class _CourseRecommendBottomsheetState
   @override
   void initState() {
     super.initState();
+    requestActivityRecognitionPermission();
     _allTrackingResults = [];
     _isLoadingTrackingResults = false;
     _hasAttemptedLoad = false;
@@ -219,6 +221,14 @@ class _CourseRecommendBottomsheetState
       return null;
     }
   }
+  // 중복된 initState 메서드 제거 (이미 정의되어 있음)
+
+  Future<void> requestActivityRecognitionPermission() async {
+    final status = await Permission.activityRecognition.status;
+    if (!status.isGranted) {
+      await Permission.activityRecognition.request();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -282,7 +292,8 @@ class _CourseRecommendBottomsheetState
                         ),
                         const Spacer(),
                         ElevatedButton(
-                          onPressed: () {
+                          onPressed: () async {
+                            await requestActivityRecognitionPermission();
                             print('버튼 클릭');
                             if (Provider.of<MapProvider>(
                                   context,

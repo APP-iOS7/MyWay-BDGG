@@ -7,14 +7,14 @@ import 'package:toastification/toastification.dart';
 import '../../const/custome_button.dart';
 import 'course_detail_screen.dart';
 
-class MycourseScreen extends StatefulWidget {
-  const MycourseScreen({super.key});
+class MyCourseScreen extends StatefulWidget {
+  const MyCourseScreen({super.key});
 
   @override
-  State<MycourseScreen> createState() => _MycourseScreenState();
+  State<MyCourseScreen> createState() => _MyCourseScreenState();
 }
 
-class _MycourseScreenState extends State<MycourseScreen> {
+class _MyCourseScreenState extends State<MyCourseScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
@@ -67,6 +67,10 @@ class _MycourseScreenState extends State<MycourseScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+    final padding = MediaQuery.of(context).padding;
+    final availableHeight = screenSize.height - padding.top - padding.bottom;
+
     return StreamBuilder<DocumentSnapshot>(
       stream:
           _firestore
@@ -82,7 +86,9 @@ class _MycourseScreenState extends State<MycourseScreen> {
 
         if (snapshot.connectionState == ConnectionState.waiting) {
           return _buildScaffoldWithBody(
-            const Center(child: CircularProgressIndicator()),
+            const Center(
+              child: CircularProgressIndicator(color: ORANGE_PRIMARY_500),
+            ),
           );
         }
 
@@ -96,12 +102,12 @@ class _MycourseScreenState extends State<MycourseScreen> {
             trackingResult.isEmpty) {
           return _buildScaffoldWithBody(
             Padding(
-              padding: const EdgeInsets.only(top: 200.0),
+              padding: EdgeInsets.only(top: availableHeight * 0.1),
               child: Column(
                 children: [
-                  const Icon(Icons.directions_walk),
-                  const SizedBox(height: 10),
-                  const SizedBox(
+                  Icon(Icons.directions_walk, size: availableHeight * 0.05),
+                  SizedBox(height: availableHeight * 0.02),
+                  SizedBox(
                     width: double.infinity,
                     child: Text(
                       '저장된 기록이 없습니다.',
@@ -109,17 +115,17 @@ class _MycourseScreenState extends State<MycourseScreen> {
                       style: TextStyle(
                         color: GRAYSCALE_LABEL_800,
                         fontWeight: FontWeight.bold,
-                        fontSize: 20,
+                        fontSize: screenSize.width * 0.05,
                       ),
                     ),
                   ),
-                  const Text(
+                  Text(
                     '산책을 시작해서 나만의 코스를 만들어보세요!',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: GRAYSCALE_LABEL_600,
                       fontWeight: FontWeight.w500,
-                      fontSize: 16,
+                      fontSize: screenSize.width * 0.04,
                     ),
                   ),
                 ],
@@ -142,253 +148,246 @@ class _MycourseScreenState extends State<MycourseScreen> {
 
         return Scaffold(
           backgroundColor: Colors.white,
-          appBar: AppBar(
-            backgroundColor: Colors.white,
-            elevation: 0,
-            scrolledUnderElevation: 0,
-            centerTitle: true,
-            title: const Text(
-              '나의 코스',
-              style: TextStyle(
-                color: GRAYSCALE_LABEL_950,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            actions:
-                isEditing
-                    ? [
-                      ValueListenableBuilder<List<bool>>(
-                        valueListenable: _selectedNotifier,
-                        builder: (context, selected, _) {
-                          final selectedCount =
-                              selected.where((isSelected) => isSelected).length;
-                          return Flexible(
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                TextButton(
-                                  onPressed:
-                                      () => deleteSelected(trackingResult),
-                                  style: customTextButtonStyle(),
-                                  child: const Text(
-                                    '삭제',
-                                    style: TextStyle(color: Colors.red),
-                                  ),
+          body: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(left: 20.0, right: 20.0),
+                    child: Text(
+                      '나의 코스',
+                      style: TextStyle(
+                        color: GRAYSCALE_LABEL_950,
+                        fontSize: screenSize.width * 0.045,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  isEditing
+                      ? Padding(
+                        padding: const EdgeInsets.only(right: 20.0),
+                        child: Row(
+                          children: [
+                            TextButton(
+                              onPressed: () => deleteSelected(trackingResult),
+                              style: customTextButtonStyle(),
+                              child: Text(
+                                '삭제',
+                                style: TextStyle(
+                                  color: Colors.red,
+                                  fontSize: screenSize.width * 0.035,
                                 ),
-                                TextButton(
-                                  onPressed:
-                                      () => setState(() => isEditing = false),
-                                  style: customTextButtonStyle(),
-                                  child: const Text(
-                                    '취소',
-                                    style: TextStyle(
-                                      color: GRAYSCALE_LABEL_900,
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: 15,
-                                    ),
-                                  ),
-                                ),
-                                Flexible(
-                                  child: Text(
-                                    '$selectedCount개 선택',
-                                    style: const TextStyle(
-                                      color: GRAYSCALE_LABEL_900,
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: 15,
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
+                              ),
                             ),
-                          );
-                        },
-                      ),
-                    ]
-                    : [
-                      TextButton(
-                        onPressed: () => toggleEditing(trackingResult.length),
-                        style: customTextButtonStyle(),
-                        child: const Text(
-                          '편집',
-                          style: TextStyle(
-                            color: GRAYSCALE_LABEL_900,
-                            fontWeight: FontWeight.w500,
-                            fontSize: 15,
-                          ),
-                        ),
-                      ),
-                    ],
-          ),
-          body: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-              child: GridView.builder(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  childAspectRatio: 0.85,
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 8.0,
-                  mainAxisSpacing: 8,
-                ),
-                itemCount: trackingResult.length,
-                itemBuilder: (context, index) {
-                  final result = trackingResult[index];
-                  final imageUrl = result['이미지 Url'] ?? '';
-
-                  return InkWell(
-                    focusColor: WHITE,
-                    hoverColor: WHITE,
-                    highlightColor: WHITE,
-                    onTap:
-                        isEditing
-                            ? null
-                            : () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder:
-                                      (context) =>
-                                          CourseDetailScreen(data: result),
-                                ),
-                              );
-                            },
-                    child: Stack(
-                      children: [
-                        Card(
-                          color: WHITE,
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Expanded(
-                                flex: 3,
-                                child:
-                                    imageUrl.isNotEmpty
-                                        ? ClipRRect(
-                                          borderRadius:
-                                              const BorderRadius.vertical(
-                                                top: Radius.circular(12),
-                                              ),
-                                          child: Image.network(
-                                            imageUrl,
-                                            width: double.infinity,
-                                            height: double.infinity,
-                                            fit: BoxFit.cover,
-                                            errorBuilder: (
-                                              context,
-                                              error,
-                                              stackTrace,
-                                            ) {
-                                              return Container(
-                                                width: double.infinity,
-                                                height: double.infinity,
-                                                color: GRAYSCALE_LABEL_200,
-                                                child: const Icon(
-                                                  Icons.image_not_supported,
-                                                  color: GRAYSCALE_LABEL_400,
-                                                ),
-                                              );
-                                            },
-                                          ),
-                                        )
-                                        : Container(
-                                          width: double.infinity,
-                                          height: double.infinity,
-                                          color: GRAYSCALE_LABEL_200,
-                                          child: const Icon(
-                                            Icons.image_not_supported,
-                                            color: GRAYSCALE_LABEL_400,
-                                          ),
-                                        ),
-                              ),
-                              Expanded(
-                                flex: 2,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Flexible(
-                                        child: Text(
-                                          result['코스이름'] ?? '코스명 없음',
-                                          style: const TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                          overflow: TextOverflow.ellipsis,
-                                          maxLines: 1,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Row(
-                                        children: [
-                                          const Icon(
-                                            Icons.access_time,
-                                            size: 12,
-                                            color: BLUE_SECONDARY_700,
-                                          ),
-                                          const SizedBox(width: 4),
-                                          Flexible(
-                                            child: Text(
-                                              _formatDateTime(
-                                                result['종료시간'] ?? '',
-                                              ),
-                                              style: TextStyle(
-                                                fontSize: 11,
-                                                color: GRAYSCALE_LABEL_800,
-                                              ),
-                                              overflow: TextOverflow.ellipsis,
-                                              maxLines: 1,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
+                            TextButton(
+                              onPressed:
+                                  () => setState(() => isEditing = false),
+                              style: customTextButtonStyle(),
+                              child: Text(
+                                '취소',
+                                style: TextStyle(
+                                  color: GRAYSCALE_LABEL_900,
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: screenSize.width * 0.035,
                                 ),
                               ),
-                            ],
-                          ),
-                        ),
-                        if (isEditing)
-                          Positioned(
-                            top: 4,
-                            right: 4,
-                            child: ValueListenableBuilder<List<bool>>(
+                            ),
+                            ValueListenableBuilder(
                               valueListenable: _selectedNotifier,
                               builder: (context, selected, _) {
-                                return Container(
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: Checkbox(
-                                    activeColor: ORANGE_PRIMARY_500,
-                                    focusColor: Colors.transparent,
-                                    hoverColor: Colors.transparent,
-                                    checkColor: Colors.white,
-                                    overlayColor: WidgetStateProperty.all(
-                                      Colors.transparent,
-                                    ),
-                                    value: selected[index],
-                                    onChanged: (val) {
-                                      final copy = List<bool>.from(selected);
-                                      copy[index] = val!;
-                                      _selectedNotifier.value = copy;
-                                    },
+                                return Text(
+                                  '${selected.where((e) => e).length}개 선택',
+                                  style: TextStyle(
+                                    color: GRAYSCALE_LABEL_900,
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: screenSize.width * 0.035,
                                   ),
                                 );
                               },
                             ),
+                          ],
+                        ),
+                      )
+                      : TextButton(
+                        onPressed: () => toggleEditing(trackingResult.length),
+                        style: customTextButtonStyle(),
+                        child: Text(
+                          '편집',
+                          style: TextStyle(
+                            color: GRAYSCALE_LABEL_900,
+                            fontWeight: FontWeight.w500,
+                            fontSize: screenSize.width * 0.035,
                           ),
-                      ],
-                    ),
-                  );
-                },
+                        ),
+                      ),
+                ],
               ),
-            ),
+              Expanded(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: screenSize.width * 0.05,
+                  ),
+                  child: GridView.builder(
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      childAspectRatio: 0.85,
+                      crossAxisCount: 2,
+                      crossAxisSpacing: screenSize.width * 0.02,
+                      mainAxisSpacing: screenSize.width * 0.02,
+                    ),
+                    itemCount: trackingResult.length,
+                    itemBuilder: (context, index) {
+                      final result = trackingResult[index];
+                      final imageUrl = result['이미지 Url'] ?? '';
+
+                      return InkWell(
+                        focusColor: WHITE,
+                        hoverColor: WHITE,
+                        highlightColor: WHITE,
+                        onTap:
+                            isEditing
+                                ? null
+                                : () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder:
+                                          (context) =>
+                                              CourseDetailScreen(data: result),
+                                    ),
+                                  );
+                                },
+                        child: Stack(
+                          children: [
+                            Card(
+                              color: WHITE,
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Expanded(
+                                    flex: 3,
+                                    child:
+                                        imageUrl.isNotEmpty
+                                            ? ClipRRect(
+                                              borderRadius:
+                                                  const BorderRadius.vertical(
+                                                    top: Radius.circular(12),
+                                                  ),
+                                              child: Image.network(
+                                                imageUrl,
+                                                width: double.infinity,
+                                                fit: BoxFit.cover,
+                                              ),
+                                            )
+                                            : Container(
+                                              width: double.infinity,
+                                              decoration: BoxDecoration(
+                                                color: Colors.grey[200],
+                                                borderRadius:
+                                                    const BorderRadius.vertical(
+                                                      top: Radius.circular(12),
+                                                    ),
+                                              ),
+                                              child: Icon(
+                                                Icons.image_not_supported,
+                                                size: screenSize.width * 0.1,
+                                                color: Colors.grey[400],
+                                              ),
+                                            ),
+                                  ),
+                                  Expanded(
+                                    flex: 2,
+                                    child: Padding(
+                                      padding: EdgeInsets.all(
+                                        screenSize.width * 0.025,
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Flexible(
+                                            child: Text(
+                                              result['코스이름'] ?? '',
+                                              style: TextStyle(
+                                                fontSize:
+                                                    screenSize.width * 0.035,
+                                                fontWeight: FontWeight.w600,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                              maxLines: 1,
+                                            ),
+                                          ),
+                                          SizedBox(
+                                            height: screenSize.width * 0.01,
+                                          ),
+                                          Row(
+                                            children: [
+                                              Icon(
+                                                Icons.access_time,
+                                                size: screenSize.width * 0.03,
+                                                color: BLUE_SECONDARY_700,
+                                              ),
+                                              SizedBox(
+                                                width: screenSize.width * 0.01,
+                                              ),
+                                              Flexible(
+                                                child: Text(
+                                                  result['종료시간'] ?? '',
+                                                  style: TextStyle(
+                                                    fontSize:
+                                                        screenSize.width *
+                                                        0.035,
+                                                    color: GRAYSCALE_LABEL_800,
+                                                  ),
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            if (isEditing)
+                              Positioned(
+                                top: 1,
+                                right: 1,
+                                child: ValueListenableBuilder<List<bool>>(
+                                  valueListenable: _selectedNotifier,
+                                  builder: (context, selected, _) {
+                                    return Checkbox(
+                                      activeColor: ORANGE_PRIMARY_500,
+                                      focusColor: Colors.transparent,
+                                      hoverColor: Colors.transparent,
+                                      checkColor: Colors.white,
+                                      overlayColor: WidgetStateProperty.all(
+                                        Colors.transparent,
+                                      ),
+                                      value: selected[index],
+                                      onChanged: (val) {
+                                        final copy = List<bool>.from(selected);
+                                        copy[index] = val!;
+                                        _selectedNotifier.value = copy;
+                                      },
+                                    );
+                                  },
+                                ),
+                              ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ],
           ),
         );
       },
@@ -406,17 +405,19 @@ class _MycourseScreenState extends State<MycourseScreen> {
   }
 
   Scaffold _buildScaffoldWithBody(Widget bodyContent) {
+    final screenSize = MediaQuery.of(context).size;
+
     return Scaffold(
       backgroundColor: WHITE,
       appBar: AppBar(
         backgroundColor: Colors.white,
         scrolledUnderElevation: 0,
         centerTitle: true,
-        title: const Text(
+        title: Text(
           '나의 코스',
           style: TextStyle(
             color: GRAYSCALE_LABEL_950,
-            fontSize: 18,
+            fontSize: screenSize.width * 0.045,
             fontWeight: FontWeight.bold,
           ),
         ),

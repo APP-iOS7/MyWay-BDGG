@@ -3,8 +3,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:myway/bottomTabBar/bottom_tab_bar.dart';
 import 'package:myway/const/colors.dart';
-import 'package:myway/screen/home/home_screen.dart';
 import 'package:toastification/toastification.dart';
 
 import '../../const/custome_button.dart';
@@ -56,19 +56,33 @@ class _SigninScreenState extends State<SigninScreen> {
       debugPrint('로그인 성공: ${userCredential.user}');
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => HomeScreen()),
+        MaterialPageRoute(builder: (context) => const BottomTabBar()),
       );
-    } catch (e) {
-      if (mounted) {
-        toastification.show(
-          context: context,
-          type: ToastificationType.error,
-          style: ToastificationStyle.flat,
-          alignment: Alignment.bottomCenter,
-          autoCloseDuration: Duration(seconds: 2),
-          title: Text("로그인 실패 $e"),
-        );
+    } on FirebaseAuthException catch (e) {
+      print('FirebaseAuthException: ${e.code}');
+      switch (e.code) {
+        case 'invalid-credential':
+          toastification.show(
+            context: context,
+            type: ToastificationType.error,
+            style: ToastificationStyle.flat,
+            alignment: Alignment.bottomCenter,
+            autoCloseDuration: Duration(seconds: 2),
+            title: Text("잘못된 이메일 또는 비밀번호입니다."),
+          );
+          break;
+        default:
+          toastification.show(
+            context: context,
+            type: ToastificationType.error,
+            style: ToastificationStyle.flat,
+            alignment: Alignment.bottomCenter,
+            autoCloseDuration: Duration(seconds: 2),
+            title: Text("로그인 실패 ${e.message.toString()}"),
+          );
       }
+    } catch (e) {
+      print('로그인 오류: $e');
     }
   }
 

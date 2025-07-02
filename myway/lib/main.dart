@@ -2,7 +2,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:myway/bottomTabBar/bottom_tab_bar.dart';
+import 'package:myway/const/colors.dart';
 import 'package:myway/firebase_options.dart';
+import 'package:myway/provider/profile_provider.dart';
 import 'package:myway/screen/notice/notice_list_screen.dart';
 import 'package:myway/screen/notice/notice_screen.dart';
 import 'package:myway/screen/setting/privacy_policy_screen.dart';
@@ -32,7 +35,6 @@ import 'temp/test_drawer.dart';
 import 'temp/test_map.dart';
 
 Future<void> main() async {
-  print('commit for stable version');
   WidgetsFlutterBinding.ensureInitialized();
 
   // 세로 방향 고정
@@ -53,6 +55,7 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (context) => ActivityLogProvider()),
         ChangeNotifierProvider(create: (context) => ParkDataProvider()),
         ChangeNotifierProvider(create: (context) => ParkDataProviderTest()),
+        ChangeNotifierProvider(create: (context) => ProfileProvider()),
       ],
       child: const MyApp(),
     ),
@@ -111,11 +114,13 @@ class AuthWrapper extends StatelessWidget {
         }
 
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+          return const Center(
+            child: CircularProgressIndicator(color: ORANGE_PRIMARY_500),
+          );
         } else if (snapshot.hasError) {
           return const Center(child: Text('에러가 발생하였습니다.'));
         } else if (snapshot.hasData) {
-          return const HomeScreen();
+          return const BottomTabBar();
         } else {
           return const SigninScreen();
         }

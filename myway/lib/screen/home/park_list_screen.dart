@@ -883,18 +883,6 @@ class _ParkListScreenState extends State<ParkListScreen>
           appBar: AppBar(
             backgroundColor: BACKGROUND_COLOR,
             elevation: 0,
-            leading: IconButton(
-              icon: const Icon(
-                Icons.arrow_back_ios,
-                color: GRAYSCALE_LABEL_950,
-                size: 20,
-              ),
-              onPressed: () {
-                if (Navigator.canPop(context)) {
-                  Navigator.pop(context);
-                }
-              },
-            ),
             title: const Text(
               "공원 및 코스 추천",
               style: TextStyle(

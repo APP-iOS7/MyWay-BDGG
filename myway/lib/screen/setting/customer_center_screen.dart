@@ -25,7 +25,10 @@ class _CustomerCenterScreenState extends State<CustomerCenterScreen> {
       showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (context) => const Center(child: CircularProgressIndicator()),
+        builder:
+            (context) => const Center(
+              child: CircularProgressIndicator(color: ORANGE_PRIMARY_500),
+            ),
       );
 
       // Provider를 통한 계정 삭제

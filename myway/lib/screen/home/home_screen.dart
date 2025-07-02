@@ -8,11 +8,8 @@ import 'package:provider/provider.dart';
 import '../../provider/park_data_provider.dart';
 import '../../provider/user_provider.dart';
 import '/const/colors.dart';
-import 'mycourse_screen.dart';
-import 'park_list_screen.dart';
 import 'weather_screen.dart';
 import '/provider/weather_provider.dart';
-import '../result/activity_log_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -24,6 +21,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   List<String> imageUrls = [];
   bool isLoading = true;
+
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
@@ -32,47 +30,21 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     context.read<UserProvider>().loadNickname();
     fetchImages();
-    final parkProvider = context.read<ParkDataProvider>();
-    parkProvider.loadParksFromCsv();
+    context.read<ParkDataProvider>().loadParksFromCsv();
+    context.read<ParkDataProvider>().loadParksFromCsv();
   }
 
   Future<void> fetchImages() async {
-    try {
-      // 사용자가 로그인되어 있는지 확인
-      final user = _auth.currentUser;
-      if (user == null) {
-        print('사용자가 로그인되어 있지 않습니다. 이미지를 가져올 수 없습니다.');
-        if (mounted) {
-          setState(() {
-            imageUrls = [];
-            isLoading = false;
-          });
-        }
-        return;
-      }
-
-      final ref = FirebaseStorage.instance.ref().child('walk_result');
-      final result = await ref.listAll();
-      print('Storage에서 찾은 이미지 개수: ${result.items.length}');
-
-      final urls = await Future.wait(
-        result.items.map((item) => item.getDownloadURL()),
-      );
-
-      if (mounted) {
-        setState(() {
-          imageUrls = urls;
-          isLoading = false;
-        });
-      }
-    } catch (e) {
-      print('이미지 가져오기 실패: $e');
-      if (mounted) {
-        setState(() {
-          imageUrls = [];
-          isLoading = false;
-        });
-      }
+    final ref = FirebaseStorage.instance.ref().child('walk_result');
+    final result = await ref.listAll();
+    final urls = await Future.wait(
+      result.items.map((item) => item.getDownloadURL()),
+    );
+    if (mounted) {
+      setState(() {
+        imageUrls = urls;
+        isLoading = false;
+      });
     }
   }
 
@@ -89,7 +61,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 40),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -101,57 +73,51 @@ class _HomeScreenState extends State<HomeScreen> {
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  SizedBox(width: 20),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) {
-                            return WeatherScreen();
-                          },
-                        ),
-                      );
-                    },
-                    child: Row(
-                      spacing: 5,
-                      children: [
-                        SvgPicture.asset(
-                          weatherProvider.weatherIconPath,
-                          height: 30,
-                        ),
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              weatherProvider.weatherStatus,
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w500,
-                                color: GREEN_SUCCESS_TEXT_50,
-                              ),
-                            ),
-                            Text(
-                              '${weatherProvider.temperature}°',
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w500,
-                                color: BLACK,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
                   Spacer(),
-                  IconButton(
-                    onPressed: () {
-                      Navigator.pushNamed(context, 'setting');
-                    },
-                    icon: Icon(
-                      Icons.settings_outlined,
-                      color: GRAYSCALE_LABEL_600,
+                  Transform.translate(
+                    offset: Offset(0, 10),
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) {
+                              return WeatherScreen();
+                            },
+                          ),
+                        );
+                      },
+
+                      child: Row(
+                        spacing: 5,
+                        children: [
+                          SvgPicture.asset(
+                            weatherProvider.weatherIconPath,
+                            height: 30,
+                          ),
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                weatherProvider.weatherStatus,
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w500,
+                                  color: GREEN_SUCCESS_TEXT_50,
+                                ),
+                              ),
+                              Text(
+                                '${weatherProvider.temperature}°',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w500,
+                                  color: BLACK,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],
@@ -161,8 +127,8 @@ class _HomeScreenState extends State<HomeScreen> {
             Padding(
               padding: const EdgeInsets.only(
                 top: 0.0,
-                left: 20,
-                right: 20,
+                left: 40,
+                right: 40,
                 bottom: 10,
               ),
               child: Row(
@@ -171,35 +137,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   Text(
                     '나의 산책 코스',
                     style: TextStyle(color: BLACK, fontSize: 17),
-                  ),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const MycourseScreen(),
-                        ),
-                      );
-                    },
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: BLUE_SECONDARY_600,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 2.0,
-                        horizontal: 10.0,
-                      ),
-                      child: Text(
-                        '더보기+',
-                        style: TextStyle(
-                          color: WHITE,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
                   ),
                 ],
               ),
@@ -321,11 +258,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         : trackingResult;
 
                 return SizedBox(
-                  height: 450,
+                  height: 500,
                   child: CarouselSlider(
                     options: CarouselOptions(
                       scrollDirection: Axis.horizontal,
-                      height: 430,
+                      height: 480,
                       enableInfiniteScroll: trackingResult.length == 3,
                       padEnds: true,
                       viewportFraction: 0.8, // 화면에 보이는 아이템의 비율
@@ -368,12 +305,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                               ? Image.network(
                                                 result['이미지 Url'],
                                                 width: double.infinity,
-                                                height: 262,
+                                                height: 285,
                                                 fit: BoxFit.cover,
                                               )
                                               : Container(
                                                 width: double.infinity,
-                                                height: 282,
+                                                height: 290,
                                                 color: GRAYSCALE_LABEL_200,
                                                 child: Icon(
                                                   Icons.image_not_supported,
@@ -414,7 +351,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                           FontWeight.w600,
                                                     ),
                                                   ),
-
+                                                  SizedBox(height: 10),
                                                   Row(
                                                     children: [
                                                       Column(
@@ -535,7 +472,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Padding(
                   padding: const EdgeInsets.symmetric(
                     vertical: 10.0,
-                    horizontal: 20,
+                    horizontal: 45,
                   ),
                   child: SizedBox(
                     width: double.infinity,
@@ -546,7 +483,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       },
                       style: ElevatedButton.styleFrom(
                         shadowColor: Colors.transparent,
-                        backgroundColor: ORANGE_PRIMARY_600,
+                        backgroundColor: ORANGE_PRIMARY_500,
                         foregroundColor: WHITE,
 
                         shape: RoundedRectangleBorder(
@@ -565,122 +502,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 SizedBox(height: 10),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: _buildBottomItem(
-                          backgroundColor: RECOMMEND_BACKGROUND,
-                          label: '추천 코스',
-                          iconPath: 'assets/images/location.svg',
-                          iconColor: BLUE_SECONDARY_700,
-                          iconWidth: 30,
-                          iconHeight: 30,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder:
-                                    (context) =>
-                                        ParkListScreen(initialTabIndex: 0),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: _buildBottomItem(
-                          label: '공원 찾기',
-                          iconColor: PARK_IC,
-                          backgroundColor: FIND_PARK_BACKGROUND,
-                          iconWidth: 35,
-                          iconHeight: 35,
-                          iconPath: 'assets/icons/ic_park.svg',
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder:
-                                    (context) => const ParkListScreen(
-                                      initialTabIndex: 1,
-                                    ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: _buildBottomItem(
-                          backgroundColor: MY_RECORD_BACKGROUND,
-                          label: '나의 기록',
-                          iconColor: WALKING_IC,
-                          iconWidth: 30,
-                          iconHeight: 30,
-                          iconPath: 'assets/icons/walk.svg',
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => ActivityLogScreen(),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
               ],
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBottomItem({
-    required String label,
-    required String iconPath,
-    required double iconWidth,
-    required double iconHeight,
-    required Color iconColor,
-    required VoidCallback onTap,
-    required Color backgroundColor,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AspectRatio(
-        aspectRatio: 1, // 가로 = 세로
-        child: Container(
-          decoration: BoxDecoration(
-            color: backgroundColor,
-            borderRadius: BorderRadius.circular(8),
-            boxShadow: [
-              BoxShadow(color: GRAYSCALE_LABEL_200, offset: Offset(1, 1)),
-            ],
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SvgPicture.asset(
-                iconPath,
-                width: iconWidth,
-                height: iconHeight,
-                colorFilter: ColorFilter.mode(
-                  iconColor.withValues(alpha: 1),
-                  BlendMode.srcIn,
-                ),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                label,
-                style: const TextStyle(color: Colors.black, fontSize: 13),
-              ),
-            ],
-          ),
         ),
       ),
     );

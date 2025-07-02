@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:myway/bottomTabBar/bottom_tab_bar.dart';
 import 'dart:convert';
 import 'package:myway/const/colors.dart';
 import 'package:myway/provider/user_provider.dart';
@@ -522,7 +523,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                             context,
                                             MaterialPageRoute(
                                               builder:
-                                                  (context) => HomeScreen(),
+                                                  (context) =>
+                                                      const BottomTabBar(),
                                             ),
                                           );
                                         } else {
