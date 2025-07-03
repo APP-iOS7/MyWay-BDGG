@@ -118,14 +118,18 @@ class _ParkRecommendScreenState extends State<ParkRecommendScreen> {
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
-                  if (record.parkName != null)
-                    Text(
-                      record.parkName!,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: GRAYSCALE_LABEL_800,
-                      ),
+
+                  Text(
+                    record.parkName != null
+                        ? record.parkName!.isEmpty
+                            ? '선택 안함'
+                            : record.parkName!
+                        : '공원 미지정',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: GRAYSCALE_LABEL_800,
                     ),
+                  ),
 
                   Text(
                     formatStopTime(record.stopTime),
@@ -150,7 +154,14 @@ class _ParkRecommendScreenState extends State<ParkRecommendScreen> {
         return Scaffold(
           backgroundColor: Colors.white,
           appBar: AppBar(
-            title: const Text('추천 코스'),
+            title: const Text(
+              '추천 코스',
+              style: TextStyle(
+                color: GRAYSCALE_LABEL_950,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             centerTitle: true,
             backgroundColor: Colors.white,
             surfaceTintColor: Colors.transparent,

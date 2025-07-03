@@ -5,6 +5,7 @@ import 'package:myway/screen/home/home_screen.dart';
 import 'package:myway/screen/home/my_page_screen.dart';
 import 'package:myway/screen/home/park_list_screen.dart';
 import 'package:myway/screen/result/activity_log_screen.dart';
+import 'package:myway/temp/park_recommend_screen.dart';
 
 class BottomTabBar extends StatefulWidget {
   const BottomTabBar({super.key});
@@ -15,8 +16,8 @@ class BottomTabBar extends StatefulWidget {
 
 class _BottomTabBarState extends State<BottomTabBar> {
   final List<Widget> _tabList = [
-    ParkListScreen(initialTabIndex: 0), // 추천코스 탭
-    ParkListScreen(initialTabIndex: 1), // 공원찾기 탭
+    ParkRecommendScreen(), // 추천코스 탭
+    ParkListScreen(), // 공원찾기 탭
     HomeScreen(),
     ActivityLogScreen(),
     MyPageScreen(),
@@ -74,10 +75,10 @@ class _BottomTabBarState extends State<BottomTabBar> {
                 BottomNavigationBarItem(
                   icon: _buildTabIcon(
                     2,
-                    CupertinoIcons.add_circled,
-                    CupertinoIcons.add_circled_solid,
+                    CupertinoIcons.home,
+                    CupertinoIcons.home,
                   ),
-                  label: '산책시작',
+                  label: '홈',
                 ),
                 BottomNavigationBarItem(
                   icon: _buildTabIcon(

@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:myway/model/park_info.dart';
-import 'package:myway/model/step_model.dart';
-import 'package:myway/screen/home/course_detail_screen.dart';
 import 'package:provider/provider.dart';
 import '../../provider/park_data_provider.dart';
 import '../../const/colors.dart';
@@ -10,17 +8,13 @@ import 'park_detail.dart';
 enum ParkFilterType { all, nearby, favorites }
 
 class ParkListScreen extends StatefulWidget {
-  final int initialTabIndex;
-  const ParkListScreen({super.key, this.initialTabIndex = 0});
+  const ParkListScreen({super.key});
+
   @override
   State<ParkListScreen> createState() => _ParkListScreenState();
 }
 
-class _ParkListScreenState extends State<ParkListScreen>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-
-  // 공원 탭 관련 상태 변수
+class _ParkListScreenState extends State<ParkListScreen> {
   List<ParkInfo> _filteredParks = [];
   List<ParkInfo> _parksToDisplayOnPage = [];
   final double _nearbyFilterRadiusKm = 2.0;
@@ -32,110 +26,46 @@ class _ParkListScreenState extends State<ParkListScreen>
   int _currentParkPage = 1;
   bool _isFetchingMoreParks = false;
 
-  static const Color orangeIconColor = YELLOW_INFO_BASE_30;
-
-  // 사용자 활동 기록 관련 상태 변수
-  List<StepModel> _userRecordsToDisplayOnPage = [];
-  final ScrollController _userRecordsScrollController = ScrollController();
-  final int _userRecordsPerPage = 20;
-  int _currentUserRecordsPage = 1;
-  bool _isFetchingMoreUserRecords = false;
-
   @override
   void initState() {
     super.initState();
-
-    _tabController = TabController(
-      length: 2,
-      vsync: this,
-      initialIndex: widget.initialTabIndex,
-    );
-    _tabController.addListener(_handleTabSelection);
-
     _searchController.addListener(_onParkSearchChanged);
     _parkListScrollController.addListener(_onParkScroll);
-    _userRecordsScrollController.addListener(_onUserRecordsScroll);
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final provider = Provider.of<ParkDataProvider>(context, listen: false);
       provider.initialize().then((_) {
         _applyParkFilterAndSearchAndPagination(provider);
-        _applyUserRecordsPagination(provider);
       });
     });
   }
 
   @override
   void dispose() {
-    _tabController.removeListener(_handleTabSelection);
-    _tabController.dispose();
     _searchController.removeListener(_onParkSearchChanged);
     _searchController.dispose();
     _parkListScrollController.removeListener(_onParkScroll);
     _parkListScrollController.dispose();
-    _userRecordsScrollController.removeListener(_onUserRecordsScroll);
-    _userRecordsScrollController.dispose();
     super.dispose();
-  }
-
-  void _handleTabSelection() {
-    if (mounted) {
-      final parkDataProvider = Provider.of<ParkDataProvider>(
-        context,
-        listen: false,
-      );
-      if (_tabController.indexIsChanging) {
-        setState(() {
-          if (_tabController.index == 0) {
-            if (_parkListScrollController.hasClients) {
-              _parkListScrollController.jumpTo(0);
-            }
-            _applyParkFilterAndSearchAndPagination(parkDataProvider);
-          } else if (_tabController.index == 1) {
-            if (_userRecordsScrollController.hasClients) {
-              _userRecordsScrollController.jumpTo(0);
-            }
-            _applyUserRecordsPagination(parkDataProvider);
-          }
-        });
-      }
-    }
   }
 
   void _onParkSearchChanged() {
     if (mounted) {
-      final parkDataProvider = Provider.of<ParkDataProvider>(
-        context,
-        listen: false,
-      );
+      final provider = Provider.of<ParkDataProvider>(context, listen: false);
       setState(() {
         _searchTerm = _searchController.text;
-        _applyParkFilterAndSearchAndPagination(parkDataProvider);
+        _applyParkFilterAndSearchAndPagination(provider);
       });
     }
   }
 
   void _onParkScroll() {
-    if (_tabController.index == 0 &&
-        _parkListScrollController.hasClients &&
+    if (_parkListScrollController.hasClients &&
         _parkListScrollController.position.pixels >=
             _parkListScrollController.position.maxScrollExtent - 200 &&
         !_isFetchingMoreParks &&
         _parksToDisplayOnPage.length < _filteredParks.length) {
       _fetchMoreParksForPage();
-    }
-  }
-
-  void _onUserRecordsScroll() {
-    if (_tabController.index == 1 &&
-        _userRecordsScrollController.hasClients &&
-        _userRecordsScrollController.position.pixels >=
-            _userRecordsScrollController.position.maxScrollExtent - 200 &&
-        !_isFetchingMoreUserRecords) {
-      final provider = Provider.of<ParkDataProvider>(context, listen: false);
-      if (_userRecordsToDisplayOnPage.length <
-          provider.allUserCourseRecords.length) {
-        _fetchMoreUserRecordsForPage();
-      }
     }
   }
 
@@ -207,142 +137,6 @@ class _ParkListScreenState extends State<ParkListScreen>
     });
   }
 
-  void _applyUserRecordsPagination(ParkDataProvider provider) {
-    if (mounted) {
-      setState(() {
-        _currentUserRecordsPage = 1;
-        _loadUserRecordsForCurrentPage(provider);
-      });
-    }
-  }
-
-  void _loadUserRecordsForCurrentPage(ParkDataProvider provider) {
-    final allRecords = provider.allUserCourseRecords;
-    final int startIndex = (_currentUserRecordsPage - 1) * _userRecordsPerPage;
-    int endIndex = startIndex + _userRecordsPerPage;
-    if (endIndex > allRecords.length) {
-      endIndex = allRecords.length;
-    }
-
-    if (mounted) {
-      setState(() {
-        if (_currentUserRecordsPage == 1) {
-          _userRecordsToDisplayOnPage = allRecords.sublist(
-            startIndex,
-            endIndex,
-          );
-        } else {
-          _userRecordsToDisplayOnPage.addAll(
-            allRecords.sublist(startIndex, endIndex),
-          );
-        }
-        _isFetchingMoreUserRecords = false;
-      });
-    }
-  }
-
-  void _fetchMoreUserRecordsForPage() {
-    if (_isFetchingMoreUserRecords) return;
-    if (mounted) {
-      setState(() => _isFetchingMoreUserRecords = true);
-    }
-    _currentUserRecordsPage++;
-    Future.delayed(const Duration(milliseconds: 500), () {
-      if (mounted) {
-        final provider = Provider.of<ParkDataProvider>(context, listen: false);
-        _loadUserRecordsForCurrentPage(provider);
-      }
-    });
-  }
-
-  Widget _buildParkListItem(ParkInfo park) {
-    String displayAddress = park.address.isNotEmpty ? park.address : "주소 정보 없음";
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8.0),
-      decoration: BoxDecoration(
-        color: GRAYSCALE_LABEL_50,
-        borderRadius: BorderRadius.circular(10.0),
-        boxShadow: const [
-          BoxShadow(
-            color: Color.fromRGBO(32, 32, 32, 0.05),
-            spreadRadius: 0.5,
-            blurRadius: 4,
-            offset: Offset(0, 1),
-          ),
-        ],
-      ),
-      child: InkWell(
-        onTap:
-            () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ParkDetailScreen(park: park),
-              ),
-            ),
-        borderRadius: BorderRadius.circular(10.0),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-          child: Row(
-            children: [
-              const Icon(Icons.location_on, size: 22, color: orangeIconColor),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.baseline,
-                      textBaseline: TextBaseline.alphabetic,
-                      children: [
-                        Flexible(
-                          child: Text(
-                            park.name,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: GRAYSCALE_LABEL_950,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          '${park.distanceKm.toStringAsFixed(1)} km',
-                          style: const TextStyle(
-                            fontSize: 13,
-                            color: BLUE_SECONDARY_500,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      displayAddress,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: GRAYSCALE_LABEL_700,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8),
-              const Icon(
-                Icons.arrow_forward_ios,
-                size: 16,
-                color: GRAYSCALE_LABEL_400,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _buildParkSearchBarAndFilters(ParkDataProvider provider) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12.0, top: 8.0),
@@ -352,14 +146,9 @@ class _ParkListScreenState extends State<ParkListScreen>
             height: 48,
             child: TextField(
               controller: _searchController,
-              onChanged: (value) => _onParkSearchChanged(),
               cursorColor: ORANGE_PRIMARY_500,
               decoration: InputDecoration(
                 hintText: "공원 이름 또는 주소 검색",
-                hintStyle: const TextStyle(
-                  color: GRAYSCALE_LABEL_400,
-                  fontSize: 14,
-                ),
                 prefixIcon: const Icon(
                   Icons.search,
                   color: GRAYSCALE_LABEL_500,
@@ -367,23 +156,10 @@ class _ParkListScreenState extends State<ParkListScreen>
                 ),
                 filled: true,
                 fillColor: GRAYSCALE_LABEL_100,
-                contentPadding: const EdgeInsets.symmetric(
-                  vertical: 0,
-                  horizontal: 16,
-                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(24.0),
-                  borderSide: const BorderSide(
-                    color: GRAYSCALE_LABEL_300,
-                    width: 1.0,
-                  ),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(24.0),
-                  borderSide: const BorderSide(
-                    color: GRAYSCALE_LABEL_300,
-                    width: 1.0,
-                  ),
+                  borderSide: const BorderSide(color: GRAYSCALE_LABEL_300),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(24.0),
@@ -410,21 +186,11 @@ class _ParkListScreenState extends State<ParkListScreen>
           const SizedBox(height: 10),
           Row(
             children: [
-              _buildFilterChip(ParkFilterType.all, "전체", true, provider),
+              _buildFilterChip(ParkFilterType.all, "전체", provider),
               const SizedBox(width: 8),
-              _buildFilterChip(
-                ParkFilterType.nearby,
-                "내 주변 2km",
-                true,
-                provider,
-              ),
+              _buildFilterChip(ParkFilterType.nearby, "내 주변 2km", provider),
               const SizedBox(width: 8),
-              _buildFilterChip(
-                ParkFilterType.favorites,
-                "찜 목록",
-                true,
-                provider,
-              ),
+              _buildFilterChip(ParkFilterType.favorites, "찜 목록", provider),
             ],
           ),
         ],
@@ -435,84 +201,29 @@ class _ParkListScreenState extends State<ParkListScreen>
   Widget _buildFilterChip(
     ParkFilterType filterType,
     String label,
-    bool isParkTab,
     ParkDataProvider provider,
   ) {
-    bool isSelected = isParkTab ? _currentParkFilter == filterType : false;
+    bool isSelected = _currentParkFilter == filterType;
     return ChoiceChip(
       label: Text(label),
       selected: isSelected,
-      onSelected: (bool selected) {
-        if (!selected || !isParkTab) return;
-
-        final provider = Provider.of<ParkDataProvider>(context, listen: false);
-
-        void applyFilters() {
-          if (_parkListScrollController.hasClients) {
-            _parkListScrollController.jumpTo(0);
-          }
-
-          List<ParkInfo> result = List.from(provider.allParks);
-
-          switch (filterType) {
-            case ParkFilterType.favorites:
-              result = result.where((p) => provider.isFavorite(p.id)).toList();
-              break;
-            case ParkFilterType.nearby:
-              if (provider.currentPosition != null) {
-                result =
-                    result
-                        .where((p) => p.distanceKm < _nearbyFilterRadiusKm)
-                        .toList()
-                      ..sort((a, b) => a.distanceKm.compareTo(b.distanceKm));
-              } else {
-                result = [];
-              }
-              break;
-            case ParkFilterType.all:
-              result.sort((a, b) => a.distanceKm.compareTo(b.distanceKm));
-              break;
-          }
-
-          final term = _searchController.text.toLowerCase();
-          if (term.isNotEmpty) {
-            result =
-                result
-                    .where(
-                      (p) =>
-                          p.name.toLowerCase().contains(term) ||
-                          p.address.toLowerCase().contains(term),
-                    )
-                    .toList();
-          }
-
-          if (mounted) {
-            setState(() {
-              _currentParkFilter = filterType;
-              _filteredParks = result;
-              _currentParkPage = 1;
-              _parksToDisplayOnPage = _filteredParks;
-            });
-          }
+      onSelected: (bool selected) async {
+        if (!selected) return;
+        if (filterType == ParkFilterType.nearby &&
+            provider.currentPosition == null &&
+            !provider.isLoadingLocation) {
+          await provider.fetchCurrentLocationAndCalculateDistance();
         }
-
-        // 필터에 따라 동적 로딩 필요할 경우 비동기 호출
-        Future<void> handleDynamicFilters() async {
-          if (filterType == ParkFilterType.nearby &&
-              provider.currentPosition == null &&
-              !provider.isLoadingLocation) {
-            await provider.fetchCurrentLocationAndCalculateDistance();
-          }
-
-          if (filterType == ParkFilterType.favorites &&
-              provider.favoriteParkIds.isEmpty) {
-            await provider.loadFavoritesFromFirestore();
-          }
-
-          applyFilters();
+        if (filterType == ParkFilterType.favorites &&
+            provider.favoriteParkIds.isEmpty) {
+          await provider.loadFavoritesFromFirestore();
         }
-
-        handleDynamicFilters();
+        if (mounted) {
+          setState(() {
+            _currentParkFilter = filterType;
+            _applyParkFilterAndSearchAndPagination(provider);
+          });
+        }
       },
       backgroundColor: isSelected ? BLUE_SECONDARY_500 : GRAYSCALE_LABEL_100,
       selectedColor: BLUE_SECONDARY_500,
@@ -525,7 +236,6 @@ class _ParkListScreenState extends State<ParkListScreen>
         borderRadius: BorderRadius.circular(20.0),
         side: BorderSide(
           color: isSelected ? BLUE_SECONDARY_500 : GRAYSCALE_LABEL_300,
-          width: 1,
         ),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
@@ -533,343 +243,79 @@ class _ParkListScreenState extends State<ParkListScreen>
     );
   }
 
-  Widget buildParkTabContent(ParkDataProvider provider) {
-    const double horizontalPageMargin = 20.0;
-    if (provider.isLoadingLocation &&
-        provider.allParks.isEmpty &&
-        provider.isLoading) {
-      return const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(color: BLUE_SECONDARY_500),
-            SizedBox(height: 15),
-            Text(
-              "위치 및 공원 정보를 가져오는 중...",
-              style: TextStyle(color: GRAYSCALE_LABEL_700),
+  Widget _buildParkListItem(ParkInfo park) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8.0),
+      decoration: BoxDecoration(
+        color: GRAYSCALE_LABEL_50,
+        borderRadius: BorderRadius.circular(10.0),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x14000000),
+            blurRadius: 4,
+            offset: Offset(0, 1),
+          ),
+        ],
+      ),
+      child: InkWell(
+        onTap:
+            () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ParkDetailScreen(park: park),
+              ),
             ),
-          ],
-        ),
-      );
-    }
-    if (provider.isLoading && provider.allParks.isEmpty) {
-      return const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(color: BLUE_SECONDARY_500),
-            SizedBox(height: 15),
-            Text(
-              "공원 정보를 불러오는 중...",
-              style: TextStyle(color: GRAYSCALE_LABEL_700),
-            ),
-          ],
-        ),
-      );
-    }
-    if (provider.error.isNotEmpty && provider.allParks.isEmpty) {
-      return Center(
+        borderRadius: BorderRadius.circular(10.0),
         child: Padding(
-          padding: const EdgeInsets.all(horizontalPageMargin),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+          child: Row(
             children: [
               const Icon(
-                Icons.error_outline,
-                color: RED_DANGER_TEXT_50,
-                size: 48,
+                Icons.location_on,
+                size: 22,
+                color: YELLOW_INFO_BASE_30,
               ),
-              const SizedBox(height: 16),
-              const Text(
-                "오류 발생",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: GRAYSCALE_LABEL_900,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                provider.error,
-                style: const TextStyle(
-                  color: GRAYSCALE_LABEL_700,
-                  fontSize: 14,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 20),
-            ],
-          ),
-        ),
-      );
-    }
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: horizontalPageMargin),
-          child: _buildParkSearchBarAndFilters(provider),
-        ),
-        Expanded(
-          child: ListView.builder(
-            controller: _parkListScrollController,
-            padding: const EdgeInsets.fromLTRB(
-              horizontalPageMargin,
-              0,
-              horizontalPageMargin,
-              horizontalPageMargin,
-            ),
-            itemCount:
-                _parksToDisplayOnPage.length + (_isFetchingMoreParks ? 1 : 0),
-            itemBuilder: (context, index) {
-              if (index == _parksToDisplayOnPage.length) {
-                return const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 16.0),
-                  child: Center(
-                    child: CircularProgressIndicator(color: BLUE_SECONDARY_500),
-                  ),
-                );
-              }
-              return _buildParkListItem(_parksToDisplayOnPage[index]);
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  String formatDuration(String durationStr) {
-    final parts = durationStr.split(':');
-    if (parts.length == 3) {
-      int hours = int.tryParse(parts[0]) ?? 0;
-      int minutes = int.tryParse(parts[1]) ?? 0;
-      int seconds = int.tryParse(parts[2]) ?? 0;
-      String result = "";
-      if (hours > 0) result += "$hours시간 ";
-      if (minutes > 0 || hours > 0) result += "$minutes분 ";
-      result += "$seconds초";
-      return result.trim().isEmpty ? "0초" : result.trim();
-    }
-    return durationStr;
-  }
-
-  String formatStopTime(String stopTimeStr) {
-    try {
-      DateTime dt = DateTime.parse(stopTimeStr);
-      return "${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')} ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}";
-    } catch (e) {
-      return stopTimeStr;
-    }
-  }
-
-  Widget _buildUserRecordCardItem(StepModel record) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => CourseDetailScreen(data: record.toJson()),
-          ),
-        );
-      },
-      child: Container(
-        key: ValueKey(record.id),
-        decoration: BoxDecoration(
-          color: BACKGROUND_COLOR,
-          borderRadius: BorderRadius.circular(12.0),
-          boxShadow: const [
-            BoxShadow(
-              color: Color.fromRGBO(32, 32, 32, 0.08),
-              spreadRadius: 1,
-              blurRadius: 6,
-              offset: Offset(0, 1),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(12.0),
-                ),
-                child:
-                    record.imageUrl.isNotEmpty
-                        ? Image.network(
-                          record.imageUrl,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                          loadingBuilder: (context, child, loadingProgress) {
-                            if (loadingProgress == null) return child;
-                            return Center(
-                              child: CircularProgressIndicator(
-                                value:
-                                    loadingProgress.expectedTotalBytes != null
-                                        ? loadingProgress
-                                                .cumulativeBytesLoaded /
-                                            loadingProgress.expectedTotalBytes!
-                                        : null,
-                                color: BLUE_SECONDARY_500,
-                              ),
-                            );
-                          },
-                          errorBuilder:
-                              (context, error, stackTrace) => const Center(
-                                child: Icon(
-                                  Icons.broken_image_outlined,
-                                  color: GRAYSCALE_LABEL_400,
-                                  size: 40,
-                                ),
-                              ),
-                        )
-                        : Image.asset(
-                          'assets/images/default_course_image.png',
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                          errorBuilder:
-                              (context, error, stackTrace) => const Center(
-                                child: Icon(
-                                  Icons.image_not_supported,
-                                  color: GRAYSCALE_LABEL_400,
-                                  size: 40,
-                                ),
-                              ),
-                        ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(10.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    record.courseName.isNotEmpty
-                        ? record.courseName
-                        : "코스 이름 없음",
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      color: GRAYSCALE_LABEL_950,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  if (record.parkName != null &&
-                      record.parkName!.isNotEmpty) ...[
-                    const SizedBox(height: 1),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                     Text(
-                      record.parkName!,
+                      park.name,
                       style: const TextStyle(
-                        fontSize: 14,
-                        color: GRAYSCALE_LABEL_800,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      park.address.isNotEmpty ? park.address : "주소 정보 없음",
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: GRAYSCALE_LABEL_700,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ],
-                  const SizedBox(height: 3),
-
-                  Text(
-                    formatStopTime(record.stopTime),
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: GRAYSCALE_LABEL_800,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget buildUserRecordsTabContent(ParkDataProvider provider) {
-    if (provider.isLoadingUserRecords &&
-        provider.allUserCourseRecords.isEmpty) {
-      return const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(color: BLUE_SECONDARY_700),
-            SizedBox(height: 15),
-            Text(
-              "사용자 기록을 불러오는 중...",
-              style: TextStyle(color: GRAYSCALE_LABEL_700),
-            ),
-          ],
-        ),
-      );
-    }
-
-    if (provider.userRecordsError.isNotEmpty &&
-        provider.allUserCourseRecords.isEmpty) {
-      return Center(child: Text(provider.userRecordsError));
-    }
-
-    if (provider.allUserCourseRecords.isEmpty &&
-        !provider.isLoadingUserRecords) {
-      return const Center(
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.directions_walk_outlined,
-                color: GRAYSCALE_LABEL_800,
-                size: 30,
+                ),
               ),
               Text(
-                "추천코스가 없습니다.",
-                style: TextStyle(
-                  color: GRAYSCALE_LABEL_800,
-                  fontSize: 16,
+                "${park.distanceKm.toStringAsFixed(1)} km",
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: BLUE_SECONDARY_500,
                   fontWeight: FontWeight.w600,
                 ),
-                textAlign: TextAlign.center,
               ),
-              Text(
-                "산책을 시작해 다른사람들과 함께 공유해보세요!",
-                style: TextStyle(
-                  color: GRAYSCALE_LABEL_600,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
+              const Icon(
+                Icons.arrow_forward_ios,
+                size: 16,
+                color: GRAYSCALE_LABEL_400,
               ),
             ],
           ),
         ),
-      );
-    }
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12.0),
-      child: GridView.builder(
-        controller: _userRecordsScrollController,
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          crossAxisSpacing: 12.0,
-          mainAxisSpacing: 12.0,
-          childAspectRatio: 0.68,
-        ),
-        itemCount:
-            _userRecordsToDisplayOnPage.length +
-            (_isFetchingMoreUserRecords ? 1 : 0),
-        itemBuilder: (context, index) {
-          if (index == _userRecordsToDisplayOnPage.length) {
-            return const Padding(
-              padding: EdgeInsets.symmetric(vertical: 16.0),
-              child: Center(
-                child: CircularProgressIndicator(color: BLUE_SECONDARY_700),
-              ),
-            );
-          }
-          final record = _userRecordsToDisplayOnPage[index];
-          return _buildUserRecordCardItem(record);
-        },
       ),
     );
   }
@@ -877,14 +323,14 @@ class _ParkListScreenState extends State<ParkListScreen>
   @override
   Widget build(BuildContext context) {
     return Consumer<ParkDataProvider>(
-      builder: (context, parkDataProvider, child) {
+      builder: (context, provider, child) {
         return Scaffold(
           backgroundColor: BACKGROUND_COLOR,
           appBar: AppBar(
             backgroundColor: BACKGROUND_COLOR,
             elevation: 0,
             title: const Text(
-              "공원 및 코스 추천",
+              "공원 리스트",
               style: TextStyle(
                 color: GRAYSCALE_LABEL_950,
                 fontSize: 18,
@@ -892,30 +338,35 @@ class _ParkListScreenState extends State<ParkListScreen>
               ),
             ),
             centerTitle: true,
-            bottom: TabBar(
-              controller: _tabController,
-              labelColor: BLUE_SECONDARY_700,
-              unselectedLabelColor: GRAYSCALE_LABEL_500,
-              indicatorColor: BLUE_SECONDARY_700,
-              indicatorSize: TabBarIndicatorSize.tab,
-              indicatorWeight: 3.0,
-              overlayColor: WidgetStateProperty.all(Colors.transparent),
-              labelStyle: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-              ),
-              unselectedLabelStyle: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w500,
-              ),
-              tabs: const [Tab(text: "추천 코스"), Tab(text: "공원")],
-            ),
           ),
-          body: TabBarView(
-            controller: _tabController,
+          body: Column(
             children: [
-              buildUserRecordsTabContent(parkDataProvider),
-              buildParkTabContent(parkDataProvider),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: _buildParkSearchBarAndFilters(provider),
+              ),
+              Expanded(
+                child: ListView.builder(
+                  controller: _parkListScrollController,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 12,
+                  ),
+                  itemCount:
+                      _parksToDisplayOnPage.length +
+                      (_isFetchingMoreParks ? 1 : 0),
+                  itemBuilder: (context, index) {
+                    if (index == _parksToDisplayOnPage.length) {
+                      return const Center(
+                        child: CircularProgressIndicator(
+                          color: BLUE_SECONDARY_500,
+                        ),
+                      );
+                    }
+                    return _buildParkListItem(_parksToDisplayOnPage[index]);
+                  },
+                ),
+              ),
             ],
           ),
         );
