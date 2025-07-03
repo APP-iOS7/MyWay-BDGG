@@ -73,11 +73,7 @@ class _BottomTabBarState extends State<BottomTabBar> {
                   label: '공원찾기',
                 ),
                 BottomNavigationBarItem(
-                  icon: _buildTabIcon(
-                    2,
-                    CupertinoIcons.home,
-                    CupertinoIcons.home,
-                  ),
+                  icon: _buildTabIcon(2, Icons.home, Icons.home_sharp),
                   label: '홈',
                 ),
                 BottomNavigationBarItem(
