@@ -145,20 +145,44 @@ class UserProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> deleteAccount() async {
+  Future<void> deleteAccount(String password) async {
     try {
+      _isLoading = true;
+      notifyListeners();
+
       final user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        // 계정 삭제 실행
-        await user.delete();
-        await FirebaseAuth.instance.signOut(); // 로그아웃 명시
-        return true;
-      } else {
-        return false;
+      if (user == null) {
+        throw FirebaseAuthException(
+          code: 'no-user',
+          message: '사용자가 로그인 되어 있지 않습니다.',
+        );
       }
-    } catch (e) {
-      print('회원탈퇴 실패: $e');
-      return false;
+
+      final email = user.email;
+      if (email == null) {
+        throw FirebaseAuthException(
+          code: 'no-email',
+          message: '사용자의 이메일이 없습니다.',
+        );
+      }
+
+      // 1. 재인증
+      AuthCredential credential = EmailAuthProvider.credential(
+        email: email,
+        password: password,
+      );
+      await user.reauthenticateWithCredential(credential);
+      // 2. Firestore에서 사용자 데이터 삭제
+      await _firestore.collection('users').doc(user.uid).delete();
+      // 3. Firebase Auth에서 사용자 삭제
+      await user.delete();
+
+      clearUserData();
+    } on FirebaseAuthException catch (e) {
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
   }
 

@@ -1,6 +1,4 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:myway/main.dart';
 import 'package:myway/screen/alert/dialog.dart';
 import 'package:toastification/toastification.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -9,110 +7,19 @@ import 'package:provider/provider.dart';
 import '../../const/colors.dart';
 import '../../provider/user_provider.dart';
 
-class CustomerCenterScreen extends StatefulWidget {
+class CustomerCenterScreen extends StatelessWidget {
   const CustomerCenterScreen({super.key});
 
   @override
-  State<CustomerCenterScreen> createState() => _CustomerCenterScreenState();
-}
-
-class _CustomerCenterScreenState extends State<CustomerCenterScreen> {
-  Future<void> deleteAccount() async {
-    if (!mounted) return;
-
-    try {
-      // 로딩 표시
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder:
-            (context) => const Center(
-              child: CircularProgressIndicator(color: ORANGE_PRIMARY_500),
-            ),
-      );
-
-      // Provider를 통한 계정 삭제
-      final userProvider = context.read<UserProvider>();
-      final success = await userProvider.deleteAccount();
-
-      Navigator.of(context, rootNavigator: true).pop();
-
-      if (success) {
-        if (!mounted) return;
-
-        // 성공 메시지 표시
-        if (mounted) {
-          toastification.show(
-            context: context,
-            type: ToastificationType.success,
-            alignment: Alignment.bottomCenter,
-            style: ToastificationStyle.flat,
-            autoCloseDuration: Duration(seconds: 2),
-            title: Text('회원탈퇴 완료'),
-          );
-
-          // 네비게이션 스택 초기화
-          Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (_) => const AuthWrapper()),
-            (route) => false,
-          );
-        } else {
-          if (!mounted) return;
-          toastification.show(
-            context: context,
-            type: ToastificationType.error,
-            alignment: Alignment.bottomCenter,
-            style: ToastificationStyle.flat,
-            autoCloseDuration: Duration(seconds: 2),
-            title: Text('계정 삭제에 실패했습니다.'),
-          );
-        }
-      }
-    } on FirebaseAuthException catch (e) {
-      Navigator.of(context, rootNavigator: true).pop();
-
-      if (e.code == 'requires-recent-login') {
-        toastification.show(
-          context: context,
-          type: ToastificationType.error,
-          alignment: Alignment.bottomCenter,
-          style: ToastificationStyle.flat,
-          autoCloseDuration: Duration(seconds: 2),
-          title: Text('다시 로그인 후 시도해주세요.'),
-        );
-      } else {
-        toastification.show(
-          context: context,
-          type: ToastificationType.error,
-          alignment: Alignment.bottomCenter,
-          style: ToastificationStyle.flat,
-          autoCloseDuration: Duration(seconds: 2),
-          title: Text('계정 삭제 실패: ${e.message}'),
-        );
-      }
-    } catch (e) {
-      Navigator.of(context, rootNavigator: true).pop();
-
-      toastification.show(
-        context: context,
-        type: ToastificationType.error,
-        alignment: Alignment.bottomCenter,
-        style: ToastificationStyle.flat,
-        autoCloseDuration: Duration(seconds: 2),
-        title: Text('예상치 못한 오류가 발생했습니다: $e'),
-      );
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final userProvider = Provider.of<UserProvider>(context);
+
     return Scaffold(
       backgroundColor: WHITE,
       appBar: AppBar(
         backgroundColor: WHITE,
         elevation: 0,
         scrolledUnderElevation: 0,
-
         title: Text(
           '고객센터',
           style: TextStyle(
@@ -141,7 +48,7 @@ class _CustomerCenterScreenState extends State<CustomerCenterScreen> {
                     builder: (context) {
                       return ConfirmationDialog(
                         title: '1:1 문의하기',
-                        content: '이메일로 전송됩니다. \n문의 내용을 작성해주세요.',
+                        content: '이메일로 전송됩니다.\n문의 내용을 작성해주세요.',
                         confirmText: '메일 작성',
                         cancelText: '취소',
                         onConfirm: () {
@@ -157,29 +64,85 @@ class _CustomerCenterScreenState extends State<CustomerCenterScreen> {
               ),
               _buildSettingItem(
                 text: '회원탈퇴',
-                onTap: () {
-                  showDialog(
-                    context: context,
-                    builder: (dialogContext) {
-                      return ConfirmationDialog(
-                        title: '회원탈퇴',
-                        confirmText: '네',
-                        cancelText: '아니요',
-                        content: '계정을 삭제합니다. \n삭제한 이후에는 되돌릴 수 없습니다.',
-                        onConfirm: () async {
-                          Navigator.of(dialogContext).pop();
-                          // 다이얼로그를 닫은 후 알맞은 시점에 계정 삭제 실행
-                          await deleteAccount();
-                        },
-                      );
-                    },
-                  );
+                onTap: () async {
+                  final password = await _showPasswordDialog(context);
+                  if (password == null || password.isEmpty) return;
+
+                  try {
+                    await userProvider.deleteAccount(password);
+
+                    toastification.show(
+                      context: context,
+                      type: ToastificationType.success,
+                      alignment: Alignment.bottomCenter,
+                      autoCloseDuration: Duration(seconds: 2),
+                      title: Text('회원 탈퇴 완료'),
+                    );
+
+                    Navigator.of(
+                      context,
+                    ).pushNamedAndRemoveUntil('signIn', (route) => false);
+                  } catch (e) {
+                    toastification.show(
+                      context: context,
+                      type: ToastificationType.error,
+                      alignment: Alignment.bottomCenter,
+                      autoCloseDuration: Duration(seconds: 2),
+                      title: Text('회원 탈퇴 실패: ${e.toString()}'),
+                    );
+                  }
                 },
               ),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Future<String?> _showPasswordDialog(BuildContext context) async {
+    final controller = TextEditingController();
+    return showDialog<String>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            backgroundColor: WHITE,
+            title: Text('비밀번호 확인', style: TextStyle(fontSize: 15)),
+            content: TextField(
+              autofocus: true,
+              controller: controller,
+              obscureText: true,
+              decoration: InputDecoration(
+                labelText: '비밀번호를 입력하세요',
+                labelStyle: TextStyle(color: ORANGE_PRIMARY_500),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: ORANGE_PRIMARY_500, width: 1.5),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: ORANGE_PRIMARY_500, width: 1.5),
+                ),
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text('취소', style: TextStyle(color: Colors.black)),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: ORANGE_PRIMARY_500,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                onPressed:
+                    () => Navigator.of(context).pop(controller.text.trim()),
+                child: Text('확인', style: TextStyle(color: WHITE)),
+              ),
+            ],
+          ),
     );
   }
 
