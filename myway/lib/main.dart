@@ -11,7 +11,7 @@ import 'package:myway/screen/notice/notice_screen.dart';
 import 'package:myway/screen/setting/privacy_policy_screen.dart';
 import 'package:myway/screen/setting/setting_screen.dart';
 import 'package:myway/screen/setting/terms_of_service_screen.dart';
-import 'package:myway/temp/park_recommend_screen.dart';
+import 'package:myway/screen/home/park_recommend_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:toastification/toastification.dart';
 
@@ -53,9 +53,7 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (context) => StepProvider()),
         ChangeNotifierProvider(create: (context) => MapProvider()),
         ChangeNotifierProvider(create: (context) => ActivityLogProvider()),
-        ChangeNotifierProvider(
-          create: (context) => ParkDataProvider(),
-        ),
+        ChangeNotifierProvider(create: (context) => ParkDataProvider()),
         ChangeNotifierProvider(create: (context) => ParkDataProviderTest()),
         ChangeNotifierProvider(create: (context) => ProfileProvider()),
       ],

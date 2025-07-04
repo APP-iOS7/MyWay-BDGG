@@ -5,7 +5,7 @@ import 'package:myway/screen/home/home_screen.dart';
 import 'package:myway/screen/home/my_page_screen.dart';
 import 'package:myway/screen/home/park_list_screen.dart';
 import 'package:myway/screen/result/activity_log_screen.dart';
-import 'package:myway/temp/park_recommend_screen.dart';
+import 'package:myway/screen/home/park_recommend_screen.dart';
 
 class BottomTabBar extends StatefulWidget {
   const BottomTabBar({super.key});

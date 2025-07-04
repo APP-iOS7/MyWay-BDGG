@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../const/colors.dart';
-import '../../model/step_model.dart';
-import '../../provider/park_data_provider.dart';
-import '../screen/home/course_detail_screen.dart';
+import '../../../const/colors.dart';
+import '../../../model/step_model.dart';
+import '../../../provider/park_data_provider.dart';
+import 'course_detail_screen.dart';
 
 class ParkRecommendScreen extends StatefulWidget {
   const ParkRecommendScreen({super.key});
@@ -11,7 +11,8 @@ class ParkRecommendScreen extends StatefulWidget {
   @override
   State<ParkRecommendScreen> createState() => _ParkRecommendScreenState();
 }
-class _ParkRecommendScreenState extends State<ParkRecommendScreen> 
+
+class _ParkRecommendScreenState extends State<ParkRecommendScreen>
     with AutomaticKeepAliveClientMixin {
   final ScrollController _scrollController = ScrollController();
   final int _perPage = 20;
@@ -26,10 +27,11 @@ class _ParkRecommendScreenState extends State<ParkRecommendScreen>
     // FutureBuilder에서 사용할 Future 생성
     _initializationFuture = _initializeData();
   }
-  
+
   Future<void> _initializeData() async {
     final provider = Provider.of<ParkDataProvider>(context, listen: false);
-    if (provider.allUserCourseRecords.isEmpty && !provider.isLoadingUserRecords) {
+    if (provider.allUserCourseRecords.isEmpty &&
+        !provider.isLoadingUserRecords) {
       await provider.initialize();
     }
   }
@@ -152,7 +154,7 @@ class _ParkRecommendScreenState extends State<ParkRecommendScreen>
   @override
   Widget build(BuildContext context) {
     super.build(context); // AutomaticKeepAliveClientMixin을 위해 필요
-    
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -176,24 +178,17 @@ class _ParkRecommendScreenState extends State<ParkRecommendScreen>
               child: CircularProgressIndicator(color: ORANGE_PRIMARY_500),
             );
           }
-          
+
           if (snapshot.hasError) {
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(
-                    Icons.error_outline,
-                    size: 48,
-                    color: Colors.red,
-                  ),
+                  const Icon(Icons.error_outline, size: 48, color: Colors.red),
                   const SizedBox(height: 16),
                   Text(
                     '데이터 로딩 중 오류가 발생했습니다.',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: GRAYSCALE_LABEL_600,
-                    ),
+                    style: TextStyle(fontSize: 16, color: GRAYSCALE_LABEL_600),
                   ),
                   const SizedBox(height: 16),
                   ElevatedButton(
@@ -208,25 +203,23 @@ class _ParkRecommendScreenState extends State<ParkRecommendScreen>
               ),
             );
           }
-          
+
           return Consumer<ParkDataProvider>(
             builder: (context, provider, child) {
-              final displayRecords = provider.allUserCourseRecords
-                  .take(_perPage * _currentPage)
-                  .toList();
-                  
+              final displayRecords =
+                  provider.allUserCourseRecords
+                      .take(_perPage * _currentPage)
+                      .toList();
+
               if (displayRecords.isEmpty) {
                 return const Center(
                   child: Text(
                     '추천 코스가 없습니다.',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: GRAYSCALE_LABEL_600,
-                    ),
+                    style: TextStyle(fontSize: 16, color: GRAYSCALE_LABEL_600),
                   ),
                 );
               }
-              
+
               return Padding(
                 padding: const EdgeInsets.all(16),
                 child: GridView.builder(
@@ -240,9 +233,7 @@ class _ParkRecommendScreenState extends State<ParkRecommendScreen>
                   ),
                   itemBuilder: (_, index) {
                     if (index == displayRecords.length) {
-                      return const Center(
-                        child: CircularProgressIndicator(),
-                      );
+                      return const Center(child: CircularProgressIndicator());
                     }
                     return _buildRecordCard(displayRecords[index]);
                   },
