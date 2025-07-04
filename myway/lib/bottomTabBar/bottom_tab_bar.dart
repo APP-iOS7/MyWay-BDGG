@@ -33,7 +33,7 @@ class _BottomTabBarState extends State<BottomTabBar> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _tabList[_selectedIndex],
+      body: IndexedStack(index: _selectedIndex, children: _tabList),
       bottomNavigationBar: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

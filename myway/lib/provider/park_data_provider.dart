@@ -5,6 +5,7 @@ import 'package:myway/model/park_course_info.dart';
 import 'package:myway/model/park_info.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:myway/util/csv_loader.dart';
+import 'package:flutter/scheduler.dart';
 
 import '../model/step_model.dart';
 
@@ -201,10 +202,13 @@ class ParkDataProvider extends ChangeNotifier {
   void _safeNotifyListeners() {
     if (_disposed) return;
 
-    try {
-      _safeNotifyListeners();
-    } catch (e) {
-      print('MapProvider: notifyListeners 호출 중 오류 발생: $e');
+    if (SchedulerBinding.instance.schedulerPhase ==
+        SchedulerPhase.persistentCallbacks) {
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        if (!_disposed) notifyListeners();
+      });
+    } else {
+      notifyListeners();
     }
   }
 

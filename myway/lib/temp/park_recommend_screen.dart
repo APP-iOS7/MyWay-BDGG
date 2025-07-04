@@ -11,28 +11,27 @@ class ParkRecommendScreen extends StatefulWidget {
   @override
   State<ParkRecommendScreen> createState() => _ParkRecommendScreenState();
 }
-
-class _ParkRecommendScreenState extends State<ParkRecommendScreen> {
+class _ParkRecommendScreenState extends State<ParkRecommendScreen> 
+    with AutomaticKeepAliveClientMixin {
   final ScrollController _scrollController = ScrollController();
   final int _perPage = 20;
   int _currentPage = 1;
   bool _isLoadingMore = false;
-  List<StepModel> _records = [];
+  Future<void>? _initializationFuture;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final provider = Provider.of<ParkDataProvider>(context, listen: false);
-      _loadInitialRecords(provider);
-    });
     _scrollController.addListener(_onScroll);
+    // FutureBuilder에서 사용할 Future 생성
+    _initializationFuture = _initializeData();
   }
-
-  void _loadInitialRecords(ParkDataProvider provider) {
-    setState(() {
-      _records = provider.allUserCourseRecords.take(_perPage).toList();
-    });
+  
+  Future<void> _initializeData() async {
+    final provider = Provider.of<ParkDataProvider>(context, listen: false);
+    if (provider.allUserCourseRecords.isEmpty && !provider.isLoadingUserRecords) {
+      await provider.initialize();
+    }
   }
 
   void _onScroll() {
@@ -40,22 +39,22 @@ class _ParkRecommendScreenState extends State<ParkRecommendScreen> {
             _scrollController.position.maxScrollExtent - 100 &&
         !_isLoadingMore) {
       final provider = Provider.of<ParkDataProvider>(context, listen: false);
-      if (_records.length < provider.allUserCourseRecords.length) {
-        _loadMoreRecords(provider);
+      final currentDisplayCount = _perPage * _currentPage;
+      if (currentDisplayCount < provider.allUserCourseRecords.length) {
+        _loadMoreRecords();
       }
     }
   }
 
-  void _loadMoreRecords(ParkDataProvider provider) {
+  void _loadMoreRecords() {
     setState(() => _isLoadingMore = true);
     _currentPage++;
     Future.delayed(const Duration(milliseconds: 300), () {
-      final newRecords =
-          provider.allUserCourseRecords.take(_perPage * _currentPage).toList();
-      setState(() {
-        _records = newRecords;
-        _isLoadingMore = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoadingMore = false;
+        });
+      }
     });
   }
 
@@ -148,54 +147,111 @@ class _ParkRecommendScreenState extends State<ParkRecommendScreen> {
   }
 
   @override
+  bool get wantKeepAlive => true;
+
+  @override
   Widget build(BuildContext context) {
-    return Consumer<ParkDataProvider>(
-      builder: (context, provider, child) {
-        return Scaffold(
-          backgroundColor: Colors.white,
-          appBar: AppBar(
-            title: const Text(
-              '추천 코스',
-              style: TextStyle(
-                color: GRAYSCALE_LABEL_950,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            centerTitle: true,
-            backgroundColor: Colors.white,
-            surfaceTintColor: Colors.transparent,
+    super.build(context); // AutomaticKeepAliveClientMixin을 위해 필요
+    
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: const Text(
+          '추천 코스',
+          style: TextStyle(
+            color: GRAYSCALE_LABEL_950,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
           ),
-          body:
-              provider.isLoadingUserRecords
-                  ? const Center(child: CircularProgressIndicator())
-                  : Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Container(
-                      color: Colors.white,
-                      child: GridView.builder(
-                        controller: _scrollController,
-                        itemCount: _records.length + (_isLoadingMore ? 1 : 0),
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              crossAxisSpacing: 12,
-                              mainAxisSpacing: 12,
-                              childAspectRatio: 0.68,
-                            ),
-                        itemBuilder: (_, index) {
-                          if (index == _records.length) {
-                            return const Center(
-                              child: CircularProgressIndicator(),
-                            );
-                          }
-                          return _buildRecordCard(_records[index]);
-                        },
-                      ),
+        ),
+        centerTitle: true,
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.transparent,
+      ),
+      body: FutureBuilder<void>(
+        future: _initializationFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: CircularProgressIndicator(color: ORANGE_PRIMARY_500),
+            );
+          }
+          
+          if (snapshot.hasError) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.error_outline,
+                    size: 48,
+                    color: Colors.red,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    '데이터 로딩 중 오류가 발생했습니다.',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: GRAYSCALE_LABEL_600,
                     ),
                   ),
-        );
-      },
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        _initializationFuture = _initializeData();
+                      });
+                    },
+                    child: const Text('다시 시도'),
+                  ),
+                ],
+              ),
+            );
+          }
+          
+          return Consumer<ParkDataProvider>(
+            builder: (context, provider, child) {
+              final displayRecords = provider.allUserCourseRecords
+                  .take(_perPage * _currentPage)
+                  .toList();
+                  
+              if (displayRecords.isEmpty) {
+                return const Center(
+                  child: Text(
+                    '추천 코스가 없습니다.',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: GRAYSCALE_LABEL_600,
+                    ),
+                  ),
+                );
+              }
+              
+              return Padding(
+                padding: const EdgeInsets.all(16),
+                child: GridView.builder(
+                  controller: _scrollController,
+                  itemCount: displayRecords.length + (_isLoadingMore ? 1 : 0),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                    childAspectRatio: 0.68,
+                  ),
+                  itemBuilder: (_, index) {
+                    if (index == displayRecords.length) {
+                      return const Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    }
+                    return _buildRecordCard(displayRecords[index]);
+                  },
+                ),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 

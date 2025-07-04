@@ -53,7 +53,9 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (context) => StepProvider()),
         ChangeNotifierProvider(create: (context) => MapProvider()),
         ChangeNotifierProvider(create: (context) => ActivityLogProvider()),
-        ChangeNotifierProvider(create: (context) => ParkDataProvider()),
+        ChangeNotifierProvider(
+          create: (context) => ParkDataProvider(),
+        ),
         ChangeNotifierProvider(create: (context) => ParkDataProviderTest()),
         ChangeNotifierProvider(create: (context) => ProfileProvider()),
       ],
