@@ -1,7 +1,11 @@
 import 'dart:async';
 import 'dart:typed_data';
+import 'dart:ui' as ui;
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:http/http.dart' as http;
 import 'package:location/location.dart';
 import 'package:myway/model/park_course_info.dart';
 import 'package:myway/screen/alert/dialog.dart';
@@ -31,6 +35,7 @@ class _MapScreenState extends State<MapScreen>
   LatLng? currentPosition;
   bool _tracking = false; // 경로 추적 상태
   bool isLoading = true;
+  final Set<Marker> _markers = {};
 
   TrackingStatus? _prevStatus;
   ParkCourseInfo? _prevCourse;
@@ -58,6 +63,164 @@ class _MapScreenState extends State<MapScreen>
       mapController!.dispose();
       mapController = null;
     }
+  }
+
+  Future<void> _loadUserPhotoAndMarker() async {
+    final user = FirebaseAuth.instance.currentUser;
+    debugPrint('🔍 _loadUserPhotoAndMarker 시작');
+    debugPrint('🔍 currentPosition: $currentPosition');
+
+    if (user == null || currentPosition == null) {
+      debugPrint('🔍 user 또는 currentPosition이 null');
+      _addDefaultUserMarker();
+      return;
+    }
+
+    try {
+      // Firestore에서 프로필 이미지 URL 가져오기
+      final doc =
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(user.uid)
+              .get();
+
+      String? profileImageUrl;
+      if (doc.exists && doc.data() != null) {
+        profileImageUrl = doc.data()!['profileImage'] as String?;
+        debugPrint('🔍 Firestore에서 가져온 profileImage URL: $profileImageUrl');
+      }
+
+      // Firestore에 프로필 이미지가 없으면 Firebase Auth의 photoURL 사용
+      if (profileImageUrl == null || profileImageUrl.isEmpty) {
+        profileImageUrl = user.photoURL;
+        debugPrint('🔍 Firebase Auth에서 가져온 photoURL: $profileImageUrl');
+      }
+
+      if (profileImageUrl != null && profileImageUrl.isNotEmpty) {
+        try {
+          final Uint8List markerIcon = await _getBytesFromNetworkImage(
+            profileImageUrl,
+            width: 60,
+          );
+          debugPrint('🔍 마커 아이콘 생성 성공, 크기: ${markerIcon.length} bytes');
+
+          final Marker marker = Marker(
+            markerId: MarkerId('user_profile'),
+            position: currentPosition!,
+            icon: BitmapDescriptor.bytes(markerIcon),
+            infoWindow: InfoWindow(title: user.displayName ?? '사용자'),
+          );
+
+          setState(() {
+            _markers.removeWhere((m) => m.markerId.value == 'user_profile');
+            _markers.add(marker);
+          });
+          debugPrint('🔍 프로필 마커 추가 성공. 전체 마커 수: ${_markers.length}');
+        } catch (e) {
+          debugPrint('🔍 마커 이미지 로드 실패: $e');
+          _addDefaultUserMarker();
+        }
+      } else {
+        debugPrint('🔍 프로필 이미지 URL이 없음');
+        _addDefaultUserMarker();
+      }
+    } catch (e) {
+      debugPrint('🔍 Firestore 접근 실패: $e');
+      _addDefaultUserMarker();
+    }
+  }
+
+  void _addDefaultUserMarker() {
+    if (currentPosition != null) {
+      final Marker marker = Marker(
+        markerId: MarkerId('user_profile'),
+        position: currentPosition!,
+        infoWindow: InfoWindow(title: '현재 위치'),
+      );
+
+      setState(() {
+        _markers.removeWhere((m) => m.markerId.value == 'user_profile');
+        _markers.add(marker);
+      });
+    }
+  }
+
+  void _updateUserMarkerPosition(LatLng newPosition) {
+    final existingMarker = _markers.firstWhere(
+      (marker) => marker.markerId.value == 'user_profile',
+      orElse: () => Marker(markerId: MarkerId('none'), position: LatLng(0, 0)),
+    );
+
+    if (existingMarker.markerId.value != 'none') {
+      setState(() {
+        _markers.removeWhere((m) => m.markerId.value == 'user_profile');
+        _markers.add(existingMarker.copyWith(positionParam: newPosition));
+      });
+    }
+  }
+
+  Future<Uint8List> _getBytesFromNetworkImage(
+    String url, {
+    int width = 100,
+  }) async {
+    final http.Response response = await http.get(Uri.parse(url));
+    final Uint8List bytes = response.bodyBytes;
+
+    // 원본 이미지를 디코딩
+    final codec = await ui.instantiateImageCodec(bytes);
+    final frame = await codec.getNextFrame();
+    final ui.Image originalImage = frame.image;
+
+    // 원형 마커 이미지 생성
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder);
+    final size = width.toDouble();
+    final radius = size / 2;
+
+    // 배경 (흰색 원형 테두리)
+    final backgroundPaint =
+        Paint()
+          ..color = Colors.white
+          ..style = PaintingStyle.fill;
+    canvas.drawCircle(Offset(radius, radius), radius, backgroundPaint);
+
+    // 프로필 이미지를 원형으로 클리핑
+    canvas.save();
+    final clipPath =
+        Path()..addOval(
+          Rect.fromCircle(center: Offset(radius, radius), radius: radius - 4),
+        );
+    canvas.clipPath(clipPath);
+
+    // 이미지 그리기
+    final srcRect = Rect.fromLTWH(
+      0,
+      0,
+      originalImage.width.toDouble(),
+      originalImage.height.toDouble(),
+    );
+    final dstRect = Rect.fromLTWH(4, 4, size - 8, size - 8);
+    canvas.drawImageRect(originalImage, srcRect, dstRect, Paint());
+    canvas.restore();
+
+    // 테두리 그리기
+    final borderPaint =
+        Paint()
+          ..color = Color(0xFFFF8A00) // ORANGE_PRIMARY_500
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 3;
+    canvas.drawCircle(Offset(radius, radius), radius - 1.5, borderPaint);
+
+    // 이미지를 PNG로 변환
+    final picture = recorder.endRecording();
+    final img = await picture.toImage(width, width);
+    final byteData = await img.toByteData(format: ui.ImageByteFormat.png);
+
+    originalImage.dispose();
+    picture.dispose();
+    img.dispose();
+
+    return byteData!.buffer.asUint8List();
   }
 
   Future<void> _checkLocationPermission() async {
@@ -267,6 +430,12 @@ class _MapScreenState extends State<MapScreen>
           );
           walkingRoute.add(position); // 좌표 추가
 
+          // 현재 위치 업데이트
+          currentPosition = position;
+
+          // 사용자 마커 위치 업데이트
+          _updateUserMarkerPosition(position);
+
           polylines.add(
             Polyline(
               polylineId: PolylineId("route"),
@@ -360,6 +529,9 @@ class _MapScreenState extends State<MapScreen>
           }
         }
       });
+
+      // currentPosition이 설정된 후 프로필 마커 로드
+      await _loadUserPhotoAndMarker();
 
       // setState 완료 후 mapProvider 업데이트
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -490,8 +662,10 @@ class _MapScreenState extends State<MapScreen>
                                 ),
                                 zoom: 17.0,
                               ),
-                              myLocationEnabled: true,
+                              myLocationEnabled: false,
+                              myLocationButtonEnabled: false,
                               polylines: polylines,
+                              markers: _markers,
                             ),
                   ),
                   SizedBox(height: 200),
