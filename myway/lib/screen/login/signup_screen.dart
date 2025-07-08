@@ -3,7 +3,6 @@ import 'package:myway/bottomTabBar/bottom_tab_bar.dart';
 import 'dart:convert';
 import 'package:myway/const/colors.dart';
 import 'package:myway/provider/user_provider.dart';
-import 'package:myway/screen/home/home_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:toastification/toastification.dart';
 
