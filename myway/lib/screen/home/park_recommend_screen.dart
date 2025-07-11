@@ -29,35 +29,54 @@ class _ParkRecommendScreenState extends State<ParkRecommendScreen>
   }
 
   Future<void> _initializeData() async {
-    final provider = Provider.of<ParkDataProvider>(context, listen: false);
-    if (provider.allUserCourseRecords.isEmpty &&
-        !provider.isLoadingUserRecords) {
-      await provider.initialize();
+    try {
+      final provider = Provider.of<ParkDataProvider>(context, listen: false);
+      if (provider.allUserCourseRecords.isEmpty &&
+          !provider.isLoadingUserRecords) {
+        await provider.initialize();
+      }
+    } catch (e) {
+      debugPrint('Provider error: $e');
     }
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >=
-            _scrollController.position.maxScrollExtent - 100 &&
-        !_isLoadingMore) {
-      final provider = Provider.of<ParkDataProvider>(context, listen: false);
-      final currentDisplayCount = _perPage * _currentPage;
-      if (currentDisplayCount < provider.allUserCourseRecords.length) {
-        _loadMoreRecords();
+    // iOS에서 더 부드러운 스크롤을 위해 임계값 조정
+    final threshold = Theme.of(context).platform == TargetPlatform.iOS ? 150 : 100;
+    if (!_isLoadingMore &&
+        _scrollController.position.pixels >=
+            _scrollController.position.maxScrollExtent - threshold) {
+      try {
+        final provider = Provider.of<ParkDataProvider>(context, listen: false);
+        final currentDisplayCount = _perPage * _currentPage;
+        if (currentDisplayCount < provider.allUserCourseRecords.length) {
+          _loadMoreRecords();
+        }
+      } catch (e) {
+        debugPrint('Error in scroll: $e');
       }
     }
   }
 
   void _loadMoreRecords() {
+    if (_isLoadingMore) return;
     setState(() => _isLoadingMore = true);
     _currentPage++;
-    Future.delayed(const Duration(milliseconds: 300), () {
-      if (mounted) {
-        setState(() {
-          _isLoadingMore = false;
+
+    // 딜레이 후 로딩 상태 해제
+    Future.delayed(const Duration(milliseconds: 300))
+        .whenComplete(() {
+          // 성공/실패 관계없이 항상 실행
+          if (mounted) {
+            setState(() {
+              _isLoadingMore = false;
+            });
+          }
+        })
+        .catchError((error) {
+          // 에러 로깅만
+          debugPrint('Error loading more records: $error');
         });
-      }
-    });
   }
 
   String formatStopTime(String stopTimeStr) {
@@ -71,13 +90,16 @@ class _ParkRecommendScreenState extends State<ParkRecommendScreen>
 
   Widget _buildRecordCard(StepModel record) {
     return GestureDetector(
-      onTap:
-          () => Navigator.push(
+      onTap: () {
+        if (mounted) {
+          Navigator.push(
             context,
             MaterialPageRoute(
               builder: (_) => CourseDetailScreen(data: record.toJson()),
             ),
-          ),
+          );
+        }
+      },
       child: Container(
         decoration: BoxDecoration(
           color: BACKGROUND_COLOR,
@@ -98,10 +120,40 @@ class _ParkRecommendScreenState extends State<ParkRecommendScreen>
                           record.imageUrl,
                           fit: BoxFit.cover,
                           width: double.infinity,
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return Container(
+                              color: GRAYSCALE_LABEL_100,
+                              child: Center(
+                                child: CircularProgressIndicator(
+                                  value: loadingProgress.expectedTotalBytes != null
+                                      ? loadingProgress.cumulativeBytesLoaded /
+                                          loadingProgress.expectedTotalBytes!
+                                      : null,
+                                  strokeWidth: 2,
+                                  color: ORANGE_PRIMARY_500,
+                                ),
+                              ),
+                            );
+                          },
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              color: GRAYSCALE_LABEL_200,
+                              child: const Icon(
+                                Icons.image_not_supported,
+                                size: 48,
+                                color: GRAYSCALE_LABEL_600,
+                              ),
+                            );
+                          },
                         )
-                        : Image.asset(
-                          'assets/images/default_course_image.png',
-                          fit: BoxFit.cover,
+                        : Container(
+                          color: GRAYSCALE_LABEL_200,
+                          child: const Icon(
+                            Icons.image_not_supported,
+                            size: 48,
+                            color: GRAYSCALE_LABEL_600,
+                          ),
                         ),
               ),
             ),
@@ -171,8 +223,9 @@ class _ParkRecommendScreenState extends State<ParkRecommendScreen>
         surfaceTintColor: Colors.transparent,
       ),
       body: FutureBuilder<void>(
-        future: _initializationFuture,
+        future: _initializationFuture ?? _initializeData(), // Future가 없으면 초기화 수행
         builder: (context, snapshot) {
+          // 연결 상태 파악 및 초기 데이터 로딩 확인
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
               child: CircularProgressIndicator(color: ORANGE_PRIMARY_500),
@@ -225,8 +278,9 @@ class _ParkRecommendScreenState extends State<ParkRecommendScreen>
                 child: GridView.builder(
                   controller: _scrollController,
                   itemCount: displayRecords.length + (_isLoadingMore ? 1 : 0),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount:
+                        MediaQuery.of(context).size.width > 600 ? 3 : 2,
                     crossAxisSpacing: 12,
                     mainAxisSpacing: 12,
                     childAspectRatio: 0.68,
@@ -248,6 +302,7 @@ class _ParkRecommendScreenState extends State<ParkRecommendScreen>
 
   @override
   void dispose() {
+    _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
     super.dispose();
   }
