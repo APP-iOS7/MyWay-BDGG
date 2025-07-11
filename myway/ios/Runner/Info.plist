@@ -32,22 +32,26 @@
 	<string>AIzaSyDelVDyjqTQyns5noConZiN8Q3jbOmwUDE</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+
 	<key>NSHealthShareUsageDescription</key>
 	<string>걸음 수 데이터를 읽기 위해 건강 데이터 접근 권한이 필요합니다.</string>
 	<key>NSHealthUpdateUsageDescription</key>
 	<string>걸음 수 데이터를 업데이트하기 위해 건강 데이터 쓰기 권한이 필요합니다.</string>
-	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>이 앱은 산책 경로 기록을 위해 사용자의 위치를 항상 사용합니다.</string>
-	<key>NSLocationAlwaysUsageDescription</key>
-	<string>이 앱은 백그라운드에서도 위치 정보를 사용하여 산책 경로를 기록합니다.</string>
+
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>앱에서 현재 위치를 사용하기 위해 권한을 요청합니다.</string>
+	<string>사용자가 산책 경로를 기록하고, 현재 위치를 기준으로 2km 이내 공원을 안내하기 위해 위치 정보가 필요합니다.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>산책 중 경로를 지속적으로 기록하고, 종료 시 산책 통계를 제공하기 위해 위치 정보를 항상 사용합니다.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>앱이 백그라운드에서도 산책 경로를 기록하여, 사용자가 앱을 닫아도 걸은 경로를 확인할 수 있도록 위치를 사용합니다.</string>
+
 	<key>NSMotionUsageDescription</key>
 	<string>걸음 수 측정을 위해 모션 센서를 사용합니다.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>이미지를 갤러리에 저장하기 위해 권한이 필요합니다.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>이미지를 갤러리에 저장하기 위해 권한이 필요합니다.</string>
+
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UIBackgroundModes</key>
