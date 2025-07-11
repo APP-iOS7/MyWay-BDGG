@@ -16,12 +16,15 @@ class ParkDataProvider extends ChangeNotifier {
   bool _isLoading = false;
   String _error = '';
   List<ParkInfo> nearbyParks = [];
+  int _lastFetchedPage = 0;
+  final int _recordsPerPage = 20;
 
   List<StepModel> _allUserCourseRecords = [];
   String _userRecordsError = '';
   bool _isLoadingUserRecords = false;
   bool _isLoadingLocation = false;
   bool _disposed = false; // dispose 상태 추적
+  bool _hasMoreRecords = true;
 
   final List<ParkCourseInfo> _recommendedCourse = [];
 
@@ -35,7 +38,7 @@ class ParkDataProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String get error => _error;
   Position? get currentPosition => _currentPosition;
-
+  bool get hasMoreRecords => _hasMoreRecords;
   void setCurrentPosition(Position? position) {
     _currentPosition = position;
     _safeNotifyListeners();
@@ -131,51 +134,12 @@ class ParkDataProvider extends ChangeNotifier {
   }
 
   Future<void> initialize() async {
+    _allUserCourseRecords.clear();
+    _lastFetchedPage = 0;
+    _hasMoreRecords = true;
     await loadParksFromCsv();
     await fetchCurrentLocationAndCalculateDistance();
-    await _fetchUserCourseRecordsInternal();
-  }
-
-  Future<void> _fetchUserCourseRecordsInternal() async {
-    _isLoadingUserRecords = true;
-    _userRecordsError = '';
-    _safeNotifyListeners();
-
-    try {
-      final firestore = FirebaseFirestore.instance;
-      final trackingResultCollection = firestore.collection('trackingResult');
-      final querySnapshot = await trackingResultCollection.get();
-
-      List<StepModel> records = [];
-      for (var userDoc in querySnapshot.docs) {
-        final userData = userDoc.data();
-        if (userData.containsKey('TrackingResult') &&
-            userData['TrackingResult'] is List) {
-          final List<dynamic> userTrackingResults = userData['TrackingResult'];
-          for (var recordData in userTrackingResults) {
-            if (recordData is Map<String, dynamic>) {
-              try {
-                records.add(StepModel.fromJson(recordData));
-              } catch (e, s) {
-                print(
-                  "Error parsing StepModel from Firestore, record: $recordData, error: $e, stack: $s",
-                );
-              }
-            }
-          }
-        }
-      }
-      print(records.length);
-      _allUserCourseRecords = records;
-      _allUserCourseRecords.sort((a, b) => b.stopTime.compareTo(a.stopTime));
-    } catch (e, s) {
-      print("Error fetching all user course records: $e, stack: $s");
-      _userRecordsError = "사용자 활동 기록을 불러오는 중 오류가 발생했습니다.";
-      _allUserCourseRecords = [];
-    }
-
-    _isLoadingUserRecords = false;
-    _safeNotifyListeners();
+    await loadMoreUserCourseRecords(); // 초기 1페이지만 로딩
   }
 
   Future<Position> _determinePosition() async {
@@ -210,6 +174,69 @@ class ParkDataProvider extends ChangeNotifier {
     } else {
       notifyListeners();
     }
+  }
+
+  Future<void> loadMoreUserCourseRecords() async {
+    if (_isLoadingUserRecords || !_hasMoreRecords) return;
+
+    _isLoadingUserRecords = true;
+    _userRecordsError = '';
+    _safeNotifyListeners();
+
+    try {
+      final firestore = FirebaseFirestore.instance;
+      final trackingResultCollection = firestore.collection('trackingResult');
+
+      // 페이징 처리: 전체 문서에서 _lastFetchedPage 기준으로 오프겟 적용
+      final querySnapshot = await trackingResultCollection.get();
+      final allDocs = querySnapshot.docs;
+
+      final start = _lastFetchedPage * _recordsPerPage;
+      final end = start + _recordsPerPage;
+
+      if (start >= allDocs.length) {
+        _hasMoreRecords = false;
+      } else {
+        final subDocs = allDocs.sublist(
+          start,
+          end > allDocs.length ? allDocs.length : end,
+        );
+
+        List<StepModel> newRecords = [];
+
+        for (var userDoc in subDocs) {
+          final userData = userDoc.data();
+          if (userData.containsKey('TrackingResult') &&
+              userData['TrackingResult'] is List) {
+            final List<dynamic> userTrackingResults =
+                userData['TrackingResult'];
+            for (var recordData in userTrackingResults) {
+              if (recordData is Map<String, dynamic>) {
+                try {
+                  newRecords.add(StepModel.fromJson(recordData));
+                } catch (e, s) {
+                  print('Error parsing StepModel: $e, stack: $s');
+                }
+              }
+            }
+          }
+        }
+
+        _allUserCourseRecords.addAll(newRecords);
+        _allUserCourseRecords.sort((a, b) => b.stopTime.compareTo(a.stopTime));
+        _lastFetchedPage++;
+
+        if (subDocs.length < _recordsPerPage) {
+          _hasMoreRecords = false;
+        }
+      }
+    } catch (e, s) {
+      print('Error loading paginated records: $e, stack: $s');
+      _userRecordsError = '코스 데이터를 불러오지 못했습니다.';
+    }
+
+    _isLoadingUserRecords = false;
+    _safeNotifyListeners();
   }
 
   @override

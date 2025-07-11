@@ -16,7 +16,6 @@ class _ParkRecommendScreenState extends State<ParkRecommendScreen>
     with AutomaticKeepAliveClientMixin {
   final ScrollController _scrollController = ScrollController();
   final int _perPage = 20;
-  int _currentPage = 1;
   bool _isLoadingMore = false;
   Future<void>? _initializationFuture;
 
@@ -42,13 +41,14 @@ class _ParkRecommendScreenState extends State<ParkRecommendScreen>
 
   void _onScroll() {
     // iOS에서 더 부드러운 스크롤을 위해 임계값 조정
-    final threshold = Theme.of(context).platform == TargetPlatform.iOS ? 150 : 100;
+    final threshold =
+        Theme.of(context).platform == TargetPlatform.iOS ? 150 : 100;
     if (!_isLoadingMore &&
         _scrollController.position.pixels >=
             _scrollController.position.maxScrollExtent - threshold) {
       try {
         final provider = Provider.of<ParkDataProvider>(context, listen: false);
-        final currentDisplayCount = _perPage * _currentPage;
+        final currentDisplayCount = _perPage;
         if (currentDisplayCount < provider.allUserCourseRecords.length) {
           _loadMoreRecords();
         }
@@ -58,25 +58,24 @@ class _ParkRecommendScreenState extends State<ParkRecommendScreen>
     }
   }
 
-  void _loadMoreRecords() {
+  void _loadMoreRecords() async {
     if (_isLoadingMore) return;
-    setState(() => _isLoadingMore = true);
-    _currentPage++;
 
-    // 딜레이 후 로딩 상태 해제
-    Future.delayed(const Duration(milliseconds: 300))
-        .whenComplete(() {
-          // 성공/실패 관계없이 항상 실행
-          if (mounted) {
-            setState(() {
-              _isLoadingMore = false;
-            });
-          }
-        })
-        .catchError((error) {
-          // 에러 로깅만
-          debugPrint('Error loading more records: $error');
-        });
+    setState(() => _isLoadingMore = true);
+
+    try {
+      final parkDataProvider = Provider.of<ParkDataProvider>(
+        context,
+        listen: false,
+      );
+      await parkDataProvider.loadMoreUserCourseRecords();
+    } catch (e) {
+      debugPrint('Failed to load more: $e');
+    } finally {
+      if (mounted) {
+        setState(() => _isLoadingMore = false);
+      }
+    }
   }
 
   String formatStopTime(String stopTimeStr) {
@@ -126,10 +125,13 @@ class _ParkRecommendScreenState extends State<ParkRecommendScreen>
                               color: GRAYSCALE_LABEL_100,
                               child: Center(
                                 child: CircularProgressIndicator(
-                                  value: loadingProgress.expectedTotalBytes != null
-                                      ? loadingProgress.cumulativeBytesLoaded /
-                                          loadingProgress.expectedTotalBytes!
-                                      : null,
+                                  value:
+                                      loadingProgress.expectedTotalBytes != null
+                                          ? loadingProgress
+                                                  .cumulativeBytesLoaded /
+                                              loadingProgress
+                                                  .expectedTotalBytes!
+                                          : null,
                                   strokeWidth: 2,
                                   color: ORANGE_PRIMARY_500,
                                 ),
@@ -223,7 +225,8 @@ class _ParkRecommendScreenState extends State<ParkRecommendScreen>
         surfaceTintColor: Colors.transparent,
       ),
       body: FutureBuilder<void>(
-        future: _initializationFuture ?? _initializeData(), // Future가 없으면 초기화 수행
+        future:
+            _initializationFuture ?? _initializeData(), // Future가 없으면 초기화 수행
         builder: (context, snapshot) {
           // 연결 상태 파악 및 초기 데이터 로딩 확인
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -258,11 +261,8 @@ class _ParkRecommendScreenState extends State<ParkRecommendScreen>
           }
 
           return Consumer<ParkDataProvider>(
-            builder: (context, provider, child) {
-              final displayRecords =
-                  provider.allUserCourseRecords
-                      .take(_perPage * _currentPage)
-                      .toList();
+            builder: (context, parkDataProvider, child) {
+              final displayRecords = parkDataProvider.allUserCourseRecords;
 
               if (displayRecords.isEmpty) {
                 return const Center(
@@ -286,8 +286,12 @@ class _ParkRecommendScreenState extends State<ParkRecommendScreen>
                     childAspectRatio: 0.68,
                   ),
                   itemBuilder: (_, index) {
-                    if (index == displayRecords.length) {
-                      return const Center(child: CircularProgressIndicator());
+                    if (index >= displayRecords.length) {
+                      return const Center(
+                        child: CircularProgressIndicator(
+                          color: ORANGE_PRIMARY_500,
+                        ),
+                      );
                     }
                     return _buildRecordCard(displayRecords[index]);
                   },
