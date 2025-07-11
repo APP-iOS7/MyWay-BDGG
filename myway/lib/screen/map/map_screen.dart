@@ -67,11 +67,11 @@ class _MapScreenState extends State<MapScreen>
 
   Future<void> _loadUserPhotoAndMarker() async {
     final user = FirebaseAuth.instance.currentUser;
-    debugPrint('🔍 _loadUserPhotoAndMarker 시작');
-    debugPrint('🔍 currentPosition: $currentPosition');
+    debugPrint(' _loadUserPhotoAndMarker 시작');
+    debugPrint(' currentPosition: $currentPosition');
 
     if (user == null || currentPosition == null) {
-      debugPrint('🔍 user 또는 currentPosition이 null');
+      debugPrint('user 또는 currentPosition이 null');
       _addDefaultUserMarker();
       return;
     }
@@ -87,13 +87,13 @@ class _MapScreenState extends State<MapScreen>
       String? profileImageUrl;
       if (doc.exists && doc.data() != null) {
         profileImageUrl = doc.data()!['profileImage'] as String?;
-        debugPrint('🔍 Firestore에서 가져온 profileImage URL: $profileImageUrl');
+        debugPrint('Firestore에서 가져온 profileImage URL: $profileImageUrl');
       }
 
       // Firestore에 프로필 이미지가 없으면 Firebase Auth의 photoURL 사용
       if (profileImageUrl == null || profileImageUrl.isEmpty) {
         profileImageUrl = user.photoURL;
-        debugPrint('🔍 Firebase Auth에서 가져온 photoURL: $profileImageUrl');
+        debugPrint('Firebase Auth에서 가져온 photoURL: $profileImageUrl');
       }
 
       if (profileImageUrl != null && profileImageUrl.isNotEmpty) {
@@ -102,7 +102,7 @@ class _MapScreenState extends State<MapScreen>
             profileImageUrl,
             width: 60,
           );
-          debugPrint('🔍 마커 아이콘 생성 성공, 크기: ${markerIcon.length} bytes');
+          debugPrint('마커 아이콘 생성 성공, 크기: ${markerIcon.length} bytes');
 
           final Marker marker = Marker(
             markerId: MarkerId('user_profile'),
@@ -115,17 +115,17 @@ class _MapScreenState extends State<MapScreen>
             _markers.removeWhere((m) => m.markerId.value == 'user_profile');
             _markers.add(marker);
           });
-          debugPrint('🔍 프로필 마커 추가 성공. 전체 마커 수: ${_markers.length}');
+          debugPrint('프로필 마커 추가 성공. 전체 마커 수: ${_markers.length}');
         } catch (e) {
-          debugPrint('🔍 마커 이미지 로드 실패: $e');
+          debugPrint('마커 이미지 로드 실패: $e');
           _addDefaultUserMarker();
         }
       } else {
-        debugPrint('🔍 프로필 이미지 URL이 없음');
+        debugPrint('프로필 이미지 URL이 없음');
         _addDefaultUserMarker();
       }
     } catch (e) {
-      debugPrint('🔍 Firestore 접근 실패: $e');
+      debugPrint('Firestore 접근 실패: $e');
       _addDefaultUserMarker();
     }
   }
