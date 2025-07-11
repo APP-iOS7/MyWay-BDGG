@@ -10,6 +10,15 @@ import '../../provider/user_provider.dart';
 import '/const/colors.dart';
 import 'weather_screen.dart';
 import '/provider/weather_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
+
+Future<bool> ensureLocationPermission() async {
+  var status = await Permission.location.status;
+  if (!status.isGranted) {
+    status = await Permission.location.request();
+  }
+  return status.isGranted;
+}
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -31,7 +40,7 @@ class _HomeScreenState extends State<HomeScreen> {
     context.read<UserProvider>().loadNickname();
     fetchImages();
     context.read<ParkDataProvider>().loadParksFromCsv();
-    context.read<ParkDataProvider>().loadParksFromCsv();
+    requestLocationPermissionAndInit();
   }
 
   Future<void> fetchImages() async {
@@ -45,6 +54,21 @@ class _HomeScreenState extends State<HomeScreen> {
         imageUrls = urls;
         isLoading = false;
       });
+    }
+  }
+
+  void requestLocationPermissionAndInit() async {
+    bool granted = await ensureLocationPermission();
+    if (!granted && mounted) {
+      // 권한 거부 시 안내 메시지
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('위치 권한이 필요합니다. 설정에서 권한을 허용해주세요.')));
+    } else {
+      // 권한이 허용된 경우 위치 관련 기능 실행
+      context
+          .read<ParkDataProvider>()
+          .fetchCurrentLocationAndCalculateDistance();
     }
   }
 

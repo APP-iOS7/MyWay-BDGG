@@ -133,13 +133,23 @@ class ParkDataProvider extends ChangeNotifier {
     _safeNotifyListeners();
   }
 
+  // provider에 에러 메시지 저장
+  String _initError = '';
+  String get initError => _initError;
+
   Future<void> initialize() async {
-    _allUserCourseRecords.clear();
-    _lastFetchedPage = 0;
-    _hasMoreRecords = true;
-    await loadParksFromCsv();
-    await fetchCurrentLocationAndCalculateDistance();
-    await loadMoreUserCourseRecords(); // 초기 1페이지만 로딩
+    try {
+      _allUserCourseRecords.clear();
+      _lastFetchedPage = 0;
+      _hasMoreRecords = true;
+      await loadParksFromCsv();
+      await fetchCurrentLocationAndCalculateDistance();
+      await loadMoreUserCourseRecords();
+      _initError = '';
+    } catch (e) {
+      _initError = '초기화 중 오류: $e';
+      _safeNotifyListeners();
+    }
   }
 
   Future<Position> _determinePosition() async {

@@ -261,8 +261,13 @@ class _ParkRecommendScreenState extends State<ParkRecommendScreen>
           }
 
           return Consumer<ParkDataProvider>(
-            builder: (context, parkDataProvider, child) {
-              final displayRecords = parkDataProvider.allUserCourseRecords;
+            builder: (context, provider, child) {
+              if (provider.initError.isNotEmpty) {
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text(provider.initError)));
+              }
+              final displayRecords = provider.allUserCourseRecords;
 
               if (displayRecords.isEmpty) {
                 return const Center(
