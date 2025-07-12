@@ -83,20 +83,33 @@ class _BottomTabBarState extends State<BottomTabBar> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: PageView(
-        controller: _pageController,
-        onPageChanged: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
+      body: GestureDetector(
+        onHorizontalDragStart: (details) {
+          // 수평 스와이프 제스처 무시
         },
-        children: [
-          ParkRecommendScreen(), // 추천코스 탭
-          ParkListScreen(), // 공원찾기 탭
-          HomeScreen(),
-          ActivityLogScreen(),
-          MyPageScreen(),
-        ],
+        onHorizontalDragUpdate: (details) {
+          // 수평 스와이프 제스처 무시
+        },
+        onHorizontalDragEnd: (details) {
+          // 수평 스와이프 제스처 무시
+        },
+        child: PageView(
+          controller: _pageController,
+          physics: const NeverScrollableScrollPhysics(), // 스와이프 비활성화
+          allowImplicitScrolling: false, // 암시적 스크롤 비활성화
+          onPageChanged: (index) {
+            setState(() {
+              _selectedIndex = index;
+            });
+          },
+          children: [
+            ParkRecommendScreen(), // 추천코스 탭
+            ParkListScreen(), // 공원찾기 탭
+            HomeScreen(),
+            ActivityLogScreen(),
+            MyPageScreen(),
+          ],
+        ),
       ),
       bottomNavigationBar: Column(
         mainAxisSize: MainAxisSize.min,
