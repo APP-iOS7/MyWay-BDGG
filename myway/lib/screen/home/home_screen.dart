@@ -5,20 +5,11 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
-import '../../provider/park_data_provider.dart';
 import '../../provider/user_provider.dart';
+import '../../provider/park_data_provider.dart';
 import '/const/colors.dart';
 import 'weather_screen.dart';
 import '/provider/weather_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
-
-Future<bool> ensureLocationPermission() async {
-  var status = await Permission.location.status;
-  if (!status.isGranted) {
-    status = await Permission.location.request();
-  }
-  return status.isGranted;
-}
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -39,8 +30,27 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     context.read<UserProvider>().loadNickname();
     fetchImages();
-    context.read<ParkDataProvider>().loadParksFromCsv();
-    requestLocationPermissionAndInit();
+    _initializeParkData();
+  }
+
+  Future<void> _initializeParkData() async {
+    try {
+      final parkProvider = context.read<ParkDataProvider>();
+
+      print('홈스크린 CSV 초기화 시작');
+      print('현재 공원 데이터 개수: ${parkProvider.allParks.length}');
+      print('CSV 로드 상태: ${parkProvider.csvLoaded}');
+
+      // BottomTabBar에서 이미 로드했을 수 있으므로 상태만 확인
+      if (parkProvider.allParks.isNotEmpty) {
+        print('CSV 데이터가 이미 로드되어 있음: ${parkProvider.allParks.length}개');
+      } else {
+        print('CSV 데이터가 아직 로드되지 않음 - BottomTabBar에서 처리 예정');
+      }
+    } catch (e) {
+      print('홈스크린 CSV 로드 실패: $e');
+      // 에러가 발생해도 앱은 계속 실행
+    }
   }
 
   Future<void> fetchImages() async {
@@ -54,21 +64,6 @@ class _HomeScreenState extends State<HomeScreen> {
         imageUrls = urls;
         isLoading = false;
       });
-    }
-  }
-
-  void requestLocationPermissionAndInit() async {
-    bool granted = await ensureLocationPermission();
-    if (!granted && mounted) {
-      // 권한 거부 시 안내 메시지
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('위치 권한이 필요합니다. 설정에서 권한을 허용해주세요.')));
-    } else {
-      // 권한이 허용된 경우 위치 관련 기능 실행
-      context
-          .read<ParkDataProvider>()
-          .fetchCurrentLocationAndCalculateDistance();
     }
   }
 

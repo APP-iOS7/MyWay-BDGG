@@ -6,6 +6,8 @@ import 'package:myway/screen/home/my_page_screen.dart';
 import 'package:myway/screen/home/park_list_screen.dart';
 import 'package:myway/screen/result/activity_log_screen.dart';
 import 'package:myway/screen/home/park_recommend_screen.dart';
+import 'package:provider/provider.dart';
+import 'package:myway/provider/park_data_provider.dart';
 
 class BottomTabBar extends StatefulWidget {
   const BottomTabBar({super.key});
@@ -15,25 +17,87 @@ class BottomTabBar extends StatefulWidget {
 }
 
 class _BottomTabBarState extends State<BottomTabBar> {
-  final List<Widget> _tabList = [
-    ParkRecommendScreen(), // 추천코스 탭
-    ParkListScreen(), // 공원찾기 탭
-    HomeScreen(),
-    ActivityLogScreen(),
-    MyPageScreen(),
-  ];
   int _selectedIndex = 2;
+  final PageController _pageController = PageController(initialPage: 2);
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeData();
+  }
+
+  Future<void> _initializeData() async {
+    try {
+      final parkProvider = context.read<ParkDataProvider>();
+
+      print('BottomTabBar 초기화 시작');
+      print('현재 공원 데이터 개수: ${parkProvider.allParks.length}');
+      print('CSV 로드 상태: ${parkProvider.csvLoaded}');
+      print('현재 사용자 레코드 개수: ${parkProvider.allUserCourseRecords.length}');
+
+      // CSV 데이터와 사용자 레코드를 병렬로 처리
+      final futures = <Future>[];
+
+      // CSV 데이터가 없으면 로드
+      if (!parkProvider.csvLoaded && parkProvider.allParks.isEmpty) {
+        print('BottomTabBar에서 CSV 데이터 로드 시작');
+        futures.add(parkProvider.loadParksFromCsv());
+      } else {
+        print('CSV 데이터가 이미 로드되어 있음: ${parkProvider.allParks.length}개');
+      }
+
+      // 사용자 레코드가 없으면 로드
+      if (parkProvider.allUserCourseRecords.isEmpty &&
+          !parkProvider.isLoadingUserRecords) {
+        print('BottomTabBar에서 사용자 레코드 로드 시작');
+        futures.add(parkProvider.initializeUserRecords());
+      } else {
+        print(
+          '사용자 레코드가 이미 로드되어 있음: ${parkProvider.allUserCourseRecords.length}개',
+        );
+      }
+
+      // 병렬로 처리
+      if (futures.isNotEmpty) {
+        await Future.wait(futures);
+        print('BottomTabBar 초기화 완료');
+        print('최종 공원 데이터 개수: ${parkProvider.allParks.length}개');
+        print('최종 사용자 레코드 개수: ${parkProvider.allUserCourseRecords.length}개');
+      }
+    } catch (e) {
+      print('BottomTabBar 초기화 실패: $e');
+    }
+  }
 
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
+    _pageController.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(index: _selectedIndex, children: _tabList),
+      body: PageView(
+        controller: _pageController,
+        onPageChanged: (index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+        },
+        children: [
+          ParkRecommendScreen(), // 추천코스 탭
+          ParkListScreen(), // 공원찾기 탭
+          HomeScreen(),
+          ActivityLogScreen(),
+          MyPageScreen(),
+        ],
+      ),
       bottomNavigationBar: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -110,5 +174,11 @@ class _BottomTabBarState extends State<BottomTabBar> {
       isSelected ? selectedIcon : unselectedIcon,
       color: isSelected ? ORANGE_PRIMARY_500 : Colors.grey,
     );
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
   }
 }

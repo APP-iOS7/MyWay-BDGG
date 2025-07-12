@@ -25,6 +25,9 @@ class _ParkListScreenState extends State<ParkListScreen> {
   final int _parksPerPage = 20;
   int _currentParkPage = 1;
   bool _isFetchingMoreParks = false;
+  bool _isInitialLoading = true;
+  bool _isSearching = false;
+  bool _isLocationLoading = false;
 
   @override
   void initState() {
@@ -33,11 +36,37 @@ class _ParkListScreenState extends State<ParkListScreen> {
     _parkListScrollController.addListener(_onParkScroll);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final provider = Provider.of<ParkDataProvider>(context, listen: false);
-      provider.initialize().then((_) {
-        _applyParkFilterAndSearchAndPagination(provider);
-      });
+      _initializeData();
     });
+  }
+
+  Future<void> _initializeData() async {
+    try {
+      final provider = Provider.of<ParkDataProvider>(context, listen: false);
+      print('park_list_screen 초기화 시작');
+      print('현재 공원 데이터 개수: ${provider.allParks.length}');
+
+      // CSV 데이터가 없으면 로드
+      if (provider.allParks.isEmpty && !provider.csvLoaded) {
+        print('공원리스트에서 CSV 데이터 로드 시작');
+        await provider.loadParksFromCsv();
+        print('공원리스트에서 CSV 데이터 로드 완료: ${provider.allParks.length}개');
+      }
+
+      if (mounted) {
+        setState(() {
+          _isInitialLoading = false;
+        });
+        _applyParkFilterAndSearchAndPagination(provider);
+      }
+    } catch (e) {
+      print('공원리스트 초기화 실패: $e');
+      if (mounted) {
+        setState(() {
+          _isInitialLoading = false;
+        });
+      }
+    }
   }
 
   @override
@@ -54,7 +83,17 @@ class _ParkListScreenState extends State<ParkListScreen> {
       final provider = Provider.of<ParkDataProvider>(context, listen: false);
       setState(() {
         _searchTerm = _searchController.text;
-        _applyParkFilterAndSearchAndPagination(provider);
+        _isSearching = true;
+      });
+
+      // 검색 디바운싱
+      Future.delayed(const Duration(milliseconds: 300), () {
+        if (mounted) {
+          setState(() {
+            _isSearching = false;
+          });
+          _applyParkFilterAndSearchAndPagination(provider);
+        }
       });
     }
   }
@@ -72,6 +111,7 @@ class _ParkListScreenState extends State<ParkListScreen> {
   void _applyParkFilterAndSearchAndPagination(ParkDataProvider provider) {
     if (!provider.isLoading) {
       List<ParkInfo> tempFilteredList = List.from(provider.allParks);
+
       if (_currentParkFilter == ParkFilterType.favorites) {
         tempFilteredList =
             tempFilteredList
@@ -90,6 +130,7 @@ class _ParkListScreenState extends State<ParkListScreen> {
       } else {
         tempFilteredList.sort((a, b) => a.distanceKm.compareTo(b.distanceKm));
       }
+
       if (_searchTerm.isNotEmpty) {
         tempFilteredList =
             tempFilteredList
@@ -105,6 +146,7 @@ class _ParkListScreenState extends State<ParkListScreen> {
                 )
                 .toList();
       }
+
       if (mounted) {
         setState(() {
           _filteredParks = tempFilteredList;
@@ -135,6 +177,40 @@ class _ParkListScreenState extends State<ParkListScreen> {
         _loadParksForCurrentPage();
       }
     });
+  }
+
+  Widget _buildLoadingWidget(String message) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const CircularProgressIndicator(color: ORANGE_PRIMARY_500),
+          const SizedBox(height: 16),
+          Text(
+            message,
+            style: const TextStyle(fontSize: 16, color: GRAYSCALE_LABEL_600),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyWidget(String message) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.park_outlined, size: 64, color: GRAYSCALE_LABEL_400),
+          const SizedBox(height: 16),
+          Text(
+            message,
+            style: const TextStyle(fontSize: 16, color: GRAYSCALE_LABEL_600),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildParkSearchBarAndFilters(ParkDataProvider provider) {
@@ -209,15 +285,24 @@ class _ParkListScreenState extends State<ParkListScreen> {
       selected: isSelected,
       onSelected: (bool selected) async {
         if (!selected) return;
+
         if (filterType == ParkFilterType.nearby &&
             provider.currentPosition == null &&
             !provider.isLoadingLocation) {
+          setState(() {
+            _isLocationLoading = true;
+          });
           await provider.fetchCurrentLocationAndCalculateDistance();
+          setState(() {
+            _isLocationLoading = false;
+          });
         }
+
         if (filterType == ParkFilterType.favorites &&
             provider.favoriteParkIds.isEmpty) {
           await provider.loadFavoritesFromFirestore();
         }
+
         if (mounted) {
           setState(() {
             _currentParkFilter = filterType;
@@ -320,6 +405,66 @@ class _ParkListScreenState extends State<ParkListScreen> {
     );
   }
 
+  Widget _buildBody(ParkDataProvider provider) {
+    // 초기 로딩
+    if (_isInitialLoading) {
+      return _buildLoadingWidget('공원 정보를 불러오는 중...');
+    }
+
+    // 위치 정보 로딩
+    if (_isLocationLoading) {
+      return _buildLoadingWidget('위치 정보를 가져오는 중...');
+    }
+
+    // 검색 중
+    if (_isSearching) {
+      return _buildLoadingWidget('검색 중...');
+    }
+
+    // 데이터 로딩 중
+    if (provider.isLoading) {
+      return _buildLoadingWidget('데이터를 불러오는 중...');
+    }
+
+    // 공원 데이터가 없음
+    if (provider.allParks.isEmpty) {
+      return _buildEmptyWidget('공원 정보를 불러올 수 없습니다.\n잠시 후 다시 시도해주세요.');
+    }
+
+    // 필터링된 결과가 없음
+    if (_filteredParks.isEmpty) {
+      String emptyMessage = '검색 결과가 없습니다.';
+
+      if (_currentParkFilter == ParkFilterType.nearby) {
+        emptyMessage = '주변 2km 이내에 공원이 없습니다.';
+      } else if (_currentParkFilter == ParkFilterType.favorites) {
+        emptyMessage = '찜한 공원이 없습니다.';
+      } else if (_searchTerm.isNotEmpty) {
+        emptyMessage = '"$_searchTerm"에 대한 검색 결과가 없습니다.';
+      }
+
+      return _buildEmptyWidget(emptyMessage);
+    }
+
+    // 정상적인 공원 리스트
+    return ListView.builder(
+      controller: _parkListScrollController,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      itemCount: _parksToDisplayOnPage.length + (_isFetchingMoreParks ? 1 : 0),
+      itemBuilder: (context, index) {
+        if (index == _parksToDisplayOnPage.length) {
+          return const Padding(
+            padding: EdgeInsets.all(16.0),
+            child: Center(
+              child: CircularProgressIndicator(color: BLUE_SECONDARY_500),
+            ),
+          );
+        }
+        return _buildParkListItem(_parksToDisplayOnPage[index]);
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<ParkDataProvider>(
@@ -345,28 +490,7 @@ class _ParkListScreenState extends State<ParkListScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: _buildParkSearchBarAndFilters(provider),
               ),
-              Expanded(
-                child: ListView.builder(
-                  controller: _parkListScrollController,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 12,
-                  ),
-                  itemCount:
-                      _parksToDisplayOnPage.length +
-                      (_isFetchingMoreParks ? 1 : 0),
-                  itemBuilder: (context, index) {
-                    if (index == _parksToDisplayOnPage.length) {
-                      return const Center(
-                        child: CircularProgressIndicator(
-                          color: BLUE_SECONDARY_500,
-                        ),
-                      );
-                    }
-                    return _buildParkListItem(_parksToDisplayOnPage[index]);
-                  },
-                ),
-              ),
+              Expanded(child: _buildBody(provider)),
             ],
           ),
         );
