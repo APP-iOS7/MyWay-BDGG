@@ -276,12 +276,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         ? trackingResult.sublist(0, 5)
                         : trackingResult;
 
-                return SizedBox(
-                  height: 500,
+                return Expanded(
                   child: CarouselSlider(
                     options: CarouselOptions(
                       scrollDirection: Axis.horizontal,
-                      height: 480,
+                      height: 450,
                       enableInfiniteScroll: trackingResult.length == 3,
                       padEnds: true,
                       viewportFraction: 0.8, // 화면에 보이는 아이템의 비율
@@ -485,12 +484,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 );
               },
             ),
-            Spacer(),
+            // SizedBox(height: 0),
             Column(
               children: [
                 Padding(
                   padding: const EdgeInsets.symmetric(
-                    vertical: 10.0,
+                    vertical: 25.0,
                     horizontal: 45,
                   ),
                   child: SizedBox(
