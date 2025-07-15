@@ -51,16 +51,21 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
   }
 
   Widget _buildBody(ActivityLogProvider activityProvider) {
+    if (activityProvider.isLoading) {
+      return _buildLoadingWidget('데이터를 불러오는 중...');
+    }
     // 전체 데이터가 없는경우
     if (activityProvider.hasNoData) {
       return _buildNoDataMessage();
     }
-
     // 선택된 기간에 데이터가 없는 경우
-    if (activityProvider.hasNoDataInCurrentPeriod) {
+    if (activityProvider.hasNoDataInCurrentPeriod ||
+        (activityProvider.totalDistance == 0 &&
+            activityProvider.totalCount == 0 &&
+            activityProvider.totalSteps == 0)) {
+      // 통계가 모두 0이면 기록 없음 메시지
       return _buildNoDataInPeriodMessage(activityProvider);
     }
-
     // 데이터가 있는 경우
     return _buildDataContent(activityProvider);
   }
@@ -516,275 +521,215 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(height: 16),
-          // 주간 기록
           Expanded(
             child:
-                activityProvider.selectedPeriod == ActivityPeriod.weekly
-                    ? FutureBuilder<List<FlSpot>>(
-                      future: activityProvider.weeklyChartData,
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return Center(
-                            child: CircularProgressIndicator(
-                              color: ORANGE_PRIMARY_500,
-                            ),
-                          );
-                        }
-                        if (snapshot.hasError) {
-                          return Center(
-                            child: Text(
-                              '데이터를 불러오는데 실패했습니다.',
-                              style: TextStyle(
-                                color: GRAYSCALE_LABEL_600,
-                                fontSize: 14,
-                              ),
-                            ),
-                          );
-                        }
-                        if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                          return Center(
-                            child: Text(
-                              '표시할 데이터가 없습니다.',
-                              style: TextStyle(
-                                color: GRAYSCALE_LABEL_600,
-                                fontSize: 14,
-                              ),
-                            ),
-                          );
-                        }
-
-                        double maxYValue = snapshot.data!
-                            .map((e) => e.y)
-                            .reduce((a, b) => a > b ? a : b);
-
-                        maxYValue = ((maxYValue / 5).ceil() * 5);
-                        return BarChart(
-                          BarChartData(
-                            maxY: maxYValue,
-                            barTouchData: BarTouchData(
-                              touchTooltipData: BarTouchTooltipData(
-                                tooltipMargin: 5,
-                                tooltipPadding: EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 3,
-                                ),
-                                getTooltipColor:
-                                    (_) => Colors.black.withAlpha(90),
-                                getTooltipItem: (
-                                  group,
-                                  groupIndex,
-                                  rod,
-                                  rodIndex,
-                                ) {
-                                  return BarTooltipItem(
-                                    '${rod.toY.toStringAsFixed(1)}km',
-                                    TextStyle(
-                                      color: WHITE,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 14,
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-                            gridData: FlGridData(show: false),
-                            titlesData: FlTitlesData(
-                              leftTitles: AxisTitles(
-                                sideTitles: SideTitles(
-                                  showTitles: true,
-                                  reservedSize: 40,
-                                  getTitlesWidget: (value, meta) {
-                                    return Text(
-                                      '${value.toInt()} km',
-                                      style: TextStyle(
-                                        color: GRAYSCALE_LABEL_900,
-                                        fontSize: 13,
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                              bottomTitles: AxisTitles(
-                                sideTitles: SideTitles(
-                                  showTitles: true,
-                                  getTitlesWidget: (value, meta) {
-                                    const days = [
-                                      '월',
-                                      '화',
-                                      '수',
-                                      '목',
-                                      '금',
-                                      '토',
-                                      '일',
-                                    ];
-                                    return Text(
-                                      days[value.toInt()],
-                                      style: TextStyle(
-                                        color: GRAYSCALE_LABEL_900,
-                                        fontSize: 13,
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                              rightTitles: AxisTitles(
-                                sideTitles: SideTitles(showTitles: false),
-                              ),
-                              topTitles: AxisTitles(
-                                sideTitles: SideTitles(showTitles: false),
-                              ),
-                            ),
-                            borderData: FlBorderData(show: false),
-                            barGroups:
-                                snapshot.data?.asMap().entries.map((enrty) {
-                                  return BarChartGroupData(
-                                    x: enrty.key,
-                                    barRods: [
-                                      BarChartRodData(
-                                        toY: enrty.value.y,
-                                        color: YELLOW_INFO_BASE_30,
-                                        width: 16,
-                                        borderRadius: BorderRadius.circular(4),
-                                      ),
-                                    ],
-                                  );
-                                }).toList() ??
-                                [],
-                          ),
-                        );
-                      },
+                activityProvider.isLoading
+                    ? Center(
+                      child: CircularProgressIndicator(
+                        color: ORANGE_PRIMARY_500,
+                      ),
                     )
-                    // 월간 기록
-                    : FutureBuilder<List<BarChartGroupData>>(
-                      future: activityProvider.monthlyChartData,
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return Center(
-                            child: CircularProgressIndicator(
-                              color: ORANGE_PRIMARY_500,
-                            ),
-                          );
-                        }
-                        if (snapshot.hasError) {
-                          return Center(
-                            child: Text(
-                              '차트를 불러오는데 실패했습니다.',
-                              style: TextStyle(
-                                color: GRAYSCALE_LABEL_600,
-                                fontSize: 14,
-                              ),
-                            ),
-                          );
-                        }
-                        if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                          return Center(
-                            child: Text(
-                              '표시할 데이터가 없습니다.',
-                              style: TextStyle(
-                                color: GRAYSCALE_LABEL_600,
-                                fontSize: 14,
-                              ),
-                            ),
-                          );
-                        }
-                        double maxY = snapshot.data!
-                            .map((e) => e.barRods.first.toY)
-                            .fold<double>(
-                              0,
-                              (prev, curr) => curr > prev ? curr : prev,
-                            );
+                    : activityProvider.chartError != null
+                    ? Center(
+                      child: Text(
+                        activityProvider.chartError!,
+                        style: TextStyle(
+                          color: GRAYSCALE_LABEL_600,
+                          fontSize: 14,
+                        ),
+                      ),
+                    )
+                    : activityProvider.selectedPeriod == ActivityPeriod.weekly
+                    ? _buildWeeklyBarChart(activityProvider)
+                    : _buildMonthlyBarChart(activityProvider),
+          ),
+        ],
+      ),
+    );
+  }
 
-                        maxY = ((maxY / 10).ceil() * 10);
-                        return SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: SizedBox(
-                            width: 12 * 40,
-                            height: 330,
-                            child: Padding(
-                              padding: const EdgeInsets.only(top: 5.0),
-                              child: BarChart(
-                                BarChartData(
-                                  maxY: maxY,
-                                  barTouchData: BarTouchData(
-                                    touchTooltipData: BarTouchTooltipData(
-                                      tooltipMargin: 5,
-                                      tooltipPadding: EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                        vertical: 3,
-                                      ),
-                                      getTooltipColor:
-                                          (_) => Colors.black.withAlpha(90),
-                                      getTooltipItem: (
-                                        group,
-                                        groupIndex,
-                                        rod,
-                                        rodIndex,
-                                      ) {
-                                        return BarTooltipItem(
-                                          '${rod.toY.toStringAsFixed(1)}km',
-                                          TextStyle(
-                                            color: WHITE,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 14,
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                  gridData: FlGridData(show: false),
-                                  titlesData: FlTitlesData(
-                                    leftTitles: AxisTitles(
-                                      sideTitles: SideTitles(
-                                        interval: 10,
-                                        showTitles: true,
-                                        reservedSize: 40,
+  Widget _buildWeeklyBarChart(ActivityLogProvider activityProvider) {
+    final data = activityProvider.weeklyChartData;
+    if (data.isEmpty) {
+      return Center(
+        child: Text(
+          '표시할 데이터가 없습니다.',
+          style: TextStyle(color: GRAYSCALE_LABEL_600, fontSize: 14),
+        ),
+      );
+    }
+    double maxYValue = data.map((e) => e.y).reduce((a, b) => a > b ? a : b);
+    maxYValue = ((maxYValue / 5).ceil() * 5);
+    return BarChart(
+      BarChartData(
+        maxY: maxYValue,
+        barTouchData: BarTouchData(
+          touchTooltipData: BarTouchTooltipData(
+            tooltipMargin: 5,
+            tooltipPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+            getTooltipColor: (_) => Colors.black.withAlpha(90),
+            getTooltipItem: (group, groupIndex, rod, rodIndex) {
+              return BarTooltipItem(
+                '${rod.toY.toStringAsFixed(1)}km',
+                TextStyle(
+                  color: WHITE,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              );
+            },
+          ),
+        ),
+        gridData: FlGridData(show: false),
+        titlesData: FlTitlesData(
+          leftTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              reservedSize: 40,
+              getTitlesWidget: (value, meta) {
+                return Text(
+                  '${value.toInt()} km',
+                  style: TextStyle(color: GRAYSCALE_LABEL_900, fontSize: 13),
+                );
+              },
+            ),
+          ),
+          bottomTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              getTitlesWidget: (value, meta) {
+                const days = ['월', '화', '수', '목', '금', '토', '일'];
+                return Text(
+                  days[value.toInt()],
+                  style: TextStyle(color: GRAYSCALE_LABEL_900, fontSize: 13),
+                );
+              },
+            ),
+          ),
+          rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+        ),
+        borderData: FlBorderData(show: false),
+        barGroups:
+            data.asMap().entries.map((enrty) {
+              return BarChartGroupData(
+                x: enrty.key,
+                barRods: [
+                  BarChartRodData(
+                    toY: enrty.value.y,
+                    color: YELLOW_INFO_BASE_30,
+                    width: 16,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ],
+              );
+            }).toList(),
+      ),
+    );
+  }
 
-                                        getTitlesWidget: (value, meta) {
-                                          return Text(
-                                            '${value.toInt()} km',
-                                            style: TextStyle(
-                                              color: GRAYSCALE_LABEL_900,
-                                              fontSize: 13,
-                                            ),
-                                          );
-                                        },
-                                      ),
-                                    ),
-                                    bottomTitles: AxisTitles(
-                                      sideTitles: SideTitles(
-                                        showTitles: true,
-                                        getTitlesWidget: (value, meta) {
-                                          return Text(
-                                            '${value.toInt()}월',
-                                            style: TextStyle(
-                                              color: GRAYSCALE_LABEL_900,
-                                              fontSize: 13,
-                                            ),
-                                          );
-                                        },
-                                      ),
-                                    ),
-                                    rightTitles: AxisTitles(
-                                      sideTitles: SideTitles(showTitles: false),
-                                    ),
-                                    topTitles: AxisTitles(
-                                      sideTitles: SideTitles(
-                                        showTitles: false,
-                                        reservedSize: 20,
-                                      ),
-                                    ),
-                                  ),
-                                  borderData: FlBorderData(show: false),
-                                  barGroups: snapshot.data ?? [],
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
+  Widget _buildMonthlyBarChart(ActivityLogProvider activityProvider) {
+    final data = activityProvider.monthlyChartData;
+    if (data.isEmpty) {
+      return Center(
+        child: Text(
+          '표시할 데이터가 없습니다.',
+          style: TextStyle(color: GRAYSCALE_LABEL_600, fontSize: 14),
+        ),
+      );
+    }
+    double maxY = data
+        .map((e) => e.barRods.first.toY)
+        .fold<double>(0, (prev, curr) => curr > prev ? curr : prev);
+    maxY = ((maxY / 10).ceil() * 10);
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: SizedBox(
+        width: 12 * 40,
+        height: 330,
+        child: Padding(
+          padding: const EdgeInsets.only(top: 5.0),
+          child: BarChart(
+            BarChartData(
+              maxY: maxY,
+              barTouchData: BarTouchData(
+                touchTooltipData: BarTouchTooltipData(
+                  tooltipMargin: 5,
+                  tooltipPadding: EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
+                  getTooltipColor: (_) => Colors.black.withAlpha(90),
+                  getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                    return BarTooltipItem(
+                      '${rod.toY.toStringAsFixed(1)}km',
+                      TextStyle(
+                        color: WHITE,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    );
+                  },
+                ),
+              ),
+              gridData: FlGridData(show: false),
+              titlesData: FlTitlesData(
+                leftTitles: AxisTitles(
+                  sideTitles: SideTitles(
+                    interval: 10,
+                    showTitles: true,
+                    reservedSize: 40,
+                    getTitlesWidget: (value, meta) {
+                      return Text(
+                        '${value.toInt()} km',
+                        style: TextStyle(
+                          color: GRAYSCALE_LABEL_900,
+                          fontSize: 13,
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                bottomTitles: AxisTitles(
+                  sideTitles: SideTitles(
+                    showTitles: true,
+                    getTitlesWidget: (value, meta) {
+                      return Text(
+                        '${value.toInt()}월',
+                        style: TextStyle(
+                          color: GRAYSCALE_LABEL_900,
+                          fontSize: 13,
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                rightTitles: AxisTitles(
+                  sideTitles: SideTitles(showTitles: false),
+                ),
+                topTitles: AxisTitles(
+                  sideTitles: SideTitles(showTitles: false, reservedSize: 20),
+                ),
+              ),
+              borderData: FlBorderData(show: false),
+              barGroups: data,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLoadingWidget(String message) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CircularProgressIndicator(color: ORANGE_PRIMARY_500),
+          SizedBox(height: 16),
+          Text(
+            message,
+            style: TextStyle(fontSize: 16, color: GRAYSCALE_LABEL_600),
           ),
         ],
       ),

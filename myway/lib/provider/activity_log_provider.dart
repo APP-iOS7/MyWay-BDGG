@@ -57,6 +57,10 @@ class ActivityLogProvider extends ChangeNotifier {
       _currentDataStatus == DataStatus.noDataInPeriod;
   bool get hasData => _currentDataStatus == DataStatus.hasData;
 
+  // 데이터 로딩 상태
+  bool _isLoading = false;
+  bool get isLoading => _isLoading;
+
   // 현재 년월 정보
   int get currentYear => _currentDate.year;
   String get currentYearMonth => '$currentYear년 ${_currentDate.month}월';
@@ -123,6 +127,8 @@ class ActivityLogProvider extends ChangeNotifier {
 
   // 주간 범위 업데이트
   void updateSelectedRange(String range) async {
+    _isLoading = true;
+    notifyListeners();
     _selectedRange = range;
 
     // 날짜 파싱
@@ -143,7 +149,8 @@ class ActivityLogProvider extends ChangeNotifier {
 
     _currentDate = startDate.add(Duration(days: 3)); // 주 중간값
     await _fetchWeeklyDataFromFirestore(startDate, endDate);
-
+    await fetchWeeklyChartData();
+    _isLoading = false;
     notifyListeners();
   }
 
@@ -316,6 +323,8 @@ class ActivityLogProvider extends ChangeNotifier {
 
   // 데이터 로드
   Future<void> loadData() async {
+    _isLoading = true;
+    notifyListeners();
     try {
       if (_selectedPeriod == ActivityPeriod.monthly) {
         final data = await getMonthlyData(
@@ -339,6 +348,8 @@ class ActivityLogProvider extends ChangeNotifier {
         'count': 0,
       });
     }
+    _isLoading = false;
+    notifyListeners();
   }
 
   // 데이터 업데이트
@@ -357,27 +368,49 @@ class ActivityLogProvider extends ChangeNotifier {
   // 주간/월간 선택 변경
   void setPeriod(ActivityPeriod period) {
     _selectedPeriod = period;
+    _isLoading = true;
+    notifyListeners();
     if (period == ActivityPeriod.weekly) {
       _currentDate = DateTime.now();
       if (_selectedRange.isEmpty) {
         _initializeCurrentWeek();
       }
+      // 주간 통계 fetch
+      final parts = _selectedRange.split(' ~ ');
+      final startParts = parts[0].split('월 ');
+      final endParts = parts[1].split('월 ');
+      final startDate = DateTime(
+        DateTime.now().year,
+        int.parse(startParts[0]),
+        int.parse(startParts[1].replaceAll('일', '')),
+      );
+      final endDate = DateTime(
+        DateTime.now().year,
+        int.parse(endParts[0]),
+        int.parse(endParts[1].replaceAll('일', '')),
+      );
+      _fetchWeeklyDataFromFirestore(startDate, endDate);
+      fetchWeeklyChartData();
     } else {
       _currentDate = DateTime.now();
+      // 월간 통계 fetch
+      getMonthlyData(_currentDate.year, _currentDate.month).then(updateStats);
+      fetchMonthlyChartData();
     }
-    loadData();
-    notifyListeners();
   }
 
   // 년도 변경 (월간 기록용)
   void updateYearMonth(String yearMonth) {
+    _isLoading = true;
+    notifyListeners();
     final parts = yearMonth.split('년 ');
     final year = int.parse(parts[0]);
     final month = int.parse(parts[1].replaceAll('월', ''));
-
     _currentDate = DateTime(year, month, 1);
-    loadData();
-    notifyListeners();
+    // 월간 통계 fetch
+    getMonthlyData(_currentDate.year, _currentDate.month).then(updateStats);
+    fetchMonthlyChartData();
+    // loadData에서 isLoading false 처리
   }
 
   // UI 메시지
@@ -397,51 +430,79 @@ class ActivityLogProvider extends ChangeNotifier {
   }
 
   // 차트 데이터 - 주간
-  Future<List<FlSpot>> get weeklyChartData async {
-    if (_selectedRange.isEmpty) return [];
+  // 차트 데이터 상태
+  List<FlSpot> _weeklyChartData = [];
+  List<BarChartGroupData> _monthlyChartData = [];
+  String? _chartError;
+  List<FlSpot> get weeklyChartData => _weeklyChartData;
+  List<BarChartGroupData> get monthlyChartData => _monthlyChartData;
+  String? get chartError => _chartError;
 
-    final parts = _selectedRange.split(' ~ ');
-    final startParts = parts[0].split('월 ');
-    final startDate = DateTime(
-      DateTime.now().year,
-      int.parse(startParts[0]),
-      int.parse(startParts[1].replaceAll('일', '')),
-    );
-
-    final List<FlSpot> spots = [];
-
-    for (int i = 0; i < 7; i++) {
-      final date = startDate.add(Duration(days: i));
-      final dayData = await _getDayData(date);
-      spots.add(FlSpot(i.toDouble(), dayData['distance'] ?? 0.0));
+  // 주간 차트 데이터 fetch
+  Future<void> fetchWeeklyChartData() async {
+    _isLoading = true;
+    _chartError = null;
+    notifyListeners();
+    try {
+      if (_selectedRange.isEmpty) {
+        _weeklyChartData = [];
+        _isLoading = false;
+        notifyListeners();
+        return;
+      }
+      final parts = _selectedRange.split(' ~ ');
+      final startParts = parts[0].split('월 ');
+      final startDate = DateTime(
+        DateTime.now().year,
+        int.parse(startParts[0]),
+        int.parse(startParts[1].replaceAll('일', '')),
+      );
+      final List<FlSpot> spots = [];
+      for (int i = 0; i < 7; i++) {
+        final date = startDate.add(Duration(days: i));
+        final dayData = await _getDayData(date);
+        spots.add(FlSpot(i.toDouble(), dayData['distance'] ?? 0.0));
+      }
+      _weeklyChartData = spots;
+    } catch (e) {
+      _chartError = '주간 차트 데이터를 불러오는데 실패했습니다.';
+      _weeklyChartData = [];
     }
-
-    return spots;
+    _isLoading = false;
+    notifyListeners();
   }
 
-  // 차트 데이터 - 월간
-  Future<List<BarChartGroupData>> get monthlyChartData async {
-    final List<BarChartGroupData> groups = [];
-
-    for (int month = 1; month <= 12; month++) {
-      final date = DateTime(_currentDate.year, month, 1);
-      final monthData = await _getMonthData(date);
-      groups.add(
-        BarChartGroupData(
-          x: month,
-          barRods: [
-            BarChartRodData(
-              toY: monthData['distance'] ?? 0.0,
-              color: YELLOW_INFO_BASE_30,
-              width: 16,
-              borderRadius: BorderRadius.circular(4),
-            ),
-          ],
-        ),
-      );
+  // 월간 차트 데이터 fetch
+  Future<void> fetchMonthlyChartData() async {
+    _isLoading = true;
+    _chartError = null;
+    notifyListeners();
+    try {
+      final List<BarChartGroupData> groups = [];
+      for (int month = 1; month <= 12; month++) {
+        final date = DateTime(_currentDate.year, month, 1);
+        final monthData = await _getMonthData(date);
+        groups.add(
+          BarChartGroupData(
+            x: month,
+            barRods: [
+              BarChartRodData(
+                toY: monthData['distance'] ?? 0.0,
+                color: YELLOW_INFO_BASE_30,
+                width: 16,
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ],
+          ),
+        );
+      }
+      _monthlyChartData = groups;
+    } catch (e) {
+      _chartError = '월간 차트 데이터를 불러오는데 실패했습니다.';
+      _monthlyChartData = [];
     }
-
-    return groups;
+    _isLoading = false;
+    notifyListeners();
   }
 
   // 특정 날짜의 데이터 조회
