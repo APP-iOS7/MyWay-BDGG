@@ -53,6 +53,16 @@ class _ParkListScreenState extends State<ParkListScreen> {
         print('공원리스트에서 CSV 데이터 로드 완료: ${provider.allParks.length}개');
       }
 
+      // 위치정보 가져오기
+      if (provider.currentPosition == null) {
+        setState(() {
+          _isLocationLoading = true;
+        });
+        await provider.fetchCurrentLocationAndCalculateDistance();
+        setState(() {
+          _isLocationLoading = false;
+        });
+      }
       if (mounted) {
         setState(() {
           _isInitialLoading = false;
@@ -473,7 +483,7 @@ class _ParkListScreenState extends State<ParkListScreen> {
           backgroundColor: BACKGROUND_COLOR,
           appBar: AppBar(
             backgroundColor: BACKGROUND_COLOR,
-            elevation: 0,
+            scrolledUnderElevation: 0,
             title: const Text(
               "공원 리스트",
               style: TextStyle(
