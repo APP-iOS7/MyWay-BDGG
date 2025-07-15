@@ -75,7 +75,17 @@ class _CustomBottomTabBarState extends State<CustomBottomTabBar> {
                 padding: const EdgeInsets.only(top: 25.0),
                 child: Text(
                   '산책시작',
-                  style: TextStyle(color: GRAYSCALE_LABEL_500, fontSize: 12),
+                  style: TextStyle(
+                    color:
+                        _selectedIndex == 2
+                            ? ORANGE_PRIMARY_500
+                            : GRAYSCALE_LABEL_500,
+                    fontSize: 12,
+                    fontWeight:
+                        _selectedIndex == 2
+                            ? FontWeight.bold
+                            : FontWeight.normal,
+                  ),
                 ),
               ),
 
