@@ -161,19 +161,31 @@ class _TrackingResultScreenState extends State<TrackingResultScreen> {
       }
     } else if (Platform.isIOS) {
       PermissionStatus photosStatus = await Permission.photos.status;
-      if (photosStatus.isDenied || photosStatus.isPermanentlyDenied) {
+      if (photosStatus.isDenied) {
         photosStatus = await Permission.photos.request();
-        if (!photosStatus.isGranted) {
+      }
+      if (!photosStatus.isGranted) {
+        if (photosStatus.isPermanentlyDenied) {
           toastification.show(
             context: context,
             style: ToastificationStyle.flat,
             type: ToastificationType.error,
             autoCloseDuration: Duration(seconds: 2),
             alignment: Alignment.bottomCenter,
-            title: Text('갤러리 접근 권한이 필요합니다'),
+            title: Text('설정에서 갤러리 접근 권한을 허용해주세요.'),
           );
-          return;
+          await openAppSettings();
+        } else {
+          toastification.show(
+            context: context,
+            style: ToastificationStyle.flat,
+            type: ToastificationType.error,
+            autoCloseDuration: Duration(seconds: 2),
+            alignment: Alignment.bottomCenter,
+            title: Text('갤러리 접근 권한이 필요합니다.'),
+          );
         }
+        return;
       }
     }
 
