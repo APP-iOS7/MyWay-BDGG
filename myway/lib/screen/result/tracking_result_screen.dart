@@ -1,13 +1,11 @@
 import 'dart:io';
 import 'dart:typed_data';
-import 'dart:ui';
-import 'package:device_info_plus/device_info_plus.dart';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:gallery_saver_plus/gallery_saver.dart';
 import 'package:myway/model/step_model.dart';
 import 'package:myway/provider/step_provider.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:toastification/toastification.dart';
@@ -35,237 +33,66 @@ class _TrackingResultScreenState extends State<TrackingResultScreen> {
   final repaintBoundary = GlobalKey();
 
   Future<void> saveCardAsImage() async {
-    // Android 버전별 권한 처리
-    if (Platform.isAndroid) {
+    if (await _requestPermission()) {
       try {
-        // 실제 Android API 레벨 확인
-        DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
-        AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
-        int androidSdkInt = androidInfo.version.sdkInt;
+        // 캡처
+        RenderRepaintBoundary boundary =
+            repaintBoundary.currentContext!.findRenderObject()
+                as RenderRepaintBoundary;
+        ui.Image image = await boundary.toImage(pixelRatio: 3.0);
+        ByteData? byteData = await image.toByteData(
+          format: ui.ImageByteFormat.png,
+        );
+        Uint8List pngBytes = byteData!.buffer.asUint8List();
 
-        print('Android SDK 버전: $androidSdkInt');
+        // 임시 파일로 저장
+        final String tempPath =
+            '${Directory.systemTemp.path}/IMG_${DateTime.now().millisecondsSinceEpoch}.png';
+        File imgFile = File(tempPath);
+        await imgFile.writeAsBytes(pngBytes);
 
-        if (androidSdkInt >= 33) {
-          // Android 13 이상
-          // Android 13 이상: READ_MEDIA_IMAGES 권한 필요
-          PermissionStatus photosStatus = await Permission.photos.status;
-          print('Photos 권한 상태: $photosStatus');
-          if (photosStatus.isDenied) {
-            photosStatus = await Permission.photos.request();
-            print('Photos 권한 요청 결과: $photosStatus');
-          }
+        // 갤러리에 저장
+        final result = await GallerySaver.saveImage(imgFile.path);
+        // final savedPath = result ?? '저장 실패';
 
-          if (!photosStatus.isGranted) {
-            if (photosStatus.isPermanentlyDenied) {
-              // 설정으로 이동하도록 안내
-              toastification.show(
-                context: context,
-                style: ToastificationStyle.flat,
-                type: ToastificationType.error,
-                autoCloseDuration: Duration(seconds: 2),
-                alignment: Alignment.bottomCenter,
-                title: Text('갤러리 접근 권한이 필요합니다. 설정에서 권한을 허용해주세요.'),
-              );
-              await openAppSettings();
-            } else {
-              toastification.show(
-                context: context,
-                style: ToastificationStyle.flat,
-                type: ToastificationType.error,
-                autoCloseDuration: Duration(seconds: 2),
-                alignment: Alignment.bottomCenter,
-                title: Text('갤러리 접근 권한이 필요합니다'),
-              );
-            }
-            return;
-          }
-        } else if (androidSdkInt >= 30) {
-          // Android 11-12: MANAGE_EXTERNAL_STORAGE 또는 WRITE_EXTERNAL_STORAGE 권한 필요
-          PermissionStatus manageStorageStatus =
-              await Permission.manageExternalStorage.status;
-          print('MANAGE_EXTERNAL_STORAGE 권한 상태: $manageStorageStatus');
-
-          if (manageStorageStatus.isDenied) {
-            manageStorageStatus =
-                await Permission.manageExternalStorage.request();
-            print('MANAGE_EXTERNAL_STORAGE 권한 요청 결과: $manageStorageStatus');
-          }
-
-          if (!manageStorageStatus.isGranted) {
-            // WRITE_EXTERNAL_STORAGE로 대체 시도
-            PermissionStatus storageStatus = await Permission.storage.status;
-            if (storageStatus.isDenied) {
-              storageStatus = await Permission.storage.request();
-            }
-
-            if (!storageStatus.isGranted) {
-              toastification.show(
-                context: context,
-                style: ToastificationStyle.flat,
-                type: ToastificationType.error,
-                autoCloseDuration: Duration(seconds: 2),
-                alignment: Alignment.bottomCenter,
-                title: Text('저장소 접근 권한이 필요합니다'),
-              );
-              return;
-            }
-          }
-        } else {
-          // Android 10 이하: WRITE_EXTERNAL_STORAGE 권한 필요
-          PermissionStatus storageStatus = await Permission.storage.status;
-          print('Storage 권한 상태: $storageStatus');
-          if (storageStatus.isDenied) {
-            storageStatus = await Permission.storage.request();
-            print('Storage 권한 요청 결과: $storageStatus');
-          }
-
-          if (!storageStatus.isGranted) {
-            if (storageStatus.isPermanentlyDenied) {
-              toastification.show(
-                context: context,
-                style: ToastificationStyle.flat,
-                type: ToastificationType.error,
-                autoCloseDuration: Duration(seconds: 2),
-                alignment: Alignment.bottomCenter,
-                title: Text('설정에서 저장소 접근 권한을 허용해주세요'),
-              );
-              await openAppSettings();
-            } else {
-              toastification.show(
-                context: context,
-                style: ToastificationStyle.flat,
-                type: ToastificationType.error,
-                autoCloseDuration: Duration(seconds: 2),
-                alignment: Alignment.bottomCenter,
-                title: Text('저장소 접근 권한이 필요합니다'),
-              );
-            }
-            return;
-          }
-        }
-      } catch (e) {
-        print('권한 확인 중 오류: $e');
-        // 오류 발생 시 기본 권한으로 시도
-        PermissionStatus storageStatus = await Permission.storage.request();
-        if (!storageStatus.isGranted) {
-          toastification.show(
-            context: context,
-            style: ToastificationStyle.flat,
-            type: ToastificationType.error,
-            autoCloseDuration: Duration(seconds: 2),
-            alignment: Alignment.bottomCenter,
-            title: Text('저장소 접근 권한이 필요합니다'),
-          );
-          return;
-        }
-      }
-    } else if (Platform.isIOS) {
-      PermissionStatus photosStatus = await Permission.photos.status;
-      if (photosStatus.isDenied) {
-        photosStatus = await Permission.photos.request();
-      }
-      if (!photosStatus.isGranted) {
-        if (photosStatus.isPermanentlyDenied) {
-          toastification.show(
-            context: context,
-            style: ToastificationStyle.flat,
-            type: ToastificationType.error,
-            autoCloseDuration: Duration(seconds: 2),
-            alignment: Alignment.bottomCenter,
-            title: Text('설정에서 갤러리 접근 권한을 허용해주세요.'),
-          );
-          await openAppSettings();
-        } else {
-          toastification.show(
-            context: context,
-            style: ToastificationStyle.flat,
-            type: ToastificationType.error,
-            autoCloseDuration: Duration(seconds: 2),
-            alignment: Alignment.bottomCenter,
-            title: Text('갤러리 접근 권한이 필요합니다.'),
-          );
-        }
-        return;
-      }
-    }
-
-    try {
-      // RepaintBoundary가 준비되었는지 확인
-      final renderObject = repaintBoundary.currentContext?.findRenderObject();
-      if (renderObject == null) {
-        throw Exception('RepaintBoundary를 찾을 수 없습니다. 위젯이 아직 렌더링되지 않았을 수 있습니다.');
-      }
-
-      final boundary = renderObject as RenderRepaintBoundary;
-
-      // 이미지 캡처
-      print('이미지 캡처 시작...');
-      final image = await boundary.toImage(pixelRatio: 3.0); // 더 높은 해상도
-      final byteData = await image.toByteData(format: ImageByteFormat.png);
-
-      if (byteData == null) {
-        throw Exception('이미지를 바이트 데이터로 변환할 수 없습니다.');
-      }
-
-      final pngBytes = byteData.buffer.asUint8List();
-      print('이미지 크기: ${pngBytes.length} bytes');
-
-      // 임시 파일로 저장
-      final tempDir = await getTemporaryDirectory();
-      final fileName =
-          'MyWay_ResultCard_${DateTime.now().millisecondsSinceEpoch}.png';
-      final file = File('${tempDir.path}/$fileName');
-
-      print('임시 파일 경로: ${file.path}');
-      await file.writeAsBytes(pngBytes);
-
-      // 파일이 실제로 생성되었는지 확인
-      if (!await file.exists()) {
-        throw Exception('임시 파일 생성에 실패했습니다.');
-      }
-
-      print('임시 파일 크기: ${await file.length()} bytes');
-
-      // 갤러리에 저장
-      print('갤러리 저장 시작...');
-      final result = await GallerySaver.saveImage(
-        file.path,
-        albumName: 'MyWay', // 앨범 이름 지정
-      );
-
-      print('갤러리 저장 결과: $result');
-
-      // 임시 파일 삭제
-      try {
-        await file.delete();
-        print('임시 파일 삭제 완료');
-      } catch (deleteError) {
-        print('임시 파일 삭제 실패: $deleteError');
-      }
-
-      if (result == true) {
+        if (!mounted) return;
         toastification.show(
           context: context,
-          style: ToastificationStyle.flat,
           type: ToastificationType.success,
-          autoCloseDuration: Duration(seconds: 3),
+          style: ToastificationStyle.flat,
           alignment: Alignment.bottomCenter,
-          title: Text('이미지가 갤러리에 저장되었습니다'),
+          autoCloseDuration: Duration(seconds: 2),
+          title: Text('이미지 저장 완료'),
         );
-      } else {
-        throw Exception('GallerySaver가 false를 반환했습니다.');
+      } catch (e) {
+        debugPrint('Error: $e');
       }
-    } catch (e) {
-      print('이미지 저장 실패 상세: $e');
+    } else {
       toastification.show(
         context: context,
-        style: ToastificationStyle.flat,
         type: ToastificationType.error,
-        autoCloseDuration: Duration(seconds: 3),
+        style: ToastificationStyle.flat,
         alignment: Alignment.bottomCenter,
-        title: Text('이미지 저장에 실패했습니다: ${e.toString()}'),
+        autoCloseDuration: Duration(seconds: 2),
+        title: Text('권한이 거부 되었습니다'),
       );
     }
+  }
+
+  Future<bool> _requestPermission() async {
+    if (Platform.isAndroid) {
+      final status =
+          await [
+            Permission.storage,
+            Permission.photos,
+            Permission.mediaLibrary,
+          ].request();
+      return status.values.any((st) => st.isGranted);
+    } else if (Platform.isIOS) {
+      final status = await Permission.photos.request();
+      return status.isGranted;
+    }
+    return false;
   }
 
   @override
