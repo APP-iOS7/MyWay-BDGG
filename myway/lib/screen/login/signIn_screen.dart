@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:myway/bottomTabBar/bottom_tab_bar.dart';
 import 'package:myway/const/colors.dart';
+import 'package:myway/provider/user_provider.dart';
+import 'package:provider/provider.dart';
 import 'package:toastification/toastification.dart';
 
 import '../../const/custome_button.dart';
@@ -88,6 +90,8 @@ class _SigninScreenState extends State<SigninScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final userProvider = Provider.of<UserProvider>(context);
+    final googleUser = userProvider.currentUser;
     return Scaffold(
       backgroundColor: Colors.white,
       resizeToAvoidBottomInset: true, // 키보드 올라올 때 자동 조정
@@ -225,6 +229,34 @@ class _SigninScreenState extends State<SigninScreen> {
                         ),
                       ),
                     ],
+                  ),
+                  GestureDetector(
+                    onTap: () async {
+                      await userProvider.googleLogin();
+                    },
+                    child: Container(
+                      width: double.infinity,
+                      height: 58,
+                      decoration: BoxDecoration(
+                        color: GRAYSCALE_LABEL_50,
+                        border: Border.all(color: Colors.black),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image.asset(
+                            'assets/images/google_icon.png',
+                            height: 30,
+                          ),
+                          SizedBox(width: 10),
+                          Text(
+                            'Google 계정으로 로그인',
+                            style: TextStyle(color: Colors.black, fontSize: 15),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ],
               ),
