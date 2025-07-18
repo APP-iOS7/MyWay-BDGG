@@ -158,7 +158,7 @@ class CustomerCenterScreen extends StatelessWidget {
         padding: const EdgeInsets.only(left: 20, right: 20),
         decoration: BoxDecoration(
           color: GRAYSCALE_LABEL_50,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(8),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
