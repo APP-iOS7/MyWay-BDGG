@@ -7,7 +7,7 @@ import 'package:myway/model/user.dart';
 class UserProvider extends ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final googleSign = GoogleSignIn();
+  final googleSignIn = GoogleSignIn();
 
   bool _isLoading = false;
   String? _errorMessage;
@@ -142,6 +142,7 @@ class UserProvider extends ChangeNotifier {
 
   void signOut() async {
     await FirebaseAuth.instance.signOut();
+    await googleSignIn.disconnect();
 
     _currentUser = null;
     notifyListeners();
@@ -211,13 +212,18 @@ class UserProvider extends ChangeNotifier {
   }
 
   Future<void> googleLogin() async {
-    final googleUser = await googleSign.signIn();
+    final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
     if (googleUser == null) return;
 
-    final googleAuth = await googleUser.authentication;
+    final GoogleSignInAuthentication googleAuth =
+        await googleUser.authentication;
     final credential = GoogleAuthProvider.credential(
       accessToken: googleAuth.accessToken,
       idToken: googleAuth.idToken,
     );
+
+    final userCredential = await _auth.signInWithCredential(credential);
+    _currentUser = userCredential.user;
+    notifyListeners();
   }
 }
