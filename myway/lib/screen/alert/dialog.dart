@@ -76,8 +76,8 @@ class ConfirmationDialog extends StatelessWidget {
                   ),
                 ),
                 onPressed: () {
-                  onConfirm();
                   Navigator.pop(context);
+                  onConfirm();
                 },
                 child: Text(
                   confirmText ?? '네',
