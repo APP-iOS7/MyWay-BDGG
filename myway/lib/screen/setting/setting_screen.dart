@@ -1,7 +1,8 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:myway/const/colors.dart';
+import 'package:myway/provider/user_provider.dart';
 import 'package:myway/screen/alert/dialog.dart';
+import 'package:provider/provider.dart';
 
 class SettingScreen extends StatelessWidget {
   const SettingScreen({super.key});
@@ -253,6 +254,10 @@ class SettingScreen extends StatelessWidget {
                       ),
                       TextButton(
                         onPressed: () async {
+                          final userProvider = Provider.of<UserProvider>(
+                            context,
+                            listen: false,
+                          );
                           await showDialog(
                             context: context,
                             builder:
@@ -261,7 +266,8 @@ class SettingScreen extends StatelessWidget {
                                   content: '로그아웃 하시겠습니까?',
                                   onConfirm: () async {
                                     // 로그아웃 처리
-                                    await FirebaseAuth.instance.signOut();
+
+                                    await userProvider.signOut();
                                     // 로그인 화면으로 이동
                                     Navigator.pushNamedAndRemoveUntil(
                                       context,
