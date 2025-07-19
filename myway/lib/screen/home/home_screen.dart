@@ -21,7 +21,6 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   List<String> imageUrls = [];
   bool isLoading = true;
-
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
@@ -162,11 +161,13 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             StreamBuilder<DocumentSnapshot>(
               stream:
-                  _firestore
-                      .collection('trackingResult')
-                      .doc(_auth.currentUser?.uid)
-                      .snapshots()
-                      .distinct(),
+                  _auth.currentUser?.uid != null
+                      ? _firestore
+                          .collection('trackingResult')
+                          .doc(_auth.currentUser!.uid)
+                          .snapshots()
+                          .distinct()
+                      : Stream.empty(),
 
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
@@ -321,10 +322,24 @@ class _HomeScreenState extends State<HomeScreen> {
                                         children: [
                                           imageUrl.isNotEmpty
                                               ? Image.network(
-                                                result['이미지 Url'],
+                                                result['이미지 Url']!,
                                                 width: double.infinity,
                                                 height: 285,
                                                 fit: BoxFit.cover,
+                                                errorBuilder: (
+                                                  context,
+                                                  error,
+                                                  stackTrace,
+                                                ) {
+                                                  return Container(
+                                                    width: double.infinity,
+                                                    height: 285,
+                                                    color: GRAYSCALE_LABEL_200,
+                                                    child: Icon(
+                                                      Icons.image_not_supported,
+                                                    ),
+                                                  );
+                                                },
                                               )
                                               : Container(
                                                 width: double.infinity,
@@ -343,7 +358,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                     CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
-                                                    '${result['코스이름']}',
+                                                    '${result['코스이름'] ?? '코스명 없음'}',
                                                     style: TextStyle(
                                                       fontSize: 20,
                                                       fontWeight:
@@ -351,7 +366,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                     ),
                                                   ),
                                                   Text(
-                                                    '${result['종료시간']}',
+                                                    '${result['종료시간'] ?? '날짜 없음'}',
                                                     style: TextStyle(
                                                       fontSize: 13,
                                                       fontWeight:
@@ -378,7 +393,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                                 .start,
                                                         children: [
                                                           Text(
-                                                            '${result['거리']}',
+                                                            '${result['거리'] ?? '0'}',
                                                             style: TextStyle(
                                                               fontSize: 23,
                                                               fontWeight:
@@ -410,7 +425,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                                     .start,
                                                             children: [
                                                               Text(
-                                                                '${result['소요시간']}',
+                                                                '${result['소요시간'] ?? '0'}',
                                                                 style: TextStyle(
                                                                   fontSize: 23,
                                                                   fontWeight:
@@ -440,7 +455,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                                     .start,
                                                             children: [
                                                               Text(
-                                                                '${result['걸음수']}',
+                                                                '${result['걸음수'] ?? '0'}',
                                                                 style: TextStyle(
                                                                   fontSize: 23,
                                                                   fontWeight:
