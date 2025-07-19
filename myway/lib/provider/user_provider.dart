@@ -7,7 +7,7 @@ import 'package:myway/model/user.dart';
 class UserProvider extends ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final googleSignIn = GoogleSignIn();
+  late var googleSignIn = GoogleSignIn();
 
   bool _isLoading = false;
   String? _errorMessage;
@@ -140,9 +140,11 @@ class UserProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void signOut() async {
+  Future<void> signOut() async {
     await FirebaseAuth.instance.signOut();
-    await googleSignIn.disconnect();
+    if (await googleSignIn.isSignedIn()) {
+      await googleSignIn.signOut();
+    }
 
     _currentUser = null;
     notifyListeners();
@@ -211,19 +213,32 @@ class UserProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> googleLogin() async {
-    final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
-    if (googleUser == null) return;
+  Future<UserCredential> googleLogin() async {
+    final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
 
-    final GoogleSignInAuthentication googleAuth =
-        await googleUser.authentication;
+    final GoogleSignInAuthentication? googleAuth =
+        await googleUser?.authentication;
+
     final credential = GoogleAuthProvider.credential(
-      accessToken: googleAuth.accessToken,
-      idToken: googleAuth.idToken,
+      accessToken: googleAuth?.accessToken,
+      idToken: googleAuth?.idToken,
     );
 
-    final userCredential = await _auth.signInWithCredential(credential);
-    _currentUser = userCredential.user;
-    notifyListeners();
+    // Firestore에 유저 정보 저장
+    if (_currentUser != null) {
+      final userDoc = _firestore.collection('users').doc(_currentUser!.uid);
+      final docSnapshot = await userDoc.get();
+
+      if (!docSnapshot.exists) {
+        // 최초 로그인 시에만 저장
+        await userDoc.set({
+          'uid': _currentUser!.uid,
+          'email': _currentUser!.email ?? '',
+          'username': _currentUser!.displayName ?? '',
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+      }
+    }
+    return await FirebaseAuth.instance.signInWithCredential(credential);
   }
 }
