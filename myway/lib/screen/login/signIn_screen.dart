@@ -233,6 +233,11 @@ class _SigninScreenState extends State<SigninScreen> {
                   GestureDetector(
                     onTap: () async {
                       await userProvider.googleLogin();
+
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => BottomTabBar()),
+                      );
                     },
                     child: Container(
                       width: double.infinity,
@@ -252,7 +257,11 @@ class _SigninScreenState extends State<SigninScreen> {
                           SizedBox(width: 10),
                           Text(
                             'Google 계정으로 로그인',
-                            style: TextStyle(color: Colors.black, fontSize: 15),
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ],
                       ),
