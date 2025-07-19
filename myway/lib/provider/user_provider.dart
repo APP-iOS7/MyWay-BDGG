@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:myway/model/user.dart';
@@ -155,7 +156,8 @@ class UserProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> deleteAccount(String password) async {
+  // 일반 이메일 계정 회원탈퇴
+  Future<void> deleteEmailAccount(String password) async {
     try {
       _isLoading = true;
       notifyListeners();
@@ -182,8 +184,10 @@ class UserProvider extends ChangeNotifier {
         password: password,
       );
       await user.reauthenticateWithCredential(credential);
-      // 2. Firestore에서 사용자 데이터 삭제
-      await _firestore.collection('users').doc(user.uid).delete();
+      
+      // 2. 사용자 데이터 삭제
+      await _deleteUserData(user.uid);
+      
       // 3. Firebase Auth에서 사용자 삭제
       await user.delete();
 
@@ -193,6 +197,156 @@ class UserProvider extends ChangeNotifier {
     } finally {
       _isLoading = false;
       notifyListeners();
+    }
+  }
+
+  // 구글 계정 회원탈퇴
+  Future<void> deleteGoogleAccount() async {
+    try {
+      _isLoading = true;
+      notifyListeners();
+
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        throw FirebaseAuthException(
+          code: 'no-user',
+          message: '사용자가 로그인 되어 있지 않습니다.',
+        );
+      }
+
+      // 구글 로그인인지 확인
+      bool isGoogleProvider = user.providerData
+          .any((provider) => provider.providerId == 'google.com');
+      
+      if (!isGoogleProvider) {
+        throw FirebaseAuthException(
+          code: 'wrong-provider',
+          message: '구글 계정이 아닙니다.',
+        );
+      }
+
+      // 1. 구글 재인증
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+      if (googleUser == null) {
+        throw FirebaseAuthException(
+          code: 'google-signin-cancelled',
+          message: '구글 로그인이 취소되었습니다.',
+        );
+      }
+
+      final GoogleSignInAuthentication googleAuth = 
+          await googleUser.authentication;
+
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      await user.reauthenticateWithCredential(credential);
+      
+      // 2. 사용자 데이터 삭제
+      await _deleteUserData(user.uid);
+      
+      // 3. Firebase Auth에서 사용자 삭제
+      await user.delete();
+      
+      // 4. 구글 로그아웃
+      await googleSignIn.signOut();
+
+      clearUserData();
+    } on FirebaseAuthException catch (e) {
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  // 통합 회원탈퇴 (로그인 방식에 따라 자동으로 처리)
+  Future<void> deleteAccount({String? password}) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      throw FirebaseAuthException(
+        code: 'no-user',
+        message: '사용자가 로그인 되어 있지 않습니다.',
+      );
+    }
+
+    // 구글 로그인인지 확인
+    bool isGoogleProvider = user.providerData
+        .any((provider) => provider.providerId == 'google.com');
+    
+    if (isGoogleProvider) {
+      await deleteGoogleAccount();
+    } else {
+      if (password == null) {
+        throw FirebaseAuthException(
+          code: 'password-required',
+          message: '비밀번호가 필요합니다.',
+        );
+      }
+      await deleteEmailAccount(password);
+    }
+  }
+
+  // 사용자 데이터 삭제 (공통 메서드)
+  Future<void> _deleteUserData(String uid) async {
+    try {
+      // 1. Firestore에서 사용자 기본 정보 삭제
+      await _firestore.collection('users').doc(uid).delete();
+      
+      // 2. 사용자의 산책 기록 삭제
+      await _firestore.collection('trackingResult').doc(uid).delete();
+      
+      // 3. Firebase Storage에서 사용자 파일 삭제
+      // 사용자별 폴더 구조: users/{uid}/
+      try {
+        final storageRef = FirebaseStorage.instance.ref().child('users/$uid');
+        final listResult = await storageRef.listAll();
+        
+        // 하위 폴더들 삭제
+        for (final prefix in listResult.prefixes) {
+          await _deleteStorageFolder(prefix);
+        }
+        
+        // 직접 파일들 삭제
+        for (final item in listResult.items) {
+          await item.delete();
+        }
+      } catch (e) {
+        print('Storage 삭제 중 오류: $e');
+        // Storage 삭제 실패는 치명적이지 않으므로 계속 진행
+      }
+      
+      // 4. 기타 사용자 관련 컬렉션이 있다면 여기서 삭제
+      // 예: 사용자 설정, 즐겨찾기 등
+      
+    } catch (e) {
+      print('사용자 데이터 삭제 중 오류: $e');
+      throw FirebaseException(
+        plugin: 'firestore',
+        message: '사용자 데이터 삭제에 실패했습니다.',
+        code: 'data-deletion-failed',
+      );
+    }
+  }
+
+  // Storage 폴더 재귀적 삭제
+  Future<void> _deleteStorageFolder(Reference folderRef) async {
+    try {
+      final listResult = await folderRef.listAll();
+      
+      // 하위 폴더들 재귀적 삭제
+      for (final prefix in listResult.prefixes) {
+        await _deleteStorageFolder(prefix);
+      }
+      
+      // 파일들 삭제
+      for (final item in listResult.items) {
+        await item.delete();
+      }
+    } catch (e) {
+      print('Storage 폴더 삭제 중 오류: $e');
     }
   }
 
