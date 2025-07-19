@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:myway/const/colors.dart';
 import 'package:myway/provider/user_provider.dart';
-import 'package:myway/screen/alert/dialog.dart';
 import 'package:provider/provider.dart';
 
 class SettingScreen extends StatelessWidget {
@@ -9,6 +8,8 @@ class SettingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final userProvider = Provider.of<UserProvider>(context);
+
     return Scaffold(
       backgroundColor: WHITE,
       appBar: AppBar(
@@ -254,28 +255,11 @@ class SettingScreen extends StatelessWidget {
                       ),
                       TextButton(
                         onPressed: () async {
-                          final userProvider = Provider.of<UserProvider>(
+                          await userProvider.signOut();
+                          Navigator.pushNamedAndRemoveUntil(
                             context,
-                            listen: false,
-                          );
-                          await showDialog(
-                            context: context,
-                            builder:
-                                (context) => ConfirmationDialog(
-                                  title: '로그아웃',
-                                  content: '로그아웃 하시겠습니까?',
-                                  onConfirm: () async {
-                                    // 로그아웃 처리
-
-                                    await userProvider.signOut();
-                                    // 로그인 화면으로 이동
-                                    Navigator.pushNamedAndRemoveUntil(
-                                      context,
-                                      'signIn',
-                                      (route) => false,
-                                    );
-                                  },
-                                ),
+                            'signIn',
+                            (route) => false,
                           );
                         },
                         child: Row(

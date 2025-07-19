@@ -53,16 +53,37 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> fetchImages() async {
-    final ref = FirebaseStorage.instance.ref().child('walk_result');
-    final result = await ref.listAll();
-    final urls = await Future.wait(
-      result.items.map((item) => item.getDownloadURL()),
-    );
-    if (mounted) {
-      setState(() {
-        imageUrls = urls;
-        isLoading = false;
-      });
+    try {
+      // 사용자가 로그인되어 있는지 확인
+      if (_auth.currentUser == null) {
+        if (mounted) {
+          setState(() {
+            imageUrls = [];
+            isLoading = false;
+          });
+        }
+        return;
+      }
+
+      final ref = FirebaseStorage.instance.ref().child('walk_result');
+      final result = await ref.listAll();
+      final urls = await Future.wait(
+        result.items.map((item) => item.getDownloadURL()),
+      );
+      if (mounted) {
+        setState(() {
+          imageUrls = urls;
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('이미지 로드 실패: $e');
+      if (mounted) {
+        setState(() {
+          imageUrls = [];
+          isLoading = false;
+        });
+      }
     }
   }
 
@@ -167,9 +188,39 @@ class _HomeScreenState extends State<HomeScreen> {
                           .doc(_auth.currentUser!.uid)
                           .snapshots()
                           .distinct()
-                      : Stream.empty(),
+                      : null,
 
               builder: (context, snapshot) {
+                // 사용자가 로그아웃된 경우
+                if (_auth.currentUser == null) {
+                  return SizedBox(
+                    height: 430,
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            '로그인이 필요합니다.',
+                            style: TextStyle(
+                              color: GRAYSCALE_LABEL_800,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            '산책 기록을 보려면 로그인해주세요.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: GRAYSCALE_LABEL_600,
+                              fontWeight: FontWeight.w500,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }
                 if (snapshot.hasError) {
                   return SizedBox(
                     height: 430,

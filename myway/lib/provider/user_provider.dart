@@ -146,7 +146,12 @@ class UserProvider extends ChangeNotifier {
       await googleSignIn.signOut();
     }
 
+    // 사용자 관련 모든 상태 초기화
     _currentUser = null;
+    _nickname = null;
+    _email = null;
+    _errorMessage = null;
+    _isSignUpSuccess = false;
     notifyListeners();
   }
 
