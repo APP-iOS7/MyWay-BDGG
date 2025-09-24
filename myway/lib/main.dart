@@ -122,7 +122,7 @@ class AuthWrapper extends StatelessWidget {
           return const Center(child: Text('에러가 발생하였습니다.'));
         } else if (snapshot.hasData) {
           // return const BottomTabBar();
-          return const CustomBottomTabBar();
+          return const BottomTabBar();
         } else {
           return const SigninScreen();
         }

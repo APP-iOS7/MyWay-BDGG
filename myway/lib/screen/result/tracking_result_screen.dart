@@ -1,11 +1,12 @@
 import 'dart:io';
 import 'dart:typed_data';
-import 'dart:ui' as ui;
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:gallery_saver_plus/gallery_saver.dart';
 import 'package:myway/model/step_model.dart';
 import 'package:myway/provider/step_provider.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:toastification/toastification.dart';
@@ -33,66 +34,70 @@ class _TrackingResultScreenState extends State<TrackingResultScreen> {
   final repaintBoundary = GlobalKey();
 
   Future<void> saveCardAsImage() async {
-    if (await _requestPermission()) {
-      try {
-        // 캡처
-        RenderRepaintBoundary boundary =
-            repaintBoundary.currentContext!.findRenderObject()
-                as RenderRepaintBoundary;
-        ui.Image image = await boundary.toImage(pixelRatio: 3.0);
-        ByteData? byteData = await image.toByteData(
-          format: ui.ImageByteFormat.png,
-        );
-        Uint8List pngBytes = byteData!.buffer.asUint8List();
-
-        // 임시 파일로 저장
-        final String tempPath =
-            '${Directory.systemTemp.path}/IMG_${DateTime.now().millisecondsSinceEpoch}.png';
-        File imgFile = File(tempPath);
-        await imgFile.writeAsBytes(pngBytes);
-
-        // 갤러리에 저장
-        final result = await GallerySaver.saveImage(imgFile.path);
-        // final savedPath = result ?? '저장 실패';
-
-        if (!mounted) return;
+    // 권한 확인
+    var status = await Permission.storage.status;
+    if (!status.isGranted) {
+      status = await Permission.storage.request();
+      if (!status.isGranted) {
         toastification.show(
           context: context,
-          type: ToastificationType.success,
           style: ToastificationStyle.flat,
-          alignment: Alignment.bottomCenter,
+          type: ToastificationType.error,
           autoCloseDuration: Duration(seconds: 2),
-          title: Text('이미지 저장 완료'),
+          alignment: Alignment.bottomCenter,
+          title: Text('갤러리 접근 권한이 필요합니다'),
         );
-      } catch (e) {
-        debugPrint('Error: $e');
+        return;
       }
-    } else {
+    }
+    try {
+      final boundary =
+          repaintBoundary.currentContext!.findRenderObject()!
+              as RenderRepaintBoundary;
+      final image = await boundary.toImage(pixelRatio: 2);
+      final byteData = await image.toByteData(format: ImageByteFormat.png);
+      final pngBytes = byteData!.buffer.asUint8List();
+
+      // 임시 파일로 저장
+      final tempDir = await getTemporaryDirectory();
+      final file = File(
+        '${tempDir.path}/ResultCard_${DateTime.now().millisecondsSinceEpoch}.png',
+      );
+      await file.writeAsBytes(pngBytes);
+
+      // 갤러리에 저장
+      final result = await GallerySaver.saveImage(file.path);
+
+      if (result == true) {
+        toastification.show(
+          context: context,
+          style: ToastificationStyle.flat,
+          type: ToastificationType.success,
+          autoCloseDuration: Duration(seconds: 3),
+          alignment: Alignment.bottomCenter,
+          title: Text('이미지가 갤러리에 저장되었습니다'),
+        );
+      } else {
+        toastification.show(
+          context: context,
+          style: ToastificationStyle.flat,
+          type: ToastificationType.error,
+          autoCloseDuration: Duration(seconds: 1),
+          alignment: Alignment.bottomCenter,
+          title: Text('이미지 저장에 실패했습니다'),
+        );
+      }
+    } catch (e) {
+      print('이미지 저장 실패: $e');
       toastification.show(
         context: context,
-        type: ToastificationType.error,
         style: ToastificationStyle.flat,
+        type: ToastificationType.error,
+        autoCloseDuration: Duration(seconds: 1),
         alignment: Alignment.bottomCenter,
-        autoCloseDuration: Duration(seconds: 2),
-        title: Text('권한이 거부 되었습니다'),
+        title: Text('이미지 저장 중 오류가 발생했습니다'),
       );
     }
-  }
-
-  Future<bool> _requestPermission() async {
-    if (Platform.isAndroid) {
-      final status =
-          await [
-            Permission.storage,
-            Permission.photos,
-            Permission.mediaLibrary,
-          ].request();
-      return status.values.any((st) => st.isGranted);
-    } else if (Platform.isIOS) {
-      final status = await Permission.photos.request();
-      return status.isGranted;
-    }
-    return false;
   }
 
   @override
